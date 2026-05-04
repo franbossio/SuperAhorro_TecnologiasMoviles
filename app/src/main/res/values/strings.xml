@@ -1,0 +1,94 @@
+<resources>
+    <string name="app_name">Super Ahorro</string>
+
+    <!-- Splash -->
+    <string name="splash_titulo">Super Ahorro</string>
+    <string name="splash_subtitulo">Controlá tus gastos de supermercado</string>
+    <string name="splash_btn_ingresar">Ingresar</string>
+    <string name="splash_btn_crear_cuenta">Crear cuenta</string>
+
+    <!-- Login -->
+    <string name="login_titulo">Iniciar sesión</string>
+    <string name="login_email">Correo electrónico</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_btn_ingresar">Ingresar</string>
+    <string name="login_olvide_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_sin_cuenta">¿No tenés cuenta? Registrate</string>
+
+    <!-- Registro -->
+    <string name="register_titulo">Crear cuenta</string>
+    <string name="register_nombre">Nombre</string>
+    <string name="register_apellido">Apellido</string>
+    <string name="register_email">Correo electrónico</string>
+    <string name="register_password">Contraseña</string>
+    <string name="register_confirmar_password">Confirmar contraseña</string>
+    <string name="register_btn_crear">Crear cuenta</string>
+    <string name="register_ya_cuenta">¿Ya tenés cuenta? Iniciá sesión</string>
+
+    <!-- Home -->
+    <string name="home_bienvenida">¡Hola</string>
+    <string name="home_gasto_mes">Gasto del mes</string>
+    <string name="home_ultima_compra">Última compra</string>
+    <string name="home_nueva_compra">Nueva compra</string>
+    <string name="home_mis_compras">Mis compras</string>
+    <string name="home_historial">Historial</string>
+    <string name="home_estadisticas">Estadísticas</string>
+
+    <!-- Compras -->
+    <string name="compra_nueva_titulo">Nueva compra</string>
+    <string name="compra_fecha">Fecha</string>
+    <string name="compra_hora">Hora</string>
+    <string name="compra_supermercado">Supermercado</string>
+    <string name="compra_total">Total ($)</string>
+    <string name="compra_guardar">Guardar compra</string>
+    <string name="compra_agregar_producto">Agregar producto</string>
+    <string name="compra_adjuntar_ticket">Adjuntar ticket</string>
+    <string name="compra_listado_titulo">Mis compras</string>
+    <string name="compra_sin_compras">Todavía no registraste ninguna compra</string>
+    <string name="compra_detalle_titulo">Detalle de compra</string>
+    <string name="compra_historial_titulo">Historial de compras</string>
+    <string name="compra_compartir">Compartir compra</string>
+
+    <!-- Productos -->
+    <string name="producto_nuevo_titulo">Nuevo producto</string>
+    <string name="producto_codigo">Código de barras</string>
+    <string name="producto_nombre">Nombre del producto</string>
+    <string name="producto_descripcion">Descripción</string>
+    <string name="producto_cantidad">Cantidad</string>
+    <string name="producto_precio">Precio unitario ($)</string>
+    <string name="producto_guardar">Guardar producto</string>
+    <string name="producto_sin_productos">Sin productos cargados</string>
+
+    <!-- Estadísticas -->
+    <string name="estadisticas_titulo">Estadísticas</string>
+    <string name="estadisticas_total_gastado">Total gastado</string>
+    <string name="estadisticas_cantidad_compras">Compras</string>
+    <string name="estadisticas_promedio">Promedio</string>
+    <string name="estadisticas_por_supermercado">Gasto por supermercado</string>
+    <string name="estadisticas_mas_comprados">Productos más comprados</string>
+
+    <!-- Perfil -->
+    <string name="perfil_titulo">Mi perfil</string>
+    <string name="perfil_guardar">Guardar cambios</string>
+    <string name="perfil_cerrar_sesion">Cerrar sesión</string>
+
+    <!-- Settings -->
+    <string name="settings_titulo">Configuración</string>
+    <string name="settings_notificaciones">Notificaciones</string>
+    <string name="settings_notificaciones_desc">Recibir alertas de promociones</string>
+    <string name="settings_tema_oscuro">Modo oscuro</string>
+    <string name="settings_tema_oscuro_desc">Activar tema oscuro</string>
+    <string name="settings_version">Versión</string>
+    <string name="settings_paquete">Paquete</string>
+
+    <!-- Generales -->
+    <string name="cargando">Cargando…</string>
+    <string name="error_generico">Ocurrió un error. Intentá de nuevo.</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="guardar">Guardar</string>
+    <string name="eliminar">Eliminar</string>
+    <string name="editar">Editar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="volver">Volver</string>
+    <string name="productos">productos</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema base para la Activity. Compose sobreescribe todo lo visual. -->
+    <style name="Theme.SuperAhorro" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorBackground">@color/gris_fondo</item>
+        <item name="android:statusBarColor">@color/verde_oscuro</item>
+    </style>
+</resources>
