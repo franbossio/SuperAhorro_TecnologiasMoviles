@@ -1,6 +1,7 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.splash
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -152,31 +154,13 @@ fun SplashScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector        = Icons.Filled.Eco,
-                        contentDescription = null,
-                        tint               = primary,
-                        modifier           = Modifier.size(72.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.logo),
+                        contentDescription = "Logo Super Ahorro",
+                        modifier = Modifier.size(120.dp)
                     )
                 }
-                // Badge inferior derecho (savings icon del HTML)
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset((-6).dp, (-6).dp)
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(primary)
-                        .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector        = Icons.Filled.Savings,
-                        contentDescription = null,
-                        tint               = Color.White,
-                        modifier           = Modifier.size(18.dp)
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -210,7 +194,7 @@ fun SplashScreen(
                     modifier = Modifier.weight(1f),
                     icon     = Icons.Outlined.ReceiptLong,
                     label    = "ESCANEO",
-                    desc     = "IA para tickets"
+                    desc     = "Tickets"
                 )
                 FeatureCard(
                     modifier = Modifier.weight(1f),
@@ -304,7 +288,6 @@ fun SplashScreen(
     }
 }
 
-// ── Feature Card componente ────────────────────────────────────────────────────
 @Composable
 private fun FeatureCard(
     modifier : Modifier = Modifier,

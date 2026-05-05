@@ -4,11 +4,11 @@ import androidx.compose.ui.graphics.Color
 
 
 
-val VerdePrimario = Color(0xFF2E7D32)
-val VerdeClaro = Color(0xFF4CAF50)
-val VerdeOscuro = Color(0xFF1B5E20)
+val VerdePrimario = Color(0xFF1404F6)
+val VerdeClaro = Color(0xFF8487FA)
+val VerdeOscuro = Color(0xFF003CD2)
 val VerdeContainer = Color(0xFFC8E6C9)
-val OnVerdeContainer = Color(0xFF1B5E20)
+val OnVerdeContainer = Color(0xFF4409E8)
 val AmarilloAcento = Color(0xFFFFC107)
 val GrisFondo = Color(0xFFF5F5F5)
 val GrisTexto = Color(0xFF757575)
@@ -16,15 +16,15 @@ val Blanco = Color(0xFFFFFFFF)
 val RojoError = Color(0xFFD32F2F)
 // Paleta principal verde
 val Verde10  = Color(0xFF002110)
-val Verde20  = Color(0xFF003920)
-val Verde30  = Color(0xFF005231)
-val Verde40  = Color(0xFF1B6B37)   // primario light
+val Verde20  = Color(0xFF8555F6)
+val Verde30  = Color(0xFF425AE0)
+val Verde40  = Color(0xFF2B31DC)   // primario light
 val Verde80  = Color(0xFF80D99D)
 val Verde90  = Color(0xFF9CF5B7)
 val Verde95  = Color(0xFFCBFFD8)
 val Verde99  = Color(0xFFF3FFF4)
 
-val VerdeContainer30 = Color(0xFF005231)
+val VerdeContainer30 = Color(0xFF082DE7)
 val VerdeContainer90 = Color(0xFF9CF5B7)
 
 // Acento amarillo
