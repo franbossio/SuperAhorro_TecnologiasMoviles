@@ -14,13 +14,10 @@ class DetalleCompraViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<UiState<Compra>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    fun cargar(id: Int) {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(300)
-            val compra = comprasMock.find { it.id == id }
-            _uiState.value = if (compra != null) UiState.Success(compra)
-            else UiState.Error("Compra no encontrada")
-        }
+    fun cargar(id: Int) = viewModelScope.launch {
+        _uiState.value = UiState.Loading
+        delay(400)
+        val compra = comprasMock.firstOrNull { it.id == id }
+        _uiState.value = if (compra != null) UiState.Success(compra) else UiState.Error("No encontrada")
     }
 }

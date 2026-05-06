@@ -1,28 +1,35 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+import com.undef.superahorro.BossioCorrea.ui.theme.StitchPrimary
+import com.undef.superahorro.BossioCorrea.ui.theme.StitchPrimaryContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,170 +48,172 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text       = stringResource(R.string.app_name),
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("SUPER AHORRO", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.primary, letterSpacing = (-0.3).sp)
                 },
                 actions = {
                     IconButton(onClick = onPerfilClick) {
-                        Icon(Icons.Default.Person, contentDescription = stringResource(R.string.perfil_titulo))
+                        Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.outline)
                     }
                     IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_titulo))
+                        Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.outline)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor         = MaterialTheme.colorScheme.primary,
-                    titleContentColor      = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = Color(0xFFF8FAFC)
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
         when (val state = uiState) {
-            is UiState.Loading -> {
-                Box(
-                    modifier        = Modifier.fillMaxSize().padding(padding),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
+            is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
-
-            is UiState.Error -> {
-                Box(
-                    modifier        = Modifier.fillMaxSize().padding(padding),
-                    contentAlignment = Alignment.Center
-                ) { Text(stringResource(R.string.error_generico)) }
+            is UiState.Error   -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Text(stringResource(R.string.error_generico))
             }
-
             is UiState.Success -> {
                 val data = state.data
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 20.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
 
-                    // ─── Card resumen mes ─────────────────────────────────
-                    Card(
-                        modifier  = Modifier.fillMaxWidth(),
-                        shape     = RoundedCornerShape(16.dp),
-                        colors    = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        elevation = CardDefaults.cardElevation(2.dp)
+                    // ── Welcome header ────────────────────────────────────
+                    Column {
+                        LabelCaps("WELCOME BACK")
+                        Spacer(Modifier.height(4.dp))
+                        Text(data.saludo, fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
+                    }
+
+                    // ── Total spent card con gradiente suave ──────────────
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape    = RoundedCornerShape(16.dp),
+                        color    = Color(0xFFFFFFFF),
+                        shadowElevation = 1.dp,
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                        )
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text(
-                                text  = data.saludo,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text  = stringResource(R.string.home_gasto_mes),
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            Text(
-                                text       = "$ %,.2f".format(data.gastoMes),
-                                style      = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text  = "${data.cantidadCompras} compras registradas",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
+                                Column {
+                                    LabelCaps("TOTAL SPENT THIS MONTH")
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = "$ %,.2f".format(data.gastoMes),
+                                        fontSize = 28.sp, fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        letterSpacing = (-0.56).sp
+                                    )
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(Icons.Default.TrendingUp, null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp))
+                                        Text("${data.cantidadCompras} compras",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            // Mini gráfico de barras decorativo
+                            Row(
+                                Modifier.fillMaxWidth().height(48.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                val heights = listOf(0.4f, 0.6f, 0.5f, 0.8f, 0.65f, 0.9f, 0.7f)
+                                heights.forEach { h ->
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight(h)
+                                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                                            .background(
+                                                Brush.verticalGradient(
+                                                    listOf(
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                                    )
+                                                )
+                                            )
+                                    )
+                                }
+                            }
                         }
                     }
 
-                    // ─── Card última compra ───────────────────────────────
-                    Card(
-                        modifier  = Modifier.fillMaxWidth().clickable { onListadoClick() },
-                        shape     = RoundedCornerShape(16.dp),
-                        colors    = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor   = MaterialTheme.colorScheme.onSurface
-                        ),
-                        elevation = CardDefaults.cardElevation(1.dp)
+                    // ── Última compra card ────────────────────────────────
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().clickable { onListadoClick() },
+                        shape    = RoundedCornerShape(16.dp),
+                        color    = Color(0xFFFFFFFF),
+                        shadowElevation = 1.dp,
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                        )
                     ) {
                         Row(
-                            modifier              = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment     = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(
-                                    text  = stringResource(R.string.home_ultima_compra),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text       = data.ultimoSuper,
-                                    style      = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color      = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text  = data.ultimaFecha,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                LabelCaps(stringResource(R.string.home_ultima_compra))
+                                Spacer(Modifier.height(4.dp))
+                                Text(data.ultimoSuper, style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(data.ultimaFecha, style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline)
                             }
-                            Text(
-                                text       = "$ %,.0f".format(data.ultimoTotal),
-                                style      = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color      = MaterialTheme.colorScheme.primary
-                            )
+                            Text("$ %,.0f".format(data.ultimoTotal),
+                                fontSize = 22.sp, fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary)
                         }
                     }
 
-                    // ─── Botón nueva compra ───────────────────────────────
+                    // ── Botón nueva compra ────────────────────────────────
                     Button(
-                        onClick  = onNuevaCompraClick,
-                        modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape    = RoundedCornerShape(12.dp)
+                        onClick   = onNuevaCompraClick,
+                        modifier  = Modifier.fillMaxWidth().height(56.dp),
+                        shape     = RoundedCornerShape(14.dp),
+                        colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        elevation = ButtonDefaults.buttonElevation(4.dp)
                     ) {
-                        Text(
-                            text       = "➕  ${stringResource(R.string.home_nueva_compra)}",
-                            fontWeight = FontWeight.Bold
-                        )
+                        Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.home_nueva_compra),
+                            fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     }
 
-                    // ─── Grilla accesos rápidos ───────────────────────────
-                    Row(
-                        modifier              = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        HomeQuickCard(
-                            modifier = Modifier.weight(1f),
-                            emoji    = "📋",
-                            label    = stringResource(R.string.home_mis_compras),
-                            onClick  = onListadoClick
-                        )
-                        HomeQuickCard(
-                            modifier = Modifier.weight(1f),
-                            emoji    = "📅",
-                            label    = stringResource(R.string.home_historial),
-                            onClick  = onHistorialClick
-                        )
-                        HomeQuickCard(
-                            modifier = Modifier.weight(1f),
-                            emoji    = "📊",
-                            label    = stringResource(R.string.home_estadisticas),
-                            onClick  = onEstadisticasClick
-                        )
+                    // ── Quick access grid ─────────────────────────────────
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        QuickCard(Modifier.weight(1f), "📋", stringResource(R.string.home_mis_compras), onListadoClick)
+                        QuickCard(Modifier.weight(1f), "📅", stringResource(R.string.home_historial), onHistorialClick)
+                        QuickCard(Modifier.weight(1f), "📊", stringResource(R.string.home_estadisticas), onEstadisticasClick)
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
             }
         }
@@ -212,39 +221,29 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeQuickCard(
-    modifier: Modifier = Modifier,
-    emoji   : String,
-    label   : String,
-    onClick : () -> Unit
-) {
-    Card(
-        modifier  = modifier.clickable { onClick() },
-        shape     = RoundedCornerShape(14.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor   = MaterialTheme.colorScheme.onSecondaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(1.dp)
+private fun QuickCard(modifier: Modifier, emoji: String, label: String, onClick: () -> Unit) {
+    Surface(
+        modifier = modifier.clickable { onClick() },
+        shape    = RoundedCornerShape(14.dp),
+        color    = Color(0xFFFFFFFF),
+        shadowElevation = 1.dp,
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
     ) {
         Column(
-            modifier            = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = emoji, style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text      = label,
-                style     = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
-            )
+            Text(emoji, fontSize = 28.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(label, style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun HomePreview() {
-    SuperAhorroTheme { HomeScreen() }
-}
+private fun HomePreview() { SuperAhorroTheme { HomeScreen() } }

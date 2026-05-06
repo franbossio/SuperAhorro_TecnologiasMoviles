@@ -1,22 +1,17 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.estadisticas
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,14 +21,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
-
-// Colores fijos para el gráfico de supermercados
-private val barColors = listOf(
-    Color(0xFF2E7D32), Color(0xFF4CAF50), Color(0xFF81C784),
-    Color(0xFFA5D6A7), Color(0xFFC8E6C9)
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,231 +33,121 @@ fun EstadisticasScreen(
     onBackClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val periodos = listOf("7 días", "30 días", "3 meses", "1 año")
+    var periodoSel by remember { mutableStateOf("30 días") }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.estadisticas_titulo)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor            = MaterialTheme.colorScheme.primary,
-                    titleContentColor         = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
+        topBar = { StitchTopBar(stringResource(R.string.estadisticas_titulo), onBackClick) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-
         when (val state = uiState) {
-            is UiState.Loading -> Box(
-                modifier         = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
-
-            is UiState.Error -> Box(
-                modifier         = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { Text(stringResource(R.string.error_generico)) }
-
+            is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+            is UiState.Error -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Text(stringResource(R.string.error_generico))
+            }
             is UiState.Success -> {
                 val data = state.data
-                val maxMensual = data.gastosMensuales.maxOfOrNull { it.second } ?: 1.0
-                val maxSuper   = data.gastosPorSuper.firstOrNull()?.second ?: 1.0
-
                 LazyColumn(
-                    modifier            = Modifier.fillMaxSize().padding(padding),
-                    contentPadding      = PaddingValues(16.dp),
+                    modifier       = Modifier.fillMaxSize().padding(padding),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
-                    // ── KPI Cards ─────────────────────────────────────────
+                    // ── Header ─────────────────────────────────────────────
                     item {
-                        Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            KpiCard(
-                                modifier = Modifier.weight(1f),
-                                label    = stringResource(R.string.estadisticas_total_gastado),
-                                value    = "$ %,.0f".format(data.totalGastado),
-                                icon     = Icons.Default.TrendingUp,
-                                color    = MaterialTheme.colorScheme.primaryContainer,
-                                onColor  = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            KpiCard(
-                                modifier = Modifier.weight(1f),
-                                label    = stringResource(R.string.estadisticas_cantidad_compras),
-                                value    = "${data.cantidadCompras}",
-                                icon     = Icons.Default.ShoppingCart,
-                                color    = MaterialTheme.colorScheme.secondaryContainer,
-                                onColor  = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
+                        Column {
+                            Text(stringResource(R.string.estadisticas_titulo),
+                                fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = (-0.72).sp)
+                            Text("Análisis inteligente de tus gastos",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline)
                         }
                     }
 
+                    // ── Filtros período ────────────────────────────────────
                     item {
-                        KpiCard(
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(periodos) { p ->
+                                FilterChip(
+                                    selected = p == periodoSel,
+                                    onClick  = { periodoSel = p },
+                                    label    = { Text(p, style = MaterialTheme.typography.labelSmall) },
+                                    shape    = RoundedCornerShape(20.dp),
+                                    colors   = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor     = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // ── KPI row: 3 mini cards ─────────────────────────────
+                    item {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            KpiCard(Modifier.weight(1f),
+                                label = stringResource(R.string.estadisticas_total_gastado),
+                                value = "$ %,.0f".format(data.totalGastado),
+                                trend = "+12%", positive = false)
+                            KpiCard(Modifier.weight(1f),
+                                label = stringResource(R.string.estadisticas_cantidad_compras),
+                                value = "${data.cantidadCompras}",
+                                trend = "+3", positive = true)
+                            KpiCard(Modifier.weight(1f),
+                                label = stringResource(R.string.estadisticas_promedio),
+                                value = "$ %,.0f".format(data.promedio),
+                                trend = "-5%", positive = true)
+                        }
+                    }
+
+                    // ── Evolución mensual (barras) ─────────────────────────
+                    item {
+                        Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            label    = stringResource(R.string.estadisticas_promedio),
-                            value    = "$ %,.0f por compra".format(data.promedio),
-                            icon     = Icons.Default.BarChart,
-                            color    = MaterialTheme.colorScheme.tertiaryContainer,
-                            onColor  = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                    }
-
-                    // ── Evolución mensual ─────────────────────────────────
-                    item {
-                        SectionCard(title = "Evolución del gasto mensual") {
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .height(130.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment     = Alignment.Bottom
-                            ) {
-                                data.gastosMensuales.forEach { (mes, valor) ->
-                                    val fraccion = if (maxMensual > 0) (valor / maxMensual).toFloat() else 0f
-                                    val animated by animateFloatAsState(
-                                        targetValue  = fraccion,
-                                        animationSpec = tween(800),
-                                        label        = "bar_$mes"
-                                    )
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Bottom,
-                                        modifier            = Modifier.weight(1f)
-                                    ) {
-                                        if (valor > 0) {
-                                            Text(
-                                                text  = "$ %,.0f".format(valor),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 8.sp
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Box(
-                                            modifier = Modifier
-                                                .width(28.dp)
-                                                .fillMaxHeight(animated.coerceAtLeast(0.03f))
-                                                .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                                                .background(
-                                                    if (valor > 0) MaterialTheme.colorScheme.primary
-                                                    else MaterialTheme.colorScheme.surfaceVariant
-                                                )
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text  = mes,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // ── Gasto por supermercado ────────────────────────────
-                    item {
-                        SectionCard(title = stringResource(R.string.estadisticas_por_supermercado)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                data.gastosPorSuper.forEachIndexed { idx, (nombre, valor) ->
-                                    val fraccion = if (maxSuper > 0) (valor / maxSuper).toFloat() else 0f
-                                    val animated by animateFloatAsState(
-                                        targetValue  = fraccion,
-                                        animationSpec = tween(900),
-                                        label        = "super_$nombre"
-                                    )
-                                    Column {
-                                        Row(
-                                            modifier              = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Row(
-                                                verticalAlignment     = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(10.dp)
-                                                        .clip(CircleShape)
-                                                        .background(barColors[idx % barColors.size])
-                                                )
-                                                Text(nombre, style = MaterialTheme.typography.bodyMedium)
-                                            }
-                                            Text(
-                                                text  = "$ %,.0f".format(valor),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        LinearProgressIndicator(
-                                            progress      = { animated },
-                                            modifier      = Modifier
-                                                .fillMaxWidth()
-                                                .height(6.dp)
-                                                .clip(RoundedCornerShape(3.dp)),
-                                            color         = barColors[idx % barColors.size],
-                                            trackColor    = MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // ── Productos más comprados ───────────────────────────
-                    item {
-                        SectionCard(title = stringResource(R.string.estadisticas_mas_comprados)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                data.productosMasComprados.forEachIndexed { idx, (nombre, cant) ->
-                                    Row(
-                                        modifier              = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment     = Alignment.CenterVertically
-                                    ) {
-                                        Row(
-                                            verticalAlignment     = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            shape    = RoundedCornerShape(16.dp),
+                            color    = Color(0xFFFFFFFF),
+                            shadowElevation = 1.dp,
+                            border   = CardDefaults.outlinedCardBorder().copy(
+                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                LabelCaps("EVOLUCIÓN MENSUAL")
+                                Spacer(Modifier.height(16.dp))
+                                val meses = listOf("E","F","M","A","M","J","J","A","S","O","N","D")
+                                val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().height(120.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    meses.zip(vals).forEach { (m, h) ->
+                                        Column(
+                                            modifier = Modifier.weight(1f),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Bottom
                                         ) {
                                             Box(
-                                                modifier         = Modifier
-                                                    .size(28.dp)
-                                                    .clip(CircleShape)
-                                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text       = "${idx + 1}",
-                                                    style      = MaterialTheme.typography.labelMedium,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color      = MaterialTheme.colorScheme.onPrimaryContainer
-                                                )
-                                            }
-                                            Text(nombre, style = MaterialTheme.typography.bodyMedium)
-                                        }
-                                        Card(
-                                            shape  = RoundedCornerShape(8.dp),
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                contentColor   = MaterialTheme.colorScheme.onSecondaryContainer
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .fillMaxHeight(h)
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                                    .background(
+                                                        Brush.verticalGradient(
+                                                            listOf(
+                                                                MaterialTheme.colorScheme.primary,
+                                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                                            )
+                                                        )
+                                                    )
                                             )
-                                        ) {
-                                            Text(
-                                                text     = "x$cant",
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                                style    = MaterialTheme.typography.labelMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(m, style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.outline)
                                         }
                                     }
                                 }
@@ -274,7 +155,76 @@ fun EstadisticasScreen(
                         }
                     }
 
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                    // ── Por supermercado ───────────────────────────────────
+                    item {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape    = RoundedCornerShape(16.dp),
+                            color    = Color(0xFFFFFFFF),
+                            shadowElevation = 1.dp,
+                            border   = CardDefaults.outlinedCardBorder().copy(
+                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                LabelCaps(stringResource(R.string.estadisticas_por_supermercado))
+                                data.gastosPorSuper.forEach { (nombre, pct) ->
+                                    SuperBar(nombre, pct)
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Productos más comprados ────────────────────────────
+                    item {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape    = RoundedCornerShape(16.dp),
+                            color    = Color(0xFFFFFFFF),
+                            shadowElevation = 1.dp,
+                            border   = CardDefaults.outlinedCardBorder().copy(
+                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                LabelCaps(stringResource(R.string.estadisticas_mas_comprados))
+                                data.topProductos.forEachIndexed { i, (prod, cant) ->
+                                    Row(Modifier.fillMaxWidth(),
+                                        Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                                        Row(verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            Surface(
+                                                modifier = Modifier.size(28.dp),
+                                                shape    = RoundedCornerShape(8.dp),
+                                                color    = MaterialTheme.colorScheme.primary.copy(0.08f)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text("${i+1}", style = MaterialTheme.typography.labelSmall,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.primary)
+                                                }
+                                            }
+                                            Text(prod, style = MaterialTheme.typography.bodyLarge)
+                                        }
+                                        Surface(
+                                            shape = RoundedCornerShape(20.dp),
+                                            color = MaterialTheme.colorScheme.primary.copy(0.08f)
+                                        ) {
+                                            Text("x$cant",
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item { Spacer(Modifier.height(32.dp)) }
                 }
             }
         }
@@ -282,63 +232,55 @@ fun EstadisticasScreen(
 }
 
 @Composable
-private fun KpiCard(
-    modifier : Modifier = Modifier,
-    label    : String,
-    value    : String,
-    icon     : androidx.compose.ui.graphics.vector.ImageVector,
-    color    : Color,
-    onColor  : Color
-) {
-    Card(
-        modifier  = modifier,
-        shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.cardColors(containerColor = color, contentColor = onColor),
-        elevation = CardDefaults.cardElevation(1.dp)
+private fun KpiCard(modifier: Modifier, label: String, value: String, trend: String, positive: Boolean) {
+    Surface(
+        modifier = modifier,
+        shape    = RoundedCornerShape(12.dp),
+        color    = Color(0xFFFFFFFF),
+        shadowElevation = 1.dp,
+        border   = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
     ) {
-        Row(
-            modifier            = Modifier.padding(16.dp),
-            verticalAlignment   = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp))
-            Column {
-                Text(label, style = MaterialTheme.typography.labelMedium)
-                Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
+        Column(modifier = Modifier.padding(12.dp)) {
+            LabelCaps(label)
+            Spacer(Modifier.height(4.dp))
+            Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.36).sp)
+            Spacer(Modifier.height(4.dp))
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = if (positive) Color(0xFF10B981).copy(0.1f) else Color(0xFFEF4444).copy(0.1f)
+            ) {
+                Text(trend,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    style    = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color    = if (positive) Color(0xFF10B981) else Color(0xFFEF4444))
             }
         }
     }
 }
 
 @Composable
-private fun SectionCard(
-    title   : String,
-    content : @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor   = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(1.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text       = title,
-                style      = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color      = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            content()
+private fun SuperBar(nombre: String, porcentaje: Float) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+            Text(nombre, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Text("${(porcentaje * 100).toInt()}%",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold)
         }
+        LinearProgressIndicator(
+            progress = { porcentaje },
+            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+            color    = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun EstadisticasPreview() {
-    SuperAhorroTheme { EstadisticasScreen() }
-}
+private fun EstadisticasPreview() { SuperAhorroTheme { EstadisticasScreen() } }

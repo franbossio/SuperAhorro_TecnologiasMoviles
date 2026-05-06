@@ -6,21 +6,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
+import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import java.time.format.DateTimeFormatter
@@ -34,123 +37,123 @@ fun DetalleCompraScreen(
     onBackClick            : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-
     LaunchedEffect(compraId) { vm.cargar(compraId) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.compra_detalle_titulo)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
-                    }
-                },
+            StitchTopBar(
+                title = stringResource(R.string.compra_detalle_titulo),
+                onBackClick = onBackClick,
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.compra_compartir))
+                        Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor         = MaterialTheme.colorScheme.primary,
-                    titleContentColor      = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick        = onAgregarProductoClick,
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor   = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.compra_agregar_producto))
-            }
-        }
+                contentColor   = Color.White,
+                shape          = RoundedCornerShape(16.dp)
+            ) { Icon(Icons.Default.Add, null) }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-
         when (val state = uiState) {
-            is UiState.Loading -> Box(
-                modifier        = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
-
-            is UiState.Error   -> Box(
-                modifier        = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { Text(stringResource(R.string.error_generico)) }
-
+            is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+            is UiState.Error -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+                Text(stringResource(R.string.error_generico))
+            }
             is UiState.Success -> {
                 val compra = state.data
                 val fmt    = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
                 LazyColumn(
                     modifier       = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // ── Encabezado ────────────────────────────────────────
+                    // ── Hero card con info principal ───────────────────────
                     item {
-                        Card(
-                            modifier  = Modifier.fillMaxWidth(),
-                            shape     = RoundedCornerShape(16.dp),
-                            colors    = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape    = RoundedCornerShape(16.dp),
+                            color    = Color(0xFFFFFFFF),
+                            shadowElevation = 1.dp,
+                            border = CardDefaults.outlinedCardBorder().copy(
+                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
                             )
                         ) {
                             Column(modifier = Modifier.padding(20.dp)) {
-                                Text(
-                                    text       = compra.supermercado,
-                                    style      = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
-                                Text(
-                                    text  = "${compra.fecha.format(fmt)}  ·  ${compra.hora}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text(
-                                    text       = "$ %,.2f".format(compra.total),
-                                    style      = MaterialTheme.typography.displaySmall,
-                                    fontWeight = FontWeight.ExtraBold
-                                )
+                                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
+                                    Column {
+                                        LabelCaps("Establecimiento")
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(compra.supermercado,
+                                            fontSize = 24.sp, fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            letterSpacing = (-0.24).sp)
+                                        Text("${compra.fecha.format(fmt)}  ·  ${compra.hora}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.outline)
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                    ) {
+                                        Text("COMPLETADO",
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                            style    = MaterialTheme.typography.labelSmall,
+                                            color    = MaterialTheme.colorScheme.primary,
+                                            fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
+                                Spacer(Modifier.height(16.dp))
+                                LabelCaps("TOTAL ABONADO")
+                                Text("$ %,.2f".format(compra.total),
+                                    fontSize = 28.sp, fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    letterSpacing = (-0.56).sp)
                             }
                         }
                     }
 
-                    // ── Título productos ──────────────────────────────────
+                    // ── Productos header ──────────────────────────────────
                     item {
-                        Text(
-                            text       = "Productos (${compra.productos.size})",
-                            style      = MaterialTheme.typography.titleMedium,
+                        Text("Productos (${compra.productos.size})",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color      = MaterialTheme.colorScheme.primary
-                        )
+                            color = MaterialTheme.colorScheme.primary)
                     }
 
                     items(compra.productos) { p -> ProductoRow(p) }
 
-                    // ── Total ─────────────────────────────────────────────
+                    // ── Total resumen ─────────────────────────────────────
                     item {
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape    = RoundedCornerShape(12.dp),
+                            color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
                         ) {
-                            Text("Total", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(
-                                text       = "$ %,.2f".format(compra.total),
-                                style      = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color      = MaterialTheme.colorScheme.primary
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Total", style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold)
+                                Text("$ %,.2f".format(compra.total),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
-
-                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
             }
         }
@@ -159,41 +162,35 @@ fun DetalleCompraScreen(
 
 @Composable
 private fun ProductoRow(p: Producto) {
-    Card(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = RoundedCornerShape(12.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor   = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(1.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(12.dp),
+        color    = Color(0xFFFFFFFF),
+        shadowElevation = 1.dp,
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.25f))
+        )
     ) {
         Row(
-            modifier              = Modifier.fillMaxWidth().padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = p.nombre, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                Text(
-                    text  = "Cód: ${p.codigo}  ·  x${p.cantidad}",
+                Text(p.nombre, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                Text("Cód: ${p.codigo}  ·  x${p.cantidad}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    color = MaterialTheme.colorScheme.outline)
             }
-            Card(
-                shape  = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor   = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
             ) {
-                Text(
-                    text       = "$ %,.2f".format(p.subtotal),
-                    modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style      = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("$ %,.2f".format(p.subtotal),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    style    = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color    = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -201,6 +198,4 @@ private fun ProductoRow(p: Producto) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun DetallePreview() {
-    SuperAhorroTheme { DetalleCompraScreen() }
-}
+private fun DetallePreview() { SuperAhorroTheme { DetalleCompraScreen() } }

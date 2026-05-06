@@ -10,12 +10,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class EstadisticasData(
-    val totalGastado: Double,
-    val cantidadCompras: Int,
-    val promedio: Double,
-    val gastosPorSuper: List<Pair<String, Double>>,
-    val productosMasComprados: List<Pair<String, Int>>,
-    val gastosMensuales: List<Pair<String, Double>>
+    val totalGastado    : Double,
+    val cantidadCompras : Int,
+    val promedio        : Double,
+    val gastosPorSuper  : List<Pair<String, Float>>,
+    val topProductos    : List<Pair<String, Int>>
 )
 
 class EstadisticasViewModel : ViewModel() {
@@ -24,45 +23,28 @@ class EstadisticasViewModel : ViewModel() {
 
     init { cargar() }
 
-    fun cargar() {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(600)
-
-            val total    = comprasMock.sumOf { it.total }
-            val cantidad = comprasMock.size
-            val promedio = if (cantidad > 0) total / cantidad else 0.0
-
-            val porSuper = comprasMock
-                .groupBy { it.supermercado }
-                .map { (super_, compras) -> super_ to compras.sumOf { it.total } }
-                .sortedByDescending { it.second }
-
-            val productosContados = comprasMock
-                .flatMap { it.productos }
-                .groupBy { it.nombre }
-                .map { (nombre, prods) -> nombre to prods.sumOf { it.cantidad } }
-                .sortedByDescending { it.second }
-                .take(5)
-
-            val mensuales = listOf(
-                "Ene" to 42000.0,
-                "Feb" to 12500.0,
-                "Mar" to 32800.0,
-                "Abr" to 27860.5,
-                "May" to 0.0
+    private fun cargar() = viewModelScope.launch {
+        _uiState.value = UiState.Loading
+        delay(600)
+        val total = comprasMock.sumOf { it.total }
+        val porSuper = comprasMock
+            .groupBy { it.supermercado }
+            .map { (s, list) -> s to (list.sumOf { it.total } / total).toFloat() }
+            .sortedByDescending { it.second }
+        val topProds = comprasMock
+            .flatMap { it.productos }
+            .groupBy { it.nombre }
+            .map { (n, list) -> n to list.sumOf { it.cantidad } }
+            .sortedByDescending { it.second }
+            .take(5)
+        _uiState.value = UiState.Success(
+            EstadisticasData(
+                totalGastado    = total,
+                cantidadCompras = comprasMock.size,
+                promedio        = if (comprasMock.isEmpty()) 0.0 else total / comprasMock.size,
+                gastosPorSuper  = porSuper,
+                topProductos    = topProds
             )
-
-            _uiState.value = UiState.Success(
-                EstadisticasData(
-                    totalGastado          = total,
-                    cantidadCompras       = cantidad,
-                    promedio              = promedio,
-                    gastosPorSuper        = porSuper,
-                    productosMasComprados = productosContados,
-                    gastosMensuales       = mensuales
-                )
-            )
-        }
+        )
     }
 }

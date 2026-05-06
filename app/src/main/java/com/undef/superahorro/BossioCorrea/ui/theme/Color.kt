@@ -2,49 +2,62 @@ package com.undef.superahorro.BossioCorrea.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// ── Paleta Stitch / Material 3 ────────────────────────────────────────────────
+// primary = #006c49  (verde esmeralda oscuro)
+// primary-container = #10b981 (emerald-500 para chips/badges)
+// background / surface = #f7f9fb
 
+val StitchPrimary           = Color(0xFF006C49)
+val StitchOnPrimary         = Color(0xFFFFFFFF)
+val StitchPrimaryContainer  = Color(0xFF10B981)   // emerald-500
+val StitchOnPrimaryContainer= Color(0xFF00422B)
 
-val VerdePrimario = Color(0xFF1404F6)
-val VerdeClaro = Color(0xFF8487FA)
-val VerdeOscuro = Color(0xFF003CD2)
-val VerdeContainer = Color(0xFFC8E6C9)
-val OnVerdeContainer = Color(0xFF4409E8)
-val AmarilloAcento = Color(0xFFFFC107)
-val GrisFondo = Color(0xFFF5F5F5)
-val GrisTexto = Color(0xFF757575)
-val Blanco = Color(0xFFFFFFFF)
-val RojoError = Color(0xFFD32F2F)
-// Paleta principal verde
-val Verde10  = Color(0xFF002110)
-val Verde20  = Color(0xFF8555F6)
-val Verde30  = Color(0xFF425AE0)
-val Verde40  = Color(0xFF2B31DC)   // primario light
-val Verde80  = Color(0xFF80D99D)
-val Verde90  = Color(0xFF9CF5B7)
-val Verde95  = Color(0xFFCBFFD8)
-val Verde99  = Color(0xFFF3FFF4)
+val StitchSecondary         = Color(0xFF545F73)
+val StitchOnSecondary       = Color(0xFFFFFFFF)
+val StitchSecondaryContainer= Color(0xFFD5E0F8)
+val StitchOnSecondaryContainer = Color(0xFF586377)
 
-val VerdeContainer30 = Color(0xFF082DE7)
-val VerdeContainer90 = Color(0xFF9CF5B7)
+val StitchTertiary          = Color(0xFF005AC2)
+val StitchOnTertiary        = Color(0xFFFFFFFF)
+val StitchTertiaryContainer = Color(0xFF71A1FF)
+val StitchOnTertiaryContainer = Color(0xFF00367A)
 
-// Acento amarillo
-val Amarillo40  = Color(0xFF6E5B00)
-val Amarillo80  = Color(0xFFF5C518)
-val Amarillo90  = Color(0xFFFFE270)
+val StitchError             = Color(0xFFBA1A1A)
+val StitchOnError           = Color(0xFFFFFFFF)
+val StitchErrorContainer    = Color(0xFFFFDAD6)
+val StitchOnErrorContainer  = Color(0xFF93000A)
 
-// Error
-val Rojo40  = Color(0xFFBA1A1A)
-val Rojo80  = Color(0xFFFFB4AB)
-val Rojo90  = Color(0xFFFFDAD6)
+val StitchBackground        = Color(0xFFF7F9FB)
+val StitchOnBackground      = Color(0xFF191C1E)
 
-// Neutros
-val Neutral10  = Color(0xFF1A1C1A)
-val Neutral20  = Color(0xFF2F312E)
-val Neutral90  = Color(0xFFE1E3DF)
-val Neutral95  = Color(0xFFF0F1EE)
-val Neutral99  = Color(0xFFFBFDF8)
+val StitchSurface           = Color(0xFFF7F9FB)
+val StitchOnSurface         = Color(0xFF191C1E)
+val StitchSurfaceVariant    = Color(0xFFE0E3E5)
+val StitchOnSurfaceVariant  = Color(0xFF3C4A42)
 
-val NeutralVar30 = Color(0xFF3B4A3F)
-val NeutralVar50 = Color(0xFF637067)
-val NeutralVar80 = Color(0xFFB1CDB9)
-val NeutralVar90 = Color(0xFFCDE9D4)
+val StitchSurfaceContainerLowest = Color(0xFFFFFFFF)
+val StitchSurfaceContainerLow    = Color(0xFFF2F4F6)
+val StitchSurfaceContainer       = Color(0xFFECEEF0)
+val StitchSurfaceContainerHigh   = Color(0xFFE6E8EA)
+val StitchSurfaceContainerHighest= Color(0xFFE0E3E5)
+
+val StitchOutline           = Color(0xFF6C7A71)
+val StitchOutlineVariant    = Color(0xFFBBCABF)
+
+val StitchInversePrimary    = Color(0xFF4EDEA3)
+val StitchInverseSurface    = Color(0xFF2D3133)
+val StitchInverseOnSurface  = Color(0xFFEFF1F3)
+
+// Dark scheme
+val StitchPrimaryDark       = Color(0xFF4EDEA3)
+val StitchOnPrimaryDark     = Color(0xFF003823)
+val StitchPrimaryContainerDark = Color(0xFF005236)
+val StitchOnPrimaryContainerDark = Color(0xFF6FFBBE)
+
+val StitchBackgroundDark    = Color(0xFF191C1E)
+val StitchOnBackgroundDark  = Color(0xFFE1E3DF)
+val StitchSurfaceDark       = Color(0xFF191C1E)
+val StitchOnSurfaceDark     = Color(0xFFE1E3DF)
+val StitchSurfaceVariantDark= Color(0xFF3B4A3F)
+val StitchOnSurfaceVariantDark = Color(0xFFB1CDB9)
+val StitchOutlineDark       = Color(0xFF637067)

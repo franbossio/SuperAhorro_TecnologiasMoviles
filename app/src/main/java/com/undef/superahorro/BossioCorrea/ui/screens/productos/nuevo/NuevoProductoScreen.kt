@@ -6,17 +6,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,146 +34,142 @@ fun NuevoProductoScreen(
     var cantidad    by remember { mutableStateOf("1") }
     var precio      by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.producto_nuevo_titulo)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor            = MaterialTheme.colorScheme.primary,
-                    titleContentColor         = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
-    ) { padding ->
+    val subtotal = (cantidad.toDoubleOrNull() ?: 0.0) * (precio.toDoubleOrNull() ?: 0.0)
 
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor    = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor  = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = Color(0xFFFFFFFF),
+        unfocusedContainerColor = Color(0xFFF2F4F6)
+    )
+
+    Scaffold(
+        topBar = { StitchTopBar(stringResource(R.string.producto_nuevo_titulo), onBackClick) },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Text(
-                text       = "Datos del producto",
-                style      = MaterialTheme.typography.titleMedium,
-                color      = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Agregar Productos", fontSize = 24.sp, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
+            Text("Ingresá los detalles de tu compra.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline)
 
-            // Código con botón de scanner
-            OutlinedTextField(
-                value         = codigo,
-                onValueChange = { codigo = it },
-                label         = { Text(stringResource(R.string.producto_codigo)) },
-                modifier      = Modifier.fillMaxWidth(),
-                singleLine    = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                trailingIcon  = {
-                    IconButton(onClick = { /* TODO: Intent para scanner */ }) {
-                        Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear código", tint = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                shape = RoundedCornerShape(12.dp)
-            )
+            Spacer(Modifier.height(20.dp))
 
-            OutlinedTextField(
-                value         = nombre,
-                onValueChange = { nombre = it },
-                label         = { Text(stringResource(R.string.producto_nombre)) },
-                modifier      = Modifier.fillMaxWidth(),
-                singleLine    = true,
-                shape         = RoundedCornerShape(12.dp)
-            )
-
-            OutlinedTextField(
-                value         = descripcion,
-                onValueChange = { descripcion = it },
-                label         = { Text(stringResource(R.string.producto_descripcion)) },
-                modifier      = Modifier.fillMaxWidth(),
-                minLines      = 2,
-                maxLines      = 3,
-                shape         = RoundedCornerShape(12.dp)
-            )
-
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(16.dp),
+                color    = Color(0xFFFFFFFF),
+                shadowElevation = 1.dp,
+                border = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                )
             ) {
-                OutlinedTextField(
-                    value         = cantidad,
-                    onValueChange = { cantidad = it },
-                    label         = { Text(stringResource(R.string.producto_cantidad)) },
-                    modifier      = Modifier.weight(1f),
-                    singleLine    = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    shape         = RoundedCornerShape(12.dp)
-                )
-                OutlinedTextField(
-                    value         = precio,
-                    onValueChange = { precio = it },
-                    label         = { Text(stringResource(R.string.producto_precio)) },
-                    modifier      = Modifier.weight(1f),
-                    singleLine    = true,
-                    leadingIcon   = { Text("$") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    shape         = RoundedCornerShape(12.dp)
-                )
-            }
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-            // Subtotal calculado
-            val subtotalCalc = (cantidad.toDoubleOrNull() ?: 0.0) * (precio.toDoubleOrNull() ?: 0.0)
-            if (subtotalCalc > 0) {
-                Card(
-                    modifier  = Modifier.fillMaxWidth(),
-                    shape     = RoundedCornerShape(12.dp),
-                    colors    = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                ) {
-                    Row(
-                        modifier              = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Subtotal", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text       = "$ %,.2f".format(subtotalCalc),
-                            style      = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                    // Nombre
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LabelCaps("NOMBRE DEL PRODUCTO")
+                        OutlinedTextField(value = nombre, onValueChange = { nombre = it },
+                            placeholder = { Text("Ej. Leche Entera", color = MaterialTheme.colorScheme.outline) },
+                            modifier = Modifier.fillMaxWidth(), singleLine = true,
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                    }
+
+                    // Descripción
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LabelCaps("DESCRIPCIÓN")
+                        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it },
+                            modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 3,
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                    }
+
+                    // Código de barras
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LabelCaps("CÓDIGO DE BARRAS")
+                        OutlinedTextField(
+                            value         = codigo,
+                            onValueChange = { codigo = it },
+                            placeholder   = { Text("Ej. 7790040012345", color = MaterialTheme.colorScheme.outline) },
+                            modifier      = Modifier.fillMaxWidth(), singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            trailingIcon  = {
+                                IconButton(onClick = {}) {
+                                    Icon(Icons.Default.QrCodeScanner, null,
+                                        tint = MaterialTheme.colorScheme.primary)
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors
                         )
+                    }
+
+                    // Cantidad / Precio
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            LabelCaps("CANTIDAD")
+                            OutlinedTextField(value = cantidad, onValueChange = { cantidad = it },
+                                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            LabelCaps("PRECIO UNITARIO")
+                            OutlinedTextField(value = precio, onValueChange = { precio = it },
+                                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                leadingIcon = { Text("$", color = MaterialTheme.colorScheme.outline) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                        }
+                    }
+
+                    // Subtotal calculado
+                    if (subtotal > 0) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape    = RoundedCornerShape(12.dp),
+                            color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Subtotal", style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.primary)
+                                Text("$ %,.2f".format(subtotal), style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick  = onGuardarClick,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape    = RoundedCornerShape(12.dp),
-                enabled  = nombre.isNotBlank() && precio.isNotBlank()
+                onClick   = onGuardarClick,
+                modifier  = Modifier.fillMaxWidth().height(56.dp),
+                shape     = RoundedCornerShape(14.dp),
+                colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                elevation = ButtonDefaults.buttonElevation(4.dp),
+                enabled   = nombre.isNotBlank() && precio.isNotBlank()
             ) {
-                Text(stringResource(R.string.producto_guardar), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.producto_guardar), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun NuevoProductoPreview() {
-    SuperAhorroTheme { NuevoProductoScreen() }
-}
+private fun NuevoProductoPreview() { SuperAhorroTheme { NuevoProductoScreen() } }

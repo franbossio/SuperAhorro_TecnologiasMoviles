@@ -7,363 +7,229 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
-import com.undef.superahorro.BossioCorrea.data.mock.comprasMock
-import com.undef.superahorro.BossioCorrea.data.mock.usuarioMock
+import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
+    vm                  : PerfilViewModel = viewModel(),
     onGuardarClick      : () -> Unit = {},
     onCerrarSesionClick : () -> Unit = {},
     onBackClick         : () -> Unit = {}
 ) {
-    var nombre  by remember { mutableStateOf(usuarioMock.nombre) }
-    var apellido by remember { mutableStateOf(usuarioMock.apellido) }
-    var email   by remember { mutableStateOf(usuarioMock.email) }
-    var telefono by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    var nombre   by remember { mutableStateOf("") }
+    var apellido by remember { mutableStateOf("") }
+    var email    by remember { mutableStateOf("") }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val totalGastado   = comprasMock.sumOf { it.total }
-    val cantidadCompras = comprasMock.size
-    val superFavorito  = comprasMock
-        .groupBy { it.supermercado }
-        .maxByOrNull { it.value.size }?.key ?: "-"
+    LaunchedEffect(uiState) {
+        if (uiState is UiState.Success) {
+            val u = (uiState as UiState.Success).data
+            nombre   = u.nombre
+            apellido = u.apellido
+            email    = u.email
+        }
+    }
 
-    if (showDialog) {
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor    = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor  = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = Color(0xFFFFFFFF),
+        unfocusedContainerColor = Color(0xFFF2F4F6)
+    )
+
+    if (showLogoutDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title   = { Text("Cerrar sesión") },
-            text    = { Text("¿Estás seguro que querés cerrar sesión?") },
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Cerrar sesión", fontWeight = FontWeight.Bold) },
+            text  = { Text("¿Seguro que querés cerrar sesión?",
+                color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
-                TextButton(onClick = { showDialog = false; onCerrarSesionClick() }) {
-                    Text("Sí, salir", color = MaterialTheme.colorScheme.error)
-                }
+                Button(
+                    onClick = { showLogoutDialog = false; onCerrarSesionClick() },
+                    colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Cerrar sesión", color = Color.White) }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text(stringResource(R.string.cancelar))
-                }
-            }
+                OutlinedButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") }
+            },
+            shape = RoundedCornerShape(16.dp)
         )
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.perfil_titulo)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor            = MaterialTheme.colorScheme.primary,
-                    titleContentColor         = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
+        topBar = { StitchTopBar(stringResource(R.string.perfil_titulo), onBackClick) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.height(24.dp))
 
-            // ── Header verde con avatar ───────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Avatar con iniciales
-                    Box(
-                        modifier = Modifier
-                            .size(88.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text       = "${nombre.firstOrNull() ?: ""}${apellido.firstOrNull() ?: ""}",
-                            fontSize   = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color      = MaterialTheme.colorScheme.onPrimary,
-                            textAlign  = TextAlign.Center
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+            // ── Avatar ────────────────────────────────────────────────────
+            Box(contentAlignment = Alignment.BottomEnd) {
+                Box(
+                    modifier = Modifier
+                        .size(96.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text       = "$nombre $apellido",
-                        style      = MaterialTheme.typography.titleLarge,
+                        text  = if (nombre.isNotEmpty()) nombre.first().uppercase() else "U",
+                        fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
-                        color      = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text  = email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    // Badge "Super Ahorrador"
-                    Card(
-                        shape  = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor   = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                    ) {
-                        Row(
-                            modifier  = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Text("Super Ahorrador", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                        }
-                    }
+                }
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                ) {
+                    Icon(Icons.Default.CameraAlt, null, tint = Color.White,
+                        modifier = Modifier.size(16.dp))
                 }
             }
 
-            Column(
-                modifier            = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            Spacer(Modifier.height(12.dp))
+            Text("$nombre $apellido", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface)
+            Text(email, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline)
+
+            Spacer(Modifier.height(24.dp))
+
+            // ── Stats row ─────────────────────────────────────────────────
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(16.dp),
+                color    = Color(0xFFFFFFFF),
+                shadowElevation = 1.dp,
+                border   = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                )
             ) {
-
-                // ── Mis logros ────────────────────────────────────────────
-                Card(
-                    modifier  = Modifier.fillMaxWidth(),
-                    shape     = RoundedCornerShape(16.dp),
-                    colors    = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text       = "Mis Logros de Ahorro",
-                            style      = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            LogroItem(valor = "$ %,.0f".format(totalGastado), label = "Total gastado")
-                            VerticalDivider(modifier = Modifier.height(40.dp))
-                            LogroItem(valor = "$cantidadCompras", label = "Compras")
-                            VerticalDivider(modifier = Modifier.height(40.dp))
-                            LogroItem(valor = superFavorito, label = "Favorito", small = true)
-                        }
-                    }
+                    ProfileStat("5", "Compras")
+                    VerticalDivider(modifier = Modifier.height(40.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    ProfileStat("23", "Productos")
+                    VerticalDivider(modifier = Modifier.height(40.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                    ProfileStat("$ 64k", "Ahorrado")
                 }
-
-                // ── Datos personales ──────────────────────────────────────
-                Card(
-                    modifier  = Modifier.fillMaxWidth(),
-                    shape     = RoundedCornerShape(16.dp),
-                    colors    = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor   = MaterialTheme.colorScheme.onSurface
-                    ),
-                    elevation = CardDefaults.cardElevation(1.dp)
-                ) {
-                    Column(
-                        modifier            = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text       = "Datos Personales",
-                            style      = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color      = MaterialTheme.colorScheme.primary
-                        )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OutlinedTextField(
-                                value         = nombre,
-                                onValueChange = { nombre = it },
-                                label         = { Text("Nombre") },
-                                leadingIcon   = { Icon(Icons.Default.Person, contentDescription = null) },
-                                modifier      = Modifier.weight(1f),
-                                singleLine    = true,
-                                shape         = RoundedCornerShape(12.dp)
-                            )
-                            OutlinedTextField(
-                                value         = apellido,
-                                onValueChange = { apellido = it },
-                                label         = { Text("Apellido") },
-                                modifier      = Modifier.weight(1f),
-                                singleLine    = true,
-                                shape         = RoundedCornerShape(12.dp)
-                            )
-                        }
-
-                        OutlinedTextField(
-                            value         = email,
-                            onValueChange = { email = it },
-                            label         = { Text(stringResource(R.string.register_email)) },
-                            leadingIcon   = { Icon(Icons.Default.Email, contentDescription = null) },
-                            modifier      = Modifier.fillMaxWidth(),
-                            singleLine    = true,
-                            shape         = RoundedCornerShape(12.dp)
-                        )
-
-                        OutlinedTextField(
-                            value         = telefono,
-                            onValueChange = { telefono = it },
-                            label         = { Text("Teléfono (opcional)") },
-                            leadingIcon   = { Icon(Icons.Default.Phone, contentDescription = null) },
-                            modifier      = Modifier.fillMaxWidth(),
-                            singleLine    = true,
-                            shape         = RoundedCornerShape(12.dp)
-                        )
-                    }
-                }
-
-                // ── Supermercados favoritos ───────────────────────────────
-                Card(
-                    modifier  = Modifier.fillMaxWidth(),
-                    shape     = RoundedCornerShape(16.dp),
-                    colors    = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor   = MaterialTheme.colorScheme.onSurface
-                    ),
-                    elevation = CardDefaults.cardElevation(1.dp)
-                ) {
-                    Column(
-                        modifier            = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment     = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text       = "Supermercados Favoritos",
-                                style      = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color      = MaterialTheme.colorScheme.primary
-                            )
-                            TextButton(onClick = {}) { Text("+ Agregar") }
-                        }
-                        comprasMock
-                            .groupBy { it.supermercado }
-                            .entries.take(3)
-                            .forEach { (super_, compras) ->
-                                Row(
-                                    modifier              = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment     = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        verticalAlignment     = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.ShoppingCart,
-                                            contentDescription = null,
-                                            tint     = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Column {
-                                            Text(super_, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                                            Text(
-                                                "${compras.size} compra(s)",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    IconButton(onClick = {}) {
-                                        Icon(
-                                            Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.tertiary
-                                        )
-                                    }
-                                }
-                                if (compras != comprasMock.groupBy { it.supermercado }.entries.take(3).last().value) {
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-                                }
-                            }
-                    }
-                }
-
-                // ── Botones ───────────────────────────────────────────────
-                Button(
-                    onClick  = onGuardarClick,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape    = RoundedCornerShape(12.dp)
-                ) {
-                    Text(stringResource(R.string.perfil_guardar), fontWeight = FontWeight.Bold)
-                }
-
-                OutlinedButton(
-                    onClick  = { showDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape    = RoundedCornerShape(12.dp),
-                    colors   = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
-                    border   = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error)
-                    )
-                ) {
-                    Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
+
+            Spacer(Modifier.height(24.dp))
+
+            // ── Form card ─────────────────────────────────────────────────
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(16.dp),
+                color    = Color(0xFFFFFFFF),
+                shadowElevation = 1.dp,
+                border   = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                )
+            ) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            LabelCaps("NOMBRE")
+                            OutlinedTextField(value = nombre, onValueChange = { nombre = it },
+                                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            LabelCaps("APELLIDO")
+                            OutlinedTextField(value = apellido, onValueChange = { apellido = it },
+                                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LabelCaps("EMAIL")
+                        OutlinedTextField(value = email, onValueChange = { email = it },
+                            modifier = Modifier.fillMaxWidth(), singleLine = true,
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            Button(
+                onClick   = { vm.guardar(nombre, apellido, email, onGuardarClick) },
+                modifier  = Modifier.fillMaxWidth().height(56.dp),
+                shape     = RoundedCornerShape(14.dp),
+                colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                elevation = ButtonDefaults.buttonElevation(4.dp)
+            ) {
+                Text(stringResource(R.string.perfil_guardar), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick  = { showLogoutDialog = true },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(14.dp),
+                colors   = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border   = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
+                )
+            ) {
+                Icon(Icons.Default.Logout, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Medium)
+            }
+
+            Spacer(Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
-private fun LogroItem(valor: String, label: String, small: Boolean = false) {
+private fun ProfileStat(value: String, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text       = valor,
-            style      = if (small) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.ExtraBold
-        )
-        Text(
-            text  = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-        )
+        Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary)
+        Text(label, style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline)
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun PerfilPreview() {
-    SuperAhorroTheme { PerfilScreen() }
-}
+private fun PerfilPreview() { SuperAhorroTheme { PerfilScreen() } }
