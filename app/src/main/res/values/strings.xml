@@ -99,4 +99,21 @@
     <string name="eliminar_producto_titulo">¿Eliminar producto?</string>
     <string name="eliminar_producto_mensaje">¿Estás seguro de que querés eliminar "%1$s" de esta compra?</string>
     <string name="eliminar_confirmar">Eliminar</string>
+
+    <!-- Agregar estos strings al res/values/strings.xml existente (dentro de <resources>) -->
+    <string name="abrir_calendario">Abrir calendario</string>
+    <string name="confirmar_fecha">Aceptar</string>
+    <!-- cancelar ya fue agregado en la entrega anterior del DetallleCompra -->
+    <!-- Si todavía no lo tenés, agregá también: -->
+    <!-- <string name="cancelar">Cancelar</string> -->
+
+    <!-- Agregar dentro de <resources> en res/values/strings.xml -->
+
+    <string name="historial_eliminar_titulo">¿Eliminar compra?</string>
+    <string name="historial_eliminar_mensaje">¿Querés eliminar la compra de "%1$s"? Esta acción no se puede deshacer.</string>
+    <string name="historial_sin_compras">No hay compras registradas\npara este período.</string>
+
+    <!-- Si todavía no los tenés de la entrega anterior, agregar: -->
+    <!-- <string name="eliminar_confirmar">Eliminar</string> -->
+    <!-- <string name="cancelar">Cancelar</string> -->
 </resources>

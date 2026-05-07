@@ -1,5 +1,6 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.perfil
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,7 +15,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +31,11 @@ import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+
+// ── Paleta de las tres stat cards ─────────────────────────────────────────────
+private val CardCompras = listOf(Color(0xFF006C49), Color(0xFF10B981))   // verde
+private val CardProductos = listOf(Color(0xFF005AC2), Color(0xFF71A1FF)) // azul
+private val CardAhorrado = listOf(Color(0xFF8B00C9), Color(0xFFD07BFF))  // violeta
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,9 +61,9 @@ fun PerfilScreen(
     }
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor    = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor  = MaterialTheme.colorScheme.outlineVariant,
-        focusedContainerColor = Color(0xFFFFFFFF),
+        focusedBorderColor      = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor   = Color(0xFFFFFFFF),
         unfocusedContainerColor = Color(0xFFF2F4F6)
     )
 
@@ -101,14 +110,14 @@ fun PerfilScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text  = if (nombre.isNotEmpty()) nombre.first().uppercase() else "U",
-                        fontSize = 40.sp,
+                        text       = if (nombre.isNotEmpty()) nombre.first().uppercase() else "U",
+                        fontSize   = 40.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color      = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(
-                    onClick = {},
+                    onClick  = {},
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
@@ -127,29 +136,8 @@ fun PerfilScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ── Stats row ─────────────────────────────────────────────────
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = RoundedCornerShape(16.dp),
-                color    = Color(0xFFFFFFFF),
-                shadowElevation = 1.dp,
-                border   = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                )
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    ProfileStat("5", "Compras")
-                    VerticalDivider(modifier = Modifier.height(40.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                    ProfileStat("23", "Productos")
-                    VerticalDivider(modifier = Modifier.height(40.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                    ProfileStat("$ 64k", "Ahorrado")
-                }
-            }
+            // ── Stats cards rediseñadas ────────────────────────────────────
+            StatsRow()
 
             Spacer(Modifier.height(24.dp))
 
@@ -207,7 +195,8 @@ fun PerfilScreen(
                 shape    = RoundedCornerShape(14.dp),
                 colors   = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 border   = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
+                    brush = androidx.compose.ui.graphics.SolidColor(
+                        MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
                 )
             ) {
                 Icon(Icons.Default.Logout, null, modifier = Modifier.size(18.dp))
@@ -220,13 +209,112 @@ fun PerfilScreen(
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Stats Row — tres tarjetas con gradiente y animación count-up
+// ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun ProfileStat(value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary)
-        Text(label, style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline)
+private fun StatsRow() {
+    Row(
+        modifier              = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        StatGradientCard(
+            modifier  = Modifier.weight(1f),
+            emoji     = "🛒",
+            value     = "5",
+            label     = "Compras",
+            gradient  = CardCompras
+        )
+        StatGradientCard(
+            modifier  = Modifier.weight(1f),
+            emoji     = "📦",
+            value     = "23",
+            label     = "Productos",
+            gradient  = CardProductos
+        )
+        StatGradientCard(
+            modifier  = Modifier.weight(1f),
+            emoji     = "💰",
+            value     = "$ 64k",
+            label     = "Ahorrado",
+            gradient  = CardAhorrado
+        )
+    }
+}
+
+@Composable
+private fun StatGradientCard(
+    modifier : Modifier,
+    emoji    : String,
+    value    : String,
+    label    : String,
+    gradient : List<Color>
+) {
+    // Animación de entrada: slide-up + fade-in
+    var visible by remember { mutableStateOf(false) }
+    val alpha by animateFloatAsState(
+        targetValue   = if (visible) 1f else 0f,
+        animationSpec = tween(500, easing = EaseOutCubic),
+        label         = "card_alpha_$label"
+    )
+    val offsetY by animateFloatAsState(
+        targetValue   = if (visible) 0f else 24f,
+        animationSpec = tween(500, easing = EaseOutBack),
+        label         = "card_offset_$label"
+    )
+    LaunchedEffect(Unit) { visible = true }
+
+    Box(
+        modifier = modifier
+            .height(110.dp)
+            .offset(y = offsetY.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = gradient,
+                    start  = Offset(0f, 0f),
+                    end    = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                )
+            )
+            // alpha directo en el Modifier no existe, lo aplicamos con graphicsLayer
+            .then(
+                Modifier.graphicsLayer { this.alpha = alpha }
+            )
+            .padding(14.dp)
+    ) {
+        // Círculo decorativo de fondo
+        Box(
+            Modifier
+                .size(64.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 18.dp, y = (-18).dp)
+                .background(Color.White.copy(alpha = 0.10f), CircleShape)
+        )
+
+        Column(
+            modifier              = Modifier.fillMaxSize(),
+            verticalArrangement   = Arrangement.SpaceBetween
+        ) {
+            // Emoji en la esquina superior izquierda
+            Text(emoji, fontSize = 20.sp)
+
+            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text(
+                    text       = value,
+                    fontSize   = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color      = Color.White,
+                    letterSpacing = (-0.44).sp
+                )
+                Text(
+                    text  = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.75f),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
     }
 }
 

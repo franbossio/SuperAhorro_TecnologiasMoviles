@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -22,6 +23,8 @@ import com.undef.superahorro.BossioCorrea.data.mock.supermercadosMock
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +38,61 @@ fun NuevaCompraScreen(
     var supermercado      by remember { mutableStateOf("") }
     var total             by remember { mutableStateOf("") }
     var dropdownExpanded  by remember { mutableStateOf(false) }
+
+    // ── Estado del DatePicker ─────────────────────────────────────────────────
+    var mostrarCalendario by remember { mutableStateOf(false) }
+    val datePickerState   = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+
+    // Cuando el diálogo se confirma, formateamos la fecha seleccionada
+    if (mostrarCalendario) {
+        DatePickerDialog(
+            onDismissRequest = { mostrarCalendario = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            fecha = sdf.format(Date(millis))
+                        }
+                        mostrarCalendario = false
+                    }
+                ) {
+                    Text(
+                        stringResource(R.string.confirmar_fecha),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarCalendario = false }) {
+                    Text(
+                        stringResource(R.string.cancelar),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = Color(0xFFFFFFFF)
+            ),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            DatePicker(
+                state  = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    todayContentColor          = MaterialTheme.colorScheme.primary,
+                    todayDateBorderColor       = MaterialTheme.colorScheme.primary,
+                    selectedDayContainerColor  = MaterialTheme.colorScheme.primary,
+                    selectedDayContentColor    = Color.White,
+                    selectedYearContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedYearContentColor   = Color.White
+                )
+            )
+        }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor    = MaterialTheme.colorScheme.primary,
@@ -107,13 +165,32 @@ fun NuevaCompraScreen(
 
                     // Fecha / Hora
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                        // ── FECHA con ícono de calendario ─────────────────
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             LabelCaps("FECHA")
-                            OutlinedTextField(value = fecha, onValueChange = { fecha = it },
-                                placeholder = { Text("dd/mm/aaaa", color = MaterialTheme.colorScheme.outline) },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true,
-                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                            OutlinedTextField(
+                                value         = fecha,
+                                onValueChange = {},           // solo lectura; se edita via picker
+                                readOnly      = true,
+                                placeholder   = { Text("dd/mm/aaaa", color = MaterialTheme.colorScheme.outline) },
+                                trailingIcon  = {
+                                    IconButton(onClick = { mostrarCalendario = true }) {
+                                        Icon(
+                                            imageVector        = Icons.Default.DateRange,
+                                            contentDescription = stringResource(R.string.abrir_calendario),
+                                            tint               = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape  = RoundedCornerShape(12.dp),
+                                colors = fieldColors
+                            )
                         }
+
+                        // ── HORA (texto libre) ────────────────────────────
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             LabelCaps("HORA")
                             OutlinedTextField(value = hora, onValueChange = { hora = it },

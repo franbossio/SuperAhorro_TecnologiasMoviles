@@ -1,21 +1,31 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.estadisticas
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,6 +35,18 @@ import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+
+// Medallas para el podio de productos
+private val MEDALLAS = listOf("🥇", "🥈", "🥉", "4°", "5°")
+
+// Colores para el podio (verde degradado)
+private val PODIO_COLORES = listOf(
+    Color(0xFF006C49),
+    Color(0xFF1A8A60),
+    Color(0xFF34A87A),
+    Color(0xFF50C48F),
+    Color(0xFF6FDFA5)
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,16 +76,21 @@ fun EstadisticasScreen(
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     // ── Header ─────────────────────────────────────────────
                     item {
                         Column {
-                            Text(stringResource(R.string.estadisticas_titulo),
+                            Text(
+                                stringResource(R.string.estadisticas_titulo),
                                 fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                letterSpacing = (-0.72).sp)
-                            Text("Análisis inteligente de tus gastos",
+                                letterSpacing = (-0.72).sp
+                            )
+                            Text(
+                                "Análisis inteligente de tus gastos",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline)
+                                color = MaterialTheme.colorScheme.outline
+                            )
                         }
                     }
 
@@ -85,74 +112,18 @@ fun EstadisticasScreen(
                         }
                     }
 
-                    // ── KPI row: 3 mini cards ─────────────────────────────
+                    // ── HERO: Total gastado ────────────────────────────────
                     item {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            KpiCard(Modifier.weight(1f),
-                                label = stringResource(R.string.estadisticas_total_gastado),
-                                value = "$ %,.0f".format(data.totalGastado),
-                                trend = "+12%", positive = false)
-                            KpiCard(Modifier.weight(1f),
-                                label = stringResource(R.string.estadisticas_cantidad_compras),
-                                value = "${data.cantidadCompras}",
-                                trend = "+3", positive = true)
-                            KpiCard(Modifier.weight(1f),
-                                label = stringResource(R.string.estadisticas_promedio),
-                                value = "$ %,.0f".format(data.promedio),
-                                trend = "-5%", positive = true)
-                        }
+                        TotalHeroCard(
+                            total           = data.totalGastado,
+                            cantidadCompras = data.cantidadCompras,
+                            promedio        = data.promedio
+                        )
                     }
 
-                    // ── Evolución mensual (barras) ─────────────────────────
+                    // ── Evolución mensual (barras animadas) ────────────────
                     item {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape    = RoundedCornerShape(16.dp),
-                            color    = Color(0xFFFFFFFF),
-                            shadowElevation = 1.dp,
-                            border   = CardDefaults.outlinedCardBorder().copy(
-                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp)) {
-                                LabelCaps("EVOLUCIÓN MENSUAL")
-                                Spacer(Modifier.height(16.dp))
-                                val meses = listOf("E","F","M","A","M","J","J","A","S","O","N","D")
-                                val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().height(120.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    verticalAlignment = Alignment.Bottom
-                                ) {
-                                    meses.zip(vals).forEach { (m, h) ->
-                                        Column(
-                                            modifier = Modifier.weight(1f),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Bottom
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .fillMaxHeight(h)
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                                                    .background(
-                                                        Brush.verticalGradient(
-                                                            listOf(
-                                                                MaterialTheme.colorScheme.primary,
-                                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                                            )
-                                                        )
-                                                    )
-                                            )
-                                            Spacer(Modifier.height(4.dp))
-                                            Text(m, style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.outline)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        EvolucionMensualCard()
                     }
 
                     // ── Por supermercado ───────────────────────────────────
@@ -166,8 +137,10 @@ fun EstadisticasScreen(
                                 brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
                             )
                         ) {
-                            Column(modifier = Modifier.padding(20.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 LabelCaps(stringResource(R.string.estadisticas_por_supermercado))
                                 data.gastosPorSuper.forEach { (nombre, pct) ->
                                     SuperBar(nombre, pct)
@@ -176,52 +149,9 @@ fun EstadisticasScreen(
                         }
                     }
 
-                    // ── Productos más comprados ────────────────────────────
+                    // ── Productos más comprados (rediseñado) ───────────────
                     item {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape    = RoundedCornerShape(16.dp),
-                            color    = Color(0xFFFFFFFF),
-                            shadowElevation = 1.dp,
-                            border   = CardDefaults.outlinedCardBorder().copy(
-                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                LabelCaps(stringResource(R.string.estadisticas_mas_comprados))
-                                data.topProductos.forEachIndexed { i, (prod, cant) ->
-                                    Row(Modifier.fillMaxWidth(),
-                                        Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                                        Row(verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                            Surface(
-                                                modifier = Modifier.size(28.dp),
-                                                shape    = RoundedCornerShape(8.dp),
-                                                color    = MaterialTheme.colorScheme.primary.copy(0.08f)
-                                            ) {
-                                                Box(contentAlignment = Alignment.Center) {
-                                                    Text("${i+1}", style = MaterialTheme.typography.labelSmall,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.primary)
-                                                }
-                                            }
-                                            Text(prod, style = MaterialTheme.typography.bodyLarge)
-                                        }
-                                        Surface(
-                                            shape = RoundedCornerShape(20.dp),
-                                            color = MaterialTheme.colorScheme.primary.copy(0.08f)
-                                        ) {
-                                            Text("x$cant",
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        TopProductosCard(data.topProductos)
                     }
 
                     item { Spacer(Modifier.height(32.dp)) }
@@ -231,36 +161,307 @@ fun EstadisticasScreen(
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HERO CARD — Total gastado
+// ─────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun KpiCard(modifier: Modifier, label: String, value: String, trend: String, positive: Boolean) {
+private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double) {
+    // Animación de entrada del número
+    var visible by remember { mutableStateOf(false) }
+    val animatedTotal by animateFloatAsState(
+        targetValue   = if (visible) 1f else 0f,
+        animationSpec = tween(1000, easing = EaseOutCubic),
+        label         = "total_anim"
+    )
+    LaunchedEffect(Unit) { visible = true }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF003D29), Color(0xFF006C49), Color(0xFF10A870)),
+                    start  = Offset(0f, 0f),
+                    end    = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                )
+            )
+            .padding(24.dp)
+    ) {
+        // Círculos decorativos de fondo
+        Box(
+            Modifier
+                .size(180.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 40.dp, y = (-40).dp)
+                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+        )
+        Box(
+            Modifier
+                .size(100.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-30).dp, y = 30.dp)
+                .background(Color.White.copy(alpha = 0.04f), CircleShape)
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                "TOTAL GASTADO",
+                style      = MaterialTheme.typography.labelSmall,
+                color      = Color.White.copy(alpha = 0.65f),
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "$ %,.0f".format(total * animatedTotal),
+                fontSize      = 42.sp,
+                fontWeight    = FontWeight.ExtraBold,
+                color         = Color.White,
+                letterSpacing = (-1.0).sp
+            )
+            Spacer(Modifier.height(12.dp))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                HeroStat("COMPRAS",   "$cantidadCompras")
+                HeroStat("PROMEDIO",  "$ %,.0f".format(promedio))
+                HeroStat("TENDENCIA", "+12%")
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroStat(label: String, value: String) {
+    Column {
+        Text(label, style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(0.55f), letterSpacing = 0.8.sp)
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVOLUCIÓN MENSUAL — barras animadas
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun EvolucionMensualCard() {
+    val meses = listOf("E","F","M","A","M","J","J","A","S","O","N","D")
+    val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
+
+    // Cada barra tiene su propio animatable para efecto stagger
+    val animatedHeights = vals.mapIndexed { idx, target ->
+        val anim = remember { Animatable(0f) }
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(idx * 60L)   // stagger: 60 ms por barra
+            anim.animateTo(
+                targetValue   = target,
+                animationSpec = tween(600, easing = EaseOutBack)
+            )
+        }
+        anim.value
+    }
+
+    val primary = MaterialTheme.colorScheme.primary
+
     Surface(
-        modifier = modifier,
-        shape    = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(16.dp),
         color    = Color(0xFFFFFFFF),
         shadowElevation = 1.dp,
         border   = CardDefaults.outlinedCardBorder().copy(
             brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
         )
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            LabelCaps(label)
-            Spacer(Modifier.height(4.dp))
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.36).sp)
-            Spacer(Modifier.height(4.dp))
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = if (positive) Color(0xFF10B981).copy(0.1f) else Color(0xFFEF4444).copy(0.1f)
+        Column(modifier = Modifier.padding(20.dp)) {
+            LabelCaps("EVOLUCIÓN MENSUAL")
+            Spacer(Modifier.height(20.dp))
+
+            val barHeight: Dp = 120.dp
+
+            Row(
+                modifier              = Modifier.fillMaxWidth().height(barHeight),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment     = Alignment.Bottom
             ) {
-                Text(trend,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    style    = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color    = if (positive) Color(0xFF10B981) else Color(0xFFEF4444))
+                meses.zip(animatedHeights).forEach { (mes, h) ->
+                    Column(
+                        modifier            = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        // Barra con gradiente animado
+                        val barPx = h
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .drawBehind {
+                                    val bh = size.height * barPx
+                                    val top = size.height - bh
+                                    drawRoundRect(
+                                        brush       = Brush.verticalGradient(
+                                            colors     = listOf(
+                                                primary,
+                                                primary.copy(alpha = 0.35f)
+                                            ),
+                                            startY = top,
+                                            endY   = size.height
+                                        ),
+                                        topLeft     = Offset(0f, top),
+                                        size        = Size(size.width, bh),
+                                        cornerRadius = CornerRadius(6f, 6f)
+                                    )
+                                }
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            mes,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
             }
         }
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOP PRODUCTOS — podio con barras de progreso horizontales y colores
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun TopProductosCard(topProductos: List<Pair<String, Int>>) {
+    val maxCant = topProductos.maxOfOrNull { it.second }?.toFloat() ?: 1f
+
+    // Animación de entrada de las barras
+    val animatedProgress = topProductos.mapIndexed { idx, _ ->
+        val anim = remember { Animatable(0f) }
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(idx * 80L)
+            anim.animateTo(1f, tween(700, easing = EaseOutCubic))
+        }
+        anim.value
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(16.dp),
+        color    = Color(0xFFFFFFFF),
+        shadowElevation = 1.dp,
+        border   = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            LabelCaps(stringResource(R.string.estadisticas_mas_comprados))
+            Spacer(Modifier.height(16.dp))
+
+            topProductos.forEachIndexed { i, (nombre, cant) ->
+                val pct       = cant / maxCant
+                val color     = PODIO_COLORES.getOrElse(i) { Color(0xFF006C49) }
+                val progreso  = animatedProgress.getOrElse(i) { 1f }
+                val medalla   = MEDALLAS.getOrElse(i) { "${i+1}°" }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
+                    Row(
+                        modifier              = Modifier.fillMaxWidth(),
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // Medalla / posición
+                        Box(
+                            modifier         = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(color.copy(alpha = 0.12f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text     = medalla,
+                                fontSize = if (i < 3) 16.sp else 11.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color    = color
+                            )
+                        }
+
+                        // Nombre del producto
+                        Text(
+                            text      = nombre,
+                            modifier  = Modifier.weight(1f),
+                            style     = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color     = MaterialTheme.colorScheme.onSurface,
+                            maxLines  = 1,
+                            overflow  = TextOverflow.Ellipsis
+                        )
+
+                        // Cantidad con chip colorido
+                        Box(
+                            modifier         = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(color.copy(alpha = 0.12f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "×$cant",
+                                style      = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color      = color
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Barra de progreso animada con color por posición
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(7.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(color.copy(alpha = 0.10f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(pct * progreso)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(color, color.copy(alpha = 0.5f))
+                                    )
+                                )
+                        )
+                    }
+                }
+
+                if (i < topProductos.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 2.dp),
+                        color    = MaterialTheme.colorScheme.outlineVariant.copy(0.25f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Componentes auxiliares sin cambios
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun SuperBar(nombre: String, porcentaje: Float) {
@@ -273,9 +474,9 @@ private fun SuperBar(nombre: String, porcentaje: Float) {
                 fontWeight = FontWeight.Bold)
         }
         LinearProgressIndicator(
-            progress = { porcentaje },
-            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-            color    = MaterialTheme.colorScheme.primary,
+            progress  = { porcentaje },
+            modifier  = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+            color     = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
