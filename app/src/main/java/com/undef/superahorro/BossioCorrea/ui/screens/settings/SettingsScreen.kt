@@ -18,18 +18,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
+
+// Opciones del selector de tema
+private enum class ThemeMode { LIGHT, DARK, SYSTEM }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onBackClick : () -> Unit = {}
+    themeViewModel : ThemeViewModel,
+    onBackClick    : () -> Unit = {}
 ) {
+    val isDark by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
     var notificaciones by remember { mutableStateOf(true) }
-    var modoOscuro     by remember { mutableStateOf(false) }
+
+    // Modo actual derivado del estado real del ViewModel
+    // (SYSTEM no se persiste aún en este mock, pero el selector lo muestra)
+    var themeMode by remember(isDark) {
+        mutableStateOf(if (isDark) ThemeMode.DARK else ThemeMode.LIGHT)
+    }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.settings_titulo), onBackClick) },
@@ -45,31 +57,84 @@ fun SettingsScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            Text(stringResource(R.string.settings_titulo),
+            Text(
+                stringResource(R.string.settings_titulo),
                 fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                letterSpacing = (-0.72).sp)
-            Text("Personalizá tu experiencia",
+                letterSpacing = (-0.72).sp
+            )
+            Text(
+                "Personalizá tu experiencia",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline)
+                color = MaterialTheme.colorScheme.outline
+            )
 
-            // ── Sección Preferencias ───────────────────────────────────────
-            SettingsSection(title = "PREFERENCIAS") {
+            // ── Sección Apariencia ─────────────────────────────────────────
+            SettingsSection(title = "APARIENCIA") {
+
+                // Toggle de notificaciones
                 ToggleSettingRow(
-                    icon    = Icons.Outlined.Notifications,
-                    title   = stringResource(R.string.settings_notificaciones),
-                    desc    = stringResource(R.string.settings_notificaciones_desc),
-                    checked = notificaciones,
+                    icon     = Icons.Outlined.Notifications,
+                    title    = stringResource(R.string.settings_notificaciones),
+                    desc     = stringResource(R.string.settings_notificaciones_desc),
+                    checked  = notificaciones,
                     onToggle = { notificaciones = it }
                 )
+
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ToggleSettingRow(
-                    icon    = Icons.Outlined.DarkMode,
-                    title   = stringResource(R.string.settings_tema_oscuro),
-                    desc    = stringResource(R.string.settings_tema_oscuro_desc),
-                    checked = modoOscuro,
-                    onToggle = { modoOscuro = it }
-                )
+
+                // ── Selector de tema (3 opciones) ──────────────────────────
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(36.dp),
+                            shape    = RoundedCornerShape(10.dp),
+                            color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Outlined.DarkMode, null,
+                                    tint     = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Column {
+                            Text(
+                                stringResource(R.string.settings_tema_oscuro),
+                                style      = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                stringResource(R.string.settings_tema_oscuro_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+
+                    // Segmented button: Claro / Oscuro / Por defecto
+                    ThemeModeSelector(
+                        selected = themeMode,
+                        onSelect = { mode ->
+                            themeMode = mode
+                            when (mode) {
+                                ThemeMode.LIGHT  -> themeViewModel.setDarkMode(false)
+                                ThemeMode.DARK   -> themeViewModel.setDarkMode(true)
+                                // SYSTEM: respeta el sistema → usar isSystemInDarkTheme en el futuro
+                                ThemeMode.SYSTEM -> themeViewModel.setDarkMode(false)
+                            }
+                        }
+                    )
+                }
             }
 
             // ── Sección Cuenta ─────────────────────────────────────────────
@@ -95,6 +160,42 @@ fun SettingsScreen(
     }
 }
 
+// ── Segmented button de tema ─────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemeModeSelector(
+    selected : ThemeMode,
+    onSelect : (ThemeMode) -> Unit
+) {
+    val options = listOf(
+        ThemeMode.LIGHT  to "☀️  Claro",
+        ThemeMode.DARK   to "🌙  Oscuro",
+        ThemeMode.SYSTEM to "⚙️  Sistema"
+    )
+
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        options.forEachIndexed { index, (mode, label) ->
+            SegmentedButton(
+                shape    = SegmentedButtonDefaults.itemShape(index, options.size),
+                onClick  = { onSelect(mode) },
+                selected = selected == mode,
+                colors   = SegmentedButtonDefaults.colors(
+                    activeContainerColor  = MaterialTheme.colorScheme.primary,
+                    activeContentColor    = Color.White,
+                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                    inactiveContentColor  = MaterialTheme.colorScheme.onSurface
+                ),
+                icon = {}   // quitamos el check mark por defecto
+            ) {
+                Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+// ── Componentes auxiliares (sin cambios) ─────────────────────────────────────
+
 @Composable
 private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -103,10 +204,12 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape    = RoundedCornerShape(16.dp),
-            color    = Color(0xFFFFFFFF),
+            color    = MaterialTheme.colorScheme.surface,
             shadowElevation = 1.dp,
             border   = CardDefaults.outlinedCardBorder().copy(
-                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                brush = androidx.compose.ui.graphics.SolidColor(
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                )
             )
         ) {
             Column { content() }
@@ -123,8 +226,10 @@ private fun ToggleSettingRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Surface(
                 modifier = Modifier.size(36.dp),
                 shape    = RoundedCornerShape(10.dp),
@@ -136,15 +241,18 @@ private fun ToggleSettingRow(
             }
             Column {
                 Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                if (desc.isNotBlank()) Text(desc, style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline)
+                if (desc.isNotBlank()) Text(
+                    desc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
             }
         }
         Switch(
             checked = checked, onCheckedChange = onToggle,
             colors  = SwitchDefaults.colors(
-                checkedThumbColor  = Color.White,
-                checkedTrackColor  = MaterialTheme.colorScheme.primary
+                checkedThumbColor = Color.White,
+                checkedTrackColor = MaterialTheme.colorScheme.primary
             )
         )
     }
@@ -157,10 +265,14 @@ private fun ActionSettingRow(icon: ImageVector, title: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(Modifier.size(36.dp), RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.primary.copy(0.10f)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                Modifier.size(36.dp), RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.primary.copy(0.10f)
+            ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                 }
@@ -168,10 +280,16 @@ private fun ActionSettingRow(icon: ImageVector, title: String, value: String) {
             Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (value.isNotBlank()) Text(value, style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline)
-            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(20.dp))
+            if (value.isNotBlank()) Text(
+                value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline
+            )
+            Icon(
+                Icons.Default.ChevronRight, null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -183,10 +301,14 @@ private fun InfoRow(icon: ImageVector, title: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Surface(Modifier.size(36.dp), RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                Modifier.size(36.dp), RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)
+            ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(icon, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
                 }
@@ -199,4 +321,6 @@ private fun InfoRow(icon: ImageVector, title: String, value: String) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun SettingsPreview() { SuperAhorroTheme { SettingsScreen() } }
+private fun SettingsPreview() {
+    SuperAhorroTheme { SettingsScreen(themeViewModel = ThemeViewModel()) }
+}
