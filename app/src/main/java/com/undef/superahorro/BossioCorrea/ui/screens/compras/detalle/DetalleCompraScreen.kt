@@ -1,24 +1,31 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,49 +51,50 @@ fun DetalleCompraScreen(
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(compraId) { vm.cargar(compraId) }
 
-    // Diálogo de confirmación de eliminación
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
     productoAEliminar?.let { producto ->
         AlertDialog(
             onDismissRequest = { productoAEliminar = null },
             title = {
-                Text(
-                    stringResource(R.string.eliminar_producto_titulo),
-                    fontWeight = FontWeight.Bold
-                )
+                Text(stringResource(R.string.eliminar_producto_titulo), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text(stringResource(R.string.eliminar_producto_mensaje, producto.nombre))
+                Text(
+                    stringResource(R.string.eliminar_producto_mensaje, producto.nombre),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        vm.eliminarProducto(producto.id)
-                        productoAEliminar = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+                Button(
+                    onClick  = { vm.eliminarProducto(producto.id); productoAEliminar = null },
+                    colors   = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(stringResource(R.string.eliminar_confirmar), fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.eliminar_confirmar), fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { productoAEliminar = null }) {
-                    Text(stringResource(R.string.cancelar))
-                }
+                OutlinedButton(
+                    onClick  = { productoAEliminar = null },
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.cancelar)) }
             },
-            shape = RoundedCornerShape(16.dp)
+            shape          = RoundedCornerShape(20.dp),
+            containerColor = Color(0xFFFFFFFF)
         )
     }
 
     Scaffold(
         topBar = {
             StitchTopBar(
-                title = stringResource(R.string.compra_detalle_titulo),
+                title       = stringResource(R.string.compra_detalle_titulo),
                 onBackClick = onBackClick,
-                actions = {
+                actions     = {
                     IconButton(onClick = {}) {
                         Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary)
                     }
@@ -112,71 +120,28 @@ fun DetalleCompraScreen(
             }
             is UiState.Success -> {
                 val compra = state.data
-                val fmt    = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                 LazyColumn(
-                    modifier       = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                    modifier            = Modifier.fillMaxSize().padding(padding),
+                    contentPadding      = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // ── Hero card con info principal ───────────────────────
-                    item {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape    = RoundedCornerShape(16.dp),
-                            color    = Color(0xFFFFFFFF),
-                            shadowElevation = 1.dp,
-                            border = CardDefaults.outlinedCardBorder().copy(
-                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp)) {
-                                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
-                                    Column {
-                                        LabelCaps("Establecimiento")
-                                        Spacer(Modifier.height(4.dp))
-                                        Text(compra.supermercado,
-                                            fontSize = 24.sp, fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            letterSpacing = (-0.24).sp)
-                                        Text("${compra.fecha.format(fmt)}  ·  ${compra.hora}",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.outline)
-                                    }
-                                    Surface(
-                                        shape = RoundedCornerShape(20.dp),
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                                    ) {
-                                        Text("COMPLETADO",
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                            style    = MaterialTheme.typography.labelSmall,
-                                            color    = MaterialTheme.colorScheme.primary,
-                                            fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                                Spacer(Modifier.height(16.dp))
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                                Spacer(Modifier.height(16.dp))
-                                LabelCaps("TOTAL ABONADO")
-                                Text("$ %,.2f".format(compra.total),
-                                    fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    letterSpacing = (-0.56).sp)
-                            }
-                        }
-                    }
 
-                    // ── Productos header ──────────────────────────────────
+                    // ── Hero card — gradiente verde igual que Estadísticas ─
+                    item { HeroCard(compra) }
+
+                    // ── Encabezado sección productos ──────────────────────
                     item {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier              = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment     = Alignment.CenterVertically
                         ) {
-                            Text("Productos (${compra.productos.size})",
-                                style = MaterialTheme.typography.titleMedium,
+                            Text(
+                                "Productos (${compra.productos.size})",
+                                style      = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary)
-                            // Hint de swipe para orientar al usuario
+                                color      = MaterialTheme.colorScheme.primary
+                            )
                             if (compra.productos.isNotEmpty()) {
                                 Text(
                                     stringResource(R.string.swipe_para_eliminar),
@@ -187,18 +152,16 @@ fun DetalleCompraScreen(
                         }
                     }
 
-                    // ── Lista de productos con swipe-to-delete ────────────
-                    items(
-                        items = compra.productos,
-                        key   = { it.id }
-                    ) { producto ->
+                    // ── Lista de productos con swipe ──────────────────────
+                    items(compra.productos, key = { it.id }) { producto ->
                         ProductoSwipeable(
                             producto   = producto,
+                            index      = compra.productos.indexOf(producto) + 1,
                             onEliminar = { productoAEliminar = producto }
                         )
                     }
 
-                    // ── Total resumen ─────────────────────────────────────
+                    // ── Fila de total ─────────────────────────────────────
                     item {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
@@ -206,18 +169,26 @@ fun DetalleCompraScreen(
                             color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier              = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment     = Alignment.CenterVertically
                             ) {
-                                Text("Total", style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold)
-                                Text("$ %,.2f".format(compra.total),
-                                    style = MaterialTheme.typography.titleMedium,
+                                Text(
+                                    "Total",
+                                    style      = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary)
+                                    color      = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    "$ %,.2f".format(compra.total),
+                                    style      = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color      = MaterialTheme.colorScheme.primary
+                                )
                             }
                         }
                     }
+
                     item { Spacer(Modifier.height(80.dp)) }
                 }
             }
@@ -225,117 +196,316 @@ fun DetalleCompraScreen(
     }
 }
 
-// ── Swipe-to-delete wrapper ───────────────────────────────────────────────────
+// ── Hero card — mismo gradiente que EstadisticasScreen y HistorialComprasScreen
+
+@Composable
+private fun HeroCard(compra: Compra) {
+    val fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    // Animación del total igual que en EstadisticasScreen
+    var visible by remember { mutableStateOf(false) }
+    val animTotal by animateFloatAsState(
+        targetValue   = if (visible) 1f else 0f,
+        animationSpec = tween(1000, easing = EaseOutCubic),
+        label         = "hero_anim"
+    )
+    LaunchedEffect(Unit) { visible = true }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF003D29), Color(0xFF006C49), Color(0xFF10A870)),
+                    start  = Offset(0f, 0f),
+                    end    = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                )
+            )
+            .padding(24.dp)
+    ) {
+        // Círculos decorativos — igual que EstadisticasScreen
+        Box(
+            Modifier
+                .size(180.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 40.dp, y = (-40).dp)
+                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+        )
+        Box(
+            Modifier
+                .size(100.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-30).dp, y = 30.dp)
+                .background(Color.White.copy(alpha = 0.04f), CircleShape)
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+
+            // Supermercado + badge COMPLETADO
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "ESTABLECIMIENTO",
+                        style         = MaterialTheme.typography.labelSmall,
+                        color         = Color.White.copy(alpha = 0.65f),
+                        fontWeight    = FontWeight.Bold,
+                        letterSpacing = 1.5.sp
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        compra.supermercado,
+                        fontSize      = 26.sp,
+                        fontWeight    = FontWeight.ExtraBold,
+                        color         = Color.White,
+                        letterSpacing = (-0.5).sp
+                    )
+                    Text(
+                        "${compra.fecha.format(fmt)}  ·  ${compra.hora}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.65f)
+                    )
+                }
+                // Badge COMPLETADO — semitransparente sobre el gradiente
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        "COMPLETADO",
+                        modifier      = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style         = MaterialTheme.typography.labelSmall,
+                        color         = Color.White,
+                        fontWeight    = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+            Spacer(Modifier.height(16.dp))
+
+            // Total animado — igual que EstadisticasScreen
+            Text(
+                "TOTAL ABONADO",
+                style         = MaterialTheme.typography.labelSmall,
+                color         = Color.White.copy(alpha = 0.65f),
+                fontWeight    = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "$ %,.2f".format(compra.total * animTotal),
+                fontSize      = 42.sp,
+                fontWeight    = FontWeight.ExtraBold,
+                color         = Color.White,
+                letterSpacing = (-1.0).sp
+            )
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+            Spacer(Modifier.height(16.dp))
+
+            // Stats row — igual que HeroStat en EstadisticasScreen
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                HeroStat("PRODUCTOS",  "${compra.productos.size}")
+                HeroStat("PROMEDIO",
+                    "$ %,.0f".format(
+                        if (compra.productos.isEmpty()) 0.0
+                        else compra.total / compra.productos.size
+                    )
+                )
+                HeroStat("IVA EST.",   "$ %,.0f".format(compra.total * 0.21))
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroStat(label: String, value: String) {
+    Column {
+        Text(
+            label,
+            style         = MaterialTheme.typography.labelSmall,
+            color         = Color.White.copy(0.55f),
+            letterSpacing = 0.8.sp
+        )
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+    }
+}
+
+// ── Swipe-to-delete — mismo patrón que ListadoComprasScreen ──────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductoSwipeable(
     producto   : Producto,
+    index      : Int,
     onEliminar : () -> Unit
 ) {
     val swipeState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onEliminar()
-                // Retornamos false para que la card NO desaparezca
-                // hasta que el usuario confirme en el diálogo
-                false
-            } else false
+            if (value == SwipeToDismissBoxValue.EndToStart) { onEliminar(); false } else false
         },
-        positionalThreshold = { it * 0.4f }   // 40 % del ancho para activar
+        positionalThreshold = { it * 0.40f }
     )
 
     SwipeToDismissBox(
-        state             = swipeState,
-        enableDismissFromStartToEnd = false,   // Solo izquierda → derecha queda desactivado
-        enableDismissFromEndToStart = true,    // Swipe de derecha a izquierda habilitado
-        backgroundContent = { SwipeBackground(swipeState) },
-        content           = { ProductoRow(producto) }
+        state                       = swipeState,
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        backgroundContent           = { ProductoSwipeBg(swipeState) },
+        content                     = { ProductoRow(producto, index) }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SwipeBackground(state: SwipeToDismissBoxState) {
-    val isActive = state.dismissDirection == SwipeToDismissBoxValue.EndToStart
-
-    val bgColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.errorContainer
-        else Color(0xFFFFEBEB),
+private fun ProductoSwipeBg(state: SwipeToDismissBoxState) {
+    val activo = state.dismissDirection == SwipeToDismissBoxValue.EndToStart
+    val bg by animateColorAsState(
+        targetValue   = if (activo) MaterialTheme.colorScheme.errorContainer
+        else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0f),
         animationSpec = tween(200),
-        label = "swipe_bg"
+        label         = "swipeBg"
     )
-    val iconColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.onErrorContainer
-        else MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
-        animationSpec = tween(200),
-        label = "swipe_icon"
+    val iconScale by animateFloatAsState(
+        targetValue = if (activo) 1.15f else 0.85f,
+        label       = "swipeScale"
     )
-
     Box(
-        modifier = Modifier
+        modifier         = Modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
+            .background(bg)
             .padding(end = 20.dp),
         contentAlignment = Alignment.CenterEnd
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier.scale(iconScale)
+        ) {
             Icon(
-                imageVector        = Icons.Default.Delete,
-                contentDescription = "Eliminar producto",
-                tint               = iconColor,
-                modifier           = Modifier.size(24.dp)
+                Icons.Default.Delete, null,
+                tint     = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text  = "Eliminar",
-                color = iconColor,
-                style = MaterialTheme.typography.labelSmall,
+                "Eliminar",
+                color      = MaterialTheme.colorScheme.error,
+                style      = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold
             )
         }
     }
 }
 
-// ── Fila de producto (sin cambios visuales respecto al original) ──────────────
+// ── Fila de producto — más llamativa, respetando paleta Stitch ────────────────
 
 @Composable
-private fun ProductoRow(p: Producto) {
+private fun ProductoRow(p: Producto, index: Int) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(12.dp),
-        color    = Color(0xFFFFFFFF),
+        modifier        = Modifier.fillMaxWidth(),
+        shape           = RoundedCornerShape(12.dp),
+        color           = Color(0xFFFFFFFF),
         shadowElevation = 1.dp,
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.25f))
+        border          = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
         )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            modifier          = Modifier.fillMaxWidth().padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(p.nombre, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                Text("Cód: ${p.codigo}  ·  x${p.cantidad}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline)
-                if (p.descripcion.isNotBlank()) {
-                    Text(p.descripcion,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+
+            // Número de ítem — círculo con fondo primary/10
+            Surface(
+                shape  = CircleShape,
+                color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                modifier = Modifier.size(38.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        "$index",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize   = 14.sp,
+                        color      = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
+
+            // Info central
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    p.nombre,
+                    style      = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.onSurface,
+                    maxLines   = 1,
+                    overflow   = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Chip código
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            "# ${p.codigo}",
+                            modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style      = MaterialTheme.typography.labelSmall,
+                            color      = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    // Chip cantidad
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                    ) {
+                        Text(
+                            "×${p.cantidad}",
+                            modifier   = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style      = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color      = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                if (p.descripcion.isNotBlank()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        p.descripcion,
+                        style    = MaterialTheme.typography.bodySmall,
+                        color    = MaterialTheme.colorScheme.outline,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // Subtotal — chip verde igual que resto de la app
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
             ) {
-                Text("$ %,.2f".format(p.subtotal),
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style    = MaterialTheme.typography.labelLarge,
+                Text(
+                    "$ %,.2f".format(p.subtotal),
+                    modifier   = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    style      = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    color    = MaterialTheme.colorScheme.primary)
+                    color      = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

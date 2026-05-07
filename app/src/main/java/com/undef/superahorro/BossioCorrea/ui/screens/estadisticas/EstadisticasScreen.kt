@@ -41,11 +41,11 @@ private val MEDALLAS = listOf("🥇", "🥈", "🥉", "4°", "5°")
 
 // Colores para el podio (verde degradado)
 private val PODIO_COLORES = listOf(
-    Color(0xFF006C49),
-    Color(0xFF1A8A60),
-    Color(0xFF34A87A),
-    Color(0xFF50C48F),
-    Color(0xFF6FDFA5)
+    Color(0xFF026259),
+    Color(0xFF18867C),
+    Color(0xFF34ADA2),
+    Color(0xFF50C2B7),
+    Color(0xFF69D3C8)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -182,7 +182,7 @@ private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double)
             .clip(RoundedCornerShape(24.dp))
             .background(
                 Brush.linearGradient(
-                    colors = listOf(Color(0xFF003D29), Color(0xFF006C49), Color(0xFF10A870)),
+                    colors = listOf(Color(0xFF009688), Color(0xFF00BCD4), Color(0xBE009688)),
                     start  = Offset(0f, 0f),
                     end    = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                 )
@@ -307,8 +307,8 @@ private fun EvolucionMensualCard() {
                                     drawRoundRect(
                                         brush       = Brush.verticalGradient(
                                             colors     = listOf(
-                                                primary,
-                                                primary.copy(alpha = 0.35f)
+                                                Color(0xFF1A5932),
+                                                Color(0xFF009688)
                                             ),
                                             startY = top,
                                             endY   = size.height

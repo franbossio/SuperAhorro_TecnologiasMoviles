@@ -1,7 +1,7 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.historial
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,17 +10,24 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,7 +44,6 @@ import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import java.time.format.DateTimeFormatter
 
-// Nombres cortos de los meses en español
 private val MESES = listOf(
     "Ene", "Feb", "Mar", "Abr", "May", "Jun",
     "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
@@ -50,11 +56,10 @@ fun HistorialComprasScreen(
     onCompraClick : (Int) -> Unit = {},
     onBackClick   : () -> Unit = {}
 ) {
-    val uiState  by vm.uiState.collectAsStateWithLifecycle()
-    val mesSel   by vm.mesSel.collectAsStateWithLifecycle()
-    val anioSel  by vm.anioSel.collectAsStateWithLifecycle()
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val mesSel  by vm.mesSel.collectAsStateWithLifecycle()
+    val anioSel by vm.anioSel.collectAsStateWithLifecycle()
 
-    // Diálogo de confirmación de eliminación
     var compraAEliminar by remember { mutableStateOf<Compra?>(null) }
 
     compraAEliminar?.let { compra ->
@@ -68,33 +73,36 @@ fun HistorialComprasScreen(
             },
             text = {
                 Text(
-                    stringResource(R.string.historial_eliminar_mensaje, compra.supermercado)
+                    stringResource(R.string.historial_eliminar_mensaje, compra.supermercado),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        vm.eliminarCompra(compra.id)
-                        compraAEliminar = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+                Button(
+                    onClick  = { vm.eliminarCompra(compra.id); compraAEliminar = null },
+                    colors   = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(stringResource(R.string.eliminar_confirmar), fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.eliminar_confirmar), fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { compraAEliminar = null }) {
-                    Text(stringResource(R.string.cancelar), color = MaterialTheme.colorScheme.outline)
-                }
+                OutlinedButton(
+                    onClick  = { compraAEliminar = null },
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.cancelar)) }
             },
-            shape = RoundedCornerShape(16.dp)
+            shape          = RoundedCornerShape(20.dp),
+            containerColor = Color(0xFFFFFFFF)
         )
     }
 
     Scaffold(
-        topBar = { StitchTopBar(stringResource(R.string.compra_historial_titulo), onBackClick) },
+        topBar         = { StitchTopBar(stringResource(R.string.compra_historial_titulo), onBackClick) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         when (val state = uiState) {
@@ -108,35 +116,20 @@ fun HistorialComprasScreen(
                 val compras = state.data
 
                 LazyColumn(
-                    modifier       = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                    modifier            = Modifier.fillMaxSize().padding(padding),
+                    contentPadding      = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
 
-                    // ── Header ──────────────────────────────────────────────
-                    item {
-                        Column {
-                            Text(
-                                "Historial",
-                                fontSize = 36.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                letterSpacing = (-0.72).sp
-                            )
-                            Text(
-                                "Todos tus registros de compras",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                        }
-                    }
+                    // ── Hero card — mismo estilo que EstadisticasScreen ───
+                    item { HeroCard(compras) }
 
-                    // ── Selector de año ─────────────────────────────────────
+                    // ── Selector de año ───────────────────────────────────
                     item {
                         AnioSelector(
-                            anioSel    = anioSel,
-                            anios      = vm.aniosDisponibles().ifEmpty { listOf(anioSel) },
-                            onAnterior = {
+                            anioSel     = anioSel,
+                            anios       = vm.aniosDisponibles().ifEmpty { listOf(anioSel) },
+                            onAnterior  = {
                                 val anios = vm.aniosDisponibles()
                                 val idx   = anios.indexOf(anioSel)
                                 if (idx > 0) vm.seleccionarAnio(anios[idx - 1])
@@ -149,59 +142,29 @@ fun HistorialComprasScreen(
                         )
                     }
 
-                    // ── Chips de meses ──────────────────────────────────────
+                    // ── Chips de meses — igual que filtros de Estadísticas ─
                     item {
-                        MesesRow(
-                            mesSel        = mesSel,
-                            onMesSelected = { vm.seleccionarMes(it) }
-                        )
+                        MesesRow(mesSel = mesSel, onMesSelected = { vm.seleccionarMes(it) })
                     }
 
-                    // ── Summary cards ───────────────────────────────────────
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            StatMiniCard(
-                                modifier = Modifier.weight(1f),
-                                label    = "ACUMULADO",
-                                value    = "$ %,.0f".format(compras.sumOf { it.total })
-                            )
-                            StatMiniCard(
-                                modifier = Modifier.weight(1f),
-                                label    = "COMPRAS",
-                                value    = "${compras.size}"
-                            )
-                            StatMiniCard(
-                                modifier = Modifier.weight(1f),
-                                label    = "PROMEDIO",
-                                value    = "$ %,.0f".format(
-                                    if (compras.isEmpty()) 0.0
-                                    else compras.sumOf { it.total } / compras.size
-                                )
-                            )
-                        }
-                    }
-
-                    // ── Lista vacía ─────────────────────────────────────────
+                    // ── Vacío ─────────────────────────────────────────────
                     if (compras.isEmpty()) {
                         item {
                             Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape    = RoundedCornerShape(16.dp),
-                                color    = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f)
+                                modifier        = Modifier.fillMaxWidth(),
+                                shape           = RoundedCornerShape(16.dp),
+                                color           = Color(0xFFFFFFFF),
+                                shadowElevation = 1.dp,
+                                border          = CardDefaults.outlinedCardBorder().copy(
+                                    brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+                                )
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(32.dp),
+                                    modifier            = Modifier.fillMaxWidth().padding(40.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        "😶",
-                                        fontSize  = 36.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(Modifier.height(8.dp))
+                                    Text("🛍", fontSize = 40.sp)
+                                    Spacer(Modifier.height(10.dp))
                                     Text(
                                         stringResource(R.string.historial_sin_compras),
                                         style     = MaterialTheme.typography.bodyMedium,
@@ -213,25 +176,48 @@ fun HistorialComprasScreen(
                         }
                     }
 
-                    // ── Lista agrupada por mes con swipe-to-delete ──────────
+                    // ── Lista agrupada por mes ────────────────────────────
                     val agrupado = compras.groupBy {
                         it.fecha.format(
                             DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale("es", "AR"))
                         )
                     }
-                    agrupado.forEach { (mes, lista) ->
+
+                    agrupado.entries.forEach { (mes, lista) ->
+
+                        // Encabezado de grupo — nombre del mes + total del mes
                         item {
                             Spacer(Modifier.height(4.dp))
-                            Text(
-                                mes.replaceFirstChar { it.uppercase() },
-                                style      = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color      = MaterialTheme.colorScheme.primary
-                            )
+                            Row(
+                                modifier              = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment     = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    mes.replaceFirstChar { it.uppercase() },
+                                    style      = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color      = MaterialTheme.colorScheme.primary
+                                )
+                                // Total del mes como chip verde igual que PriceChip
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                ) {
+                                    Text(
+                                        "$ %,.0f".format(lista.sumOf { it.total }),
+                                        modifier   = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                        style      = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color      = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                             Spacer(Modifier.height(8.dp))
                         }
+
                         items(lista, key = { it.id }) { compra ->
-                            CompraSwipeable(
+                            HistorialSwipeable(
                                 compra     = compra,
                                 onEliminar = { compraAEliminar = compra },
                                 onClick    = { onCompraClick(compra.id) }
@@ -246,66 +232,146 @@ fun HistorialComprasScreen(
     }
 }
 
-// ── Selector de año con flechas ──────────────────────────────────────────────
+// ── Hero card — mismo gradiente verde que EstadisticasScreen ─────────────────
+
+@Composable
+private fun HeroCard(compras: List<Compra>) {
+    var visible by remember { mutableStateOf(false) }
+    val animTotal by animateFloatAsState(
+        targetValue   = if (visible) 1f else 0f,
+        animationSpec = tween(1000, easing = EaseOutCubic),
+        label         = "hero_anim"
+    )
+    LaunchedEffect(Unit) { visible = true }
+
+    val total   = compras.sumOf { it.total }
+    val promedio = if (compras.isEmpty()) 0.0 else total / compras.size
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF003D29), Color(0xFF006C49), Color(0xFF10A870)),
+                    start  = Offset(0f, 0f),
+                    end    = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                )
+            )
+            .padding(24.dp)
+    ) {
+        // Círculos decorativos — igual que EstadisticasScreen
+        Box(
+            Modifier
+                .size(180.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 40.dp, y = (-40).dp)
+                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+        )
+        Box(
+            Modifier
+                .size(100.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-30).dp, y = 30.dp)
+                .background(Color.White.copy(alpha = 0.04f), CircleShape)
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                "HISTORIAL DE COMPRAS",
+                style         = MaterialTheme.typography.labelSmall,
+                color         = Color.White.copy(alpha = 0.65f),
+                fontWeight    = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "$ %,.0f".format(total * animTotal),
+                fontSize      = 42.sp,
+                fontWeight    = FontWeight.ExtraBold,
+                color         = Color.White,
+                letterSpacing = (-1.0).sp
+            )
+            Spacer(Modifier.height(12.dp))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                HeroStat("COMPRAS",  "${compras.size}")
+                HeroStat("PROMEDIO", "$ %,.0f".format(promedio))
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroStat(label: String, value: String) {
+    Column {
+        Text(
+            label,
+            style         = MaterialTheme.typography.labelSmall,
+            color         = Color.White.copy(0.55f),
+            letterSpacing = 0.8.sp
+        )
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+    }
+}
+
+// ── Selector de año ───────────────────────────────────────────────────────────
 
 @Composable
 private fun AnioSelector(
-    anioSel    : Int,
-    anios      : List<Int>,
-    onAnterior : () -> Unit,
-    onSiguiente: () -> Unit
+    anioSel     : Int,
+    anios       : List<Int>,
+    onAnterior  : () -> Unit,
+    onSiguiente : () -> Unit
 ) {
     val hayAnterior  = anios.indexOf(anioSel) > 0
     val haySiguiente = anios.indexOf(anioSel) < anios.lastIndex
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(14.dp),
-        color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
+        modifier        = Modifier.fillMaxWidth(),
+        shape           = RoundedCornerShape(14.dp),
+        color           = Color(0xFFFFFFFF),
+        shadowElevation = 1.dp,
+        border          = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier              = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(
-                onClick = onAnterior,
-                enabled = hayAnterior
-            ) {
+            IconButton(onClick = onAnterior, enabled = hayAnterior) {
                 Icon(
                     Icons.Default.ChevronLeft,
                     contentDescription = "Año anterior",
                     tint = if (hayAnterior) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline.copy(0.3f)
+                    else MaterialTheme.colorScheme.outlineVariant
                 )
             }
-
             Text(
-                text       = "$anioSel",
-                fontSize   = 20.sp,
+                "$anioSel",
+                style      = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
-                color      = MaterialTheme.colorScheme.primary,
-                letterSpacing = (-0.4).sp
+                color      = MaterialTheme.colorScheme.primary
             )
-
-            IconButton(
-                onClick = onSiguiente,
-                enabled = haySiguiente
-            ) {
+            IconButton(onClick = onSiguiente, enabled = haySiguiente) {
                 Icon(
                     Icons.Default.ChevronRight,
                     contentDescription = "Año siguiente",
                     tint = if (haySiguiente) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline.copy(0.3f)
+                    else MaterialTheme.colorScheme.outlineVariant
                 )
             }
         }
     }
 }
 
-// ── Chips de meses ────────────────────────────────────────────────────────────
+// ── Chips de meses — mismo estilo FilterChip que EstadisticasScreen ───────────
 
 @Composable
 private fun MesesRow(
@@ -313,54 +379,35 @@ private fun MesesRow(
     onMesSelected : (Int?) -> Unit
 ) {
     val rowState = rememberLazyListState()
-
-    // Auto-scroll al chip activo al montarse
     LaunchedEffect(mesSel) {
         if (mesSel != null) rowState.animateScrollToItem((mesSel - 1).coerceAtLeast(0))
     }
 
     LazyRow(
-        state               = rowState,
+        state                 = rowState,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding      = PaddingValues(horizontal = 2.dp)
+        contentPadding        = PaddingValues(horizontal = 2.dp)
     ) {
-        // Chip "Todos"
         item {
             FilterChip(
                 selected = mesSel == null,
                 onClick  = { onMesSelected(null) },
-                label    = {
-                    Text(
-                        "Todos",
-                        style      = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (mesSel == null) FontWeight.Bold else FontWeight.Normal
-                    )
-                },
-                shape  = RoundedCornerShape(20.dp),
-                colors = FilterChipDefaults.filterChipColors(
+                label    = { Text("Todos", style = MaterialTheme.typography.labelSmall) },
+                shape    = RoundedCornerShape(20.dp),
+                colors   = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor     = Color.White
                 )
             )
         }
-
-        // Chips de cada mes (1-12)
         itemsIndexed(MESES) { idx, nombre ->
             val mesNum = idx + 1
             FilterChip(
                 selected = mesSel == mesNum,
-                onClick  = {
-                    onMesSelected(if (mesSel == mesNum) null else mesNum)
-                },
-                label    = {
-                    Text(
-                        nombre,
-                        style      = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (mesSel == mesNum) FontWeight.Bold else FontWeight.Normal
-                    )
-                },
-                shape  = RoundedCornerShape(20.dp),
-                colors = FilterChipDefaults.filterChipColors(
+                onClick  = { onMesSelected(if (mesSel == mesNum) null else mesNum) },
+                label    = { Text(nombre, style = MaterialTheme.typography.labelSmall) },
+                shape    = RoundedCornerShape(20.dp),
+                colors   = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor     = Color.White
                 )
@@ -369,23 +416,20 @@ private fun MesesRow(
     }
 }
 
-// ── Swipe-to-delete wrapper ───────────────────────────────────────────────────
+// ── Swipe-to-delete — igual que ListadoComprasScreen ─────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CompraSwipeable(
+private fun HistorialSwipeable(
     compra     : Compra,
     onEliminar : () -> Unit,
     onClick    : () -> Unit
 ) {
     val swipeState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onEliminar()
-                false   // No desaparece hasta que el usuario confirme en el diálogo
-            } else false
+            if (value == SwipeToDismissBoxValue.EndToStart) { onEliminar(); false } else false
         },
-        positionalThreshold = { it * 0.38f }
+        positionalThreshold = { it * 0.40f }
     )
 
     SwipeToDismissBox(
@@ -393,46 +437,45 @@ private fun CompraSwipeable(
         enableDismissFromStartToEnd = false,
         enableDismissFromEndToStart = true,
         backgroundContent           = { SwipeBackground(swipeState) },
-        content                     = { HistorialRow(compra, onClick) }
+        content                     = { HistorialRow(compra = compra, onClick = onClick) }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SwipeBackground(state: SwipeToDismissBoxState) {
-    val isActive = state.dismissDirection == SwipeToDismissBoxValue.EndToStart
-
-    val bgColor by animateColorAsState(
-        targetValue   = if (isActive) MaterialTheme.colorScheme.errorContainer else Color(0xFFFFEBEB),
+    val activo = state.dismissDirection == SwipeToDismissBoxValue.EndToStart
+    val bg by animateColorAsState(
+        targetValue   = if (activo) MaterialTheme.colorScheme.errorContainer
+        else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0f),
         animationSpec = tween(200),
-        label         = "swipe_bg"
+        label         = "swipeBg"
     )
-    val iconColor by animateColorAsState(
-        targetValue   = if (isActive) MaterialTheme.colorScheme.onErrorContainer
-        else MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
-        animationSpec = tween(200),
-        label         = "swipe_icon"
+    val iconScale by animateFloatAsState(
+        targetValue = if (activo) 1.15f else 0.85f,
+        label       = "swipeScale"
     )
-
     Box(
-        modifier = Modifier
+        modifier         = Modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
+            .clip(RoundedCornerShape(14.dp))
+            .background(bg)
             .padding(end = 20.dp),
         contentAlignment = Alignment.CenterEnd
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier.scale(iconScale)
+        ) {
             Icon(
-                imageVector        = Icons.Default.Delete,
-                contentDescription = "Eliminar compra",
-                tint               = iconColor,
-                modifier           = Modifier.size(24.dp)
+                Icons.Default.Delete, null,
+                tint     = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(24.dp)
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 "Eliminar",
-                color      = iconColor,
+                color      = MaterialTheme.colorScheme.error,
                 style      = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold
             )
@@ -440,84 +483,83 @@ private fun SwipeBackground(state: SwipeToDismissBoxState) {
     }
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-
-@Composable
-private fun StatMiniCard(modifier: Modifier, label: String, value: String) {
-    Surface(
-        modifier = modifier,
-        shape    = RoundedCornerShape(12.dp),
-        color    = Color(0xFFFFFFFF),
-        shadowElevation = 1.dp,
-        border   = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-        )
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            LabelCaps(label)
-            Spacer(Modifier.height(4.dp))
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.primary)
-        }
-    }
-}
-
-// ── Fila de compra ────────────────────────────────────────────────────────────
+// ── Card de compra — mismo patrón que CompraCard en ListadoComprasScreen ──────
 
 @Composable
 private fun HistorialRow(compra: Compra, onClick: () -> Unit) {
-    val fmt = DateTimeFormatter.ofPattern("dd MMM", java.util.Locale("es", "AR"))
+    val fmtFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val fmtDia   = DateTimeFormatter.ofPattern("dd", java.util.Locale("es", "AR"))
+    val fmtMes   = DateTimeFormatter.ofPattern("MMM", java.util.Locale("es", "AR"))
+
     Surface(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape    = RoundedCornerShape(12.dp),
-        color    = Color(0xFFFFFFFF),
+        modifier        = Modifier.fillMaxWidth().clickable { onClick() },
+        shape           = RoundedCornerShape(14.dp),
+        color           = Color(0xFFFFFFFF),
         shadowElevation = 1.dp,
-        border   = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.25f))
+        border          = CardDefaults.outlinedCardBorder().copy(
+            brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
         )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically
+            modifier          = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                verticalAlignment      = Alignment.CenterVertically,
-                horizontalArrangement  = Arrangement.spacedBy(12.dp)
+
+            // Bloque fecha — destacado con primary al 10%
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
             ) {
-                // Chip fecha
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                Column(
+                    modifier            = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        compra.fecha.format(fmt).uppercase(),
-                        modifier   = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                        style      = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color      = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Column {
-                    Text(
-                        compra.supermercado,
-                        style      = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color      = MaterialTheme.colorScheme.onSurface
+                        compra.fecha.format(fmtDia),
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize   = 20.sp,
+                        color      = MaterialTheme.colorScheme.primary,
+                        lineHeight = 20.sp
                     )
                     Text(
-                        "${compra.productos.size} producto(s)  ·  ${compra.hora}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
+                        compra.fecha.format(fmtMes).uppercase(),
+                        fontWeight    = FontWeight.Bold,
+                        fontSize      = 10.sp,
+                        color         = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        letterSpacing = 0.8.sp
                     )
                 }
             }
-            Text(
-                "$ %,.0f".format(compra.total),
-                fontWeight = FontWeight.Bold,
-                color      = MaterialTheme.colorScheme.primary,
-                style      = MaterialTheme.typography.titleMedium
-            )
+
+            // Info central
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    compra.supermercado,
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "${compra.hora}  ·  ${compra.productos.size} producto(s)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+
+            // Total — mismo chip verde que ProductoRow
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+            ) {
+                Text(
+                    "$ %,.0f".format(compra.total),
+                    modifier   = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
