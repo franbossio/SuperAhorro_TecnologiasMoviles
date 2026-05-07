@@ -62,7 +62,7 @@ fun LoginScreen(
 
             // ── Heading ───────────────────────────────────────────────────
             Text(
-                text      = "Welcome Back",
+                text      = "Bienvenidos",
                 fontSize  = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color     = MaterialTheme.colorScheme.onSurface,
@@ -98,7 +98,7 @@ fun LoginScreen(
                 ) {
                     // Email
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL ADDRESS")
+                        LabelCaps("EMAIL ")
                         OutlinedTextField(
                             value         = email,
                             onValueChange = { email = it },

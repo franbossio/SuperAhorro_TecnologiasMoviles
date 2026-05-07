@@ -159,7 +159,7 @@ fun SplashScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FeatureCard(Modifier.weight(1f), Icons.Outlined.ReceiptLong, "ESCANEO",  "Tickets")
                 FeatureCard(Modifier.weight(1f), Icons.Outlined.Analytics,   "STATS",    "Tu gasto visual")
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  "OFERTAS",  "Mejores precios")
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  "OFERTAS",  "Precios")
             }
 
             Spacer(Modifier.height(36.dp))

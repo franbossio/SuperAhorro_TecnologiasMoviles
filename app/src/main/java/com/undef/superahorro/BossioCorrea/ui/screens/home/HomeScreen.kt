@@ -88,7 +88,7 @@ fun HomeScreen(
 
                     // ── Welcome header ────────────────────────────────────
                     Column {
-                        LabelCaps("WELCOME BACK")
+                        LabelCaps("Bienvenido")
                         Spacer(Modifier.height(4.dp))
                         Text(data.saludo, fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
@@ -107,7 +107,7 @@ fun HomeScreen(
                         Column(modifier = Modifier.padding(20.dp)) {
                             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
                                 Column {
-                                    LabelCaps("TOTAL SPENT THIS MONTH")
+                                    LabelCaps("TOTAL GASTADO ESTE MES")
                                     Spacer(Modifier.height(4.dp))
                                     Text(
                                         text = "$ %,.2f".format(data.gastoMes),
