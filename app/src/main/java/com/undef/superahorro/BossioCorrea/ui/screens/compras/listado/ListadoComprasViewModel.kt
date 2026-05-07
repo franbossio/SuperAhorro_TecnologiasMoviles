@@ -11,8 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ListadoComprasViewModel : ViewModel() {
+
     private val _uiState = MutableStateFlow<UiState<List<Compra>>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
+
+    // Lista mutable en memoria (primera entrega = mock)
+    private val _compras = comprasMock.toMutableList()
 
     init { cargar() }
 
@@ -20,7 +24,12 @@ class ListadoComprasViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             delay(500)
-            _uiState.value = UiState.Success(comprasMock)
+            _uiState.value = UiState.Success(_compras.toList())
         }
+    }
+
+    fun eliminar(compraId: Int) {
+        _compras.removeAll { it.id == compraId }
+        _uiState.value = UiState.Success(_compras.toList())
     }
 }

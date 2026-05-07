@@ -94,7 +94,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
                     }
 
-                    // ── Total spent card con gradiente suave ──────────────
+                    // Total spent card con gradiente suave
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape    = RoundedCornerShape(16.dp),
