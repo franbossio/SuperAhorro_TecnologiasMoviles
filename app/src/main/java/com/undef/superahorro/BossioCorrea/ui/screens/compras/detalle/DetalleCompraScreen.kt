@@ -1,16 +1,21 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +43,43 @@ fun DetalleCompraScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(compraId) { vm.cargar(compraId) }
+
+    // Diálogo de confirmación de eliminación
+    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
+
+    productoAEliminar?.let { producto ->
+        AlertDialog(
+            onDismissRequest = { productoAEliminar = null },
+            title = {
+                Text(
+                    stringResource(R.string.eliminar_producto_titulo),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(stringResource(R.string.eliminar_producto_mensaje, producto.nombre))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.eliminarProducto(producto.id)
+                        productoAEliminar = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.eliminar_confirmar), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { productoAEliminar = null }) {
+                    Text(stringResource(R.string.cancelar))
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -125,13 +167,36 @@ fun DetalleCompraScreen(
 
                     // ── Productos header ──────────────────────────────────
                     item {
-                        Text("Productos (${compra.productos.size})",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Productos (${compra.productos.size})",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary)
+                            // Hint de swipe para orientar al usuario
+                            if (compra.productos.isNotEmpty()) {
+                                Text(
+                                    stringResource(R.string.swipe_para_eliminar),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
                     }
 
-                    items(compra.productos) { p -> ProductoRow(p) }
+                    // ── Lista de productos con swipe-to-delete ────────────
+                    items(
+                        items = compra.productos,
+                        key   = { it.id }
+                    ) { producto ->
+                        ProductoSwipeable(
+                            producto   = producto,
+                            onEliminar = { productoAEliminar = producto }
+                        )
+                    }
 
                     // ── Total resumen ─────────────────────────────────────
                     item {
@@ -160,6 +225,81 @@ fun DetalleCompraScreen(
     }
 }
 
+// ── Swipe-to-delete wrapper ───────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProductoSwipeable(
+    producto   : Producto,
+    onEliminar : () -> Unit
+) {
+    val swipeState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onEliminar()
+                // Retornamos false para que la card NO desaparezca
+                // hasta que el usuario confirme en el diálogo
+                false
+            } else false
+        },
+        positionalThreshold = { it * 0.4f }   // 40 % del ancho para activar
+    )
+
+    SwipeToDismissBox(
+        state             = swipeState,
+        enableDismissFromStartToEnd = false,   // Solo izquierda → derecha queda desactivado
+        enableDismissFromEndToStart = true,    // Swipe de derecha a izquierda habilitado
+        backgroundContent = { SwipeBackground(swipeState) },
+        content           = { ProductoRow(producto) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeBackground(state: SwipeToDismissBoxState) {
+    val isActive = state.dismissDirection == SwipeToDismissBoxValue.EndToStart
+
+    val bgColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.errorContainer
+        else Color(0xFFFFEBEB),
+        animationSpec = tween(200),
+        label = "swipe_bg"
+    )
+    val iconColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.onErrorContainer
+        else MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
+        animationSpec = tween(200),
+        label = "swipe_icon"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
+            .padding(end = 20.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector        = Icons.Default.Delete,
+                contentDescription = "Eliminar producto",
+                tint               = iconColor,
+                modifier           = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text  = "Eliminar",
+                color = iconColor,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+// ── Fila de producto (sin cambios visuales respecto al original) ──────────────
+
 @Composable
 private fun ProductoRow(p: Producto) {
     Surface(
@@ -181,6 +321,11 @@ private fun ProductoRow(p: Producto) {
                 Text("Cód: ${p.codigo}  ·  x${p.cantidad}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline)
+                if (p.descripcion.isNotBlank()) {
+                    Text(p.descripcion,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                }
             }
             Surface(
                 shape = RoundedCornerShape(8.dp),

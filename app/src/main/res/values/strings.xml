@@ -91,4 +91,12 @@
     <string name="aceptar">Aceptar</string>
     <string name="volver">Volver</string>
     <string name="productos">productos</string>
+
+    <!-- ── Detalle de compra ─────────────────────────────────── -->
+    <string name="swipe_para_eliminar">← deslizá para eliminar</string>
+
+    <!-- ── Diálogo eliminar producto ───────────────────────────── -->
+    <string name="eliminar_producto_titulo">¿Eliminar producto?</string>
+    <string name="eliminar_producto_mensaje">¿Estás seguro de que querés eliminar "%1$s" de esta compra?</string>
+    <string name="eliminar_confirmar">Eliminar</string>
 </resources>
