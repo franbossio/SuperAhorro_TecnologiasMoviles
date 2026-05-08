@@ -1,6 +1,5 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.login
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,10 +33,11 @@ import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    vm                : LoginViewModel = viewModel(),
-    onLoginExitoso    : () -> Unit = {},
-    onRegistrarseClick: () -> Unit = {},
-    onBackClick       : () -> Unit = {}
+    vm                    : LoginViewModel = viewModel(),
+    onLoginExitoso        : () -> Unit = {},
+    onRegistrarseClick    : () -> Unit = {},
+    onBackClick           : () -> Unit = {},
+    onOlvidoPasswordClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     var email       by remember { mutableStateOf("") }
@@ -62,38 +62,38 @@ fun LoginScreen(
 
             // ── Heading ───────────────────────────────────────────────────
             Text(
-                text      = "Bienvenidos",
-                fontSize  = 36.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color     = MaterialTheme.colorScheme.onSurface,
+                text          = "Bienvenidos",
+                fontSize      = 36.sp,
+                fontWeight    = FontWeight.ExtraBold,
+                color         = MaterialTheme.colorScheme.onSurface,
                 letterSpacing = (-0.72).sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text  = "Empezá a ahorrar en tu próxima compra",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
+                text      = "Empezá a ahorrar en tu próxima compra",
+                style     = MaterialTheme.typography.bodyMedium,
+                color     = MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.widthIn(max = 280.dp)
+                modifier  = Modifier.widthIn(max = 280.dp)
             )
 
             Spacer(Modifier.height(32.dp))
 
             // ── Form Card ─────────────────────────────────────────────────
             Surface(
-                modifier  = Modifier.fillMaxWidth(),
-                shape     = RoundedCornerShape(16.dp),
-                color     = Color(0xFFFFFFFF),
-                tonalElevation = 0.dp,
+                modifier        = Modifier.fillMaxWidth(),
+                shape           = RoundedCornerShape(16.dp),
+                color           = Color(0xFFFFFFFF),
+                tonalElevation  = 0.dp,
                 shadowElevation = 1.dp,
-                border    = CardDefaults.outlinedCardBorder().copy(
+                border          = CardDefaults.outlinedCardBorder().copy(
                     brush = androidx.compose.ui.graphics.SolidColor(
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                     )
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier            = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Email
@@ -124,7 +124,7 @@ fun LoginScreen(
                             modifier      = Modifier.fillMaxWidth(),
                             singleLine    = true,
                             visualTransformation = if (verPassword) VisualTransformation.None
-                                                   else PasswordVisualTransformation(),
+                            else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             shape         = RoundedCornerShape(12.dp),
                             isError       = uiState is UiState.Error,
@@ -151,10 +151,13 @@ fun LoginScreen(
                         )
                     }
 
-                    TextButton(onClick = {}, modifier = Modifier.align(Alignment.End)) {
+                    TextButton(
+                        onClick  = onOlvidoPasswordClick,
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
                         Text(
                             stringResource(R.string.login_olvide_password),
-                            color = MaterialTheme.colorScheme.primary,
+                            color    = MaterialTheme.colorScheme.primary,
                             fontSize = 14.sp
                         )
                     }
@@ -166,7 +169,9 @@ fun LoginScreen(
                         }
                         else -> Button(
                             onClick   = { vm.login(email, password, onLoginExitoso) },
-                            modifier  = Modifier.fillMaxWidth().height(52.dp),
+                            modifier  = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
                             shape     = RoundedCornerShape(12.dp),
                             colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
@@ -186,7 +191,7 @@ fun LoginScreen(
             TextButton(onClick = onRegistrarseClick) {
                 Text(
                     stringResource(R.string.login_sin_cuenta),
-                    color = MaterialTheme.colorScheme.primary,
+                    color      = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
             }

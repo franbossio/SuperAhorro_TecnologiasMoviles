@@ -13,6 +13,7 @@ import com.undef.superahorro.BossioCorrea.ui.screens.compras.nueva.NuevaCompraSc
 import com.undef.superahorro.BossioCorrea.ui.screens.estadisticas.EstadisticasScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.home.HomeScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.login.LoginScreen
+import com.undef.superahorro.BossioCorrea.ui.screens.olvidopassword.OlvidoPasswordScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.perfil.PerfilScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.productos.nuevo.NuevoProductoScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.register.RegisterScreen
@@ -40,13 +41,14 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
         // ── Auth ────────────────────────────────────────────────────────────
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoginExitoso     = {
+                onLoginExitoso        = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
                 },
-                onRegistrarseClick = { navController.navigate(Routes.REGISTER) },
-                onBackClick        = { navController.popBackStack() }
+                onRegistrarseClick    = { navController.navigate(Routes.REGISTER) },
+                onBackClick           = { navController.popBackStack() },
+                onOlvidoPasswordClick = { navController.navigate(Routes.OLVIDO_PASSWORD) }
             )
         }
 
@@ -59,6 +61,17 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
                 },
                 onLoginClick  = { navController.popBackStack() },
                 onBackClick   = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.OLVIDO_PASSWORD) {
+            OlvidoPasswordScreen(
+                onBackClick   = { navController.popBackStack() },
+                onVolverLogin = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.OLVIDO_PASSWORD) { inclusive = true }
+                    }
+                }
             )
         }
 
