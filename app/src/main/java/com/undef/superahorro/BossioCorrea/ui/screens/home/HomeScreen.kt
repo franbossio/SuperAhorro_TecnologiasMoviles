@@ -1,20 +1,21 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.home
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,9 +28,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
-import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
-import com.undef.superahorro.BossioCorrea.ui.theme.StitchPrimary
-import com.undef.superahorro.BossioCorrea.ui.theme.StitchPrimaryContainer
+import com.undef.superahorro.BossioCorrea.ui.theme.*
+
+// ─── Colores locales del Home ──────────────────────────────────────────────────
+private val CardBg       = Color(0xFFFFFFFF)
+private val CardBorder   = Color(0xFFBBCABF).copy(alpha = 0.35f)
+private val HeroBgTop    = Color(0xFF006C49)
+private val HeroBgBottom = Color(0xFF00A066)
+private val BadgeBg      = Color(0xFFE8F7F1)
+private val BadgeText    = Color(0xFF005236)
+
+// ─── Datos del mini chart ──────────────────────────────────────────────────────
+private val barHeights = listOf(0.38f, 0.55f, 0.45f, 0.72f, 0.60f, 0.88f, 0.70f)
+private val barDays    = listOf("L", "M", "X", "J", "V", "S", "D")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,202 +55,520 @@ fun HomeScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
+    // Animación pulsante sutil para el botón principal
+    val pulse = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by pulse.animateFloat(
+        initialValue = 0.25f, targetValue = 0.45f,
+        animationSpec = infiniteRepeatable(tween(1100, easing = EaseInOutSine), RepeatMode.Reverse),
+        label = "pulseAlpha"
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("SUPER AHORRO", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.primary, letterSpacing = (-0.3).sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ShoppingCart, null,
+                                tint = Color.White, modifier = Modifier.size(17.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(9.dp))
+                        Text(
+                            "SUPER AHORRO",
+                            fontWeight = FontWeight.ExtraBold, fontSize = 17.sp,
+                            color = StitchPrimary, letterSpacing = (-0.3).sp
+                        )
+                    }
                 },
                 actions = {
+                    Box {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.Notifications, null, tint = StitchOutline)
+                        }
+                        // Badge rojo
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-10).dp, y = 10.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE53935))
+                        )
+                    }
                     IconButton(onClick = onPerfilClick) {
-                        Icon(Icons.Default.Person, null, tint = MaterialTheme.colorScheme.outline)
+                        Icon(Icons.Default.Person, null, tint = StitchOutline)
                     }
                     IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.outline)
+                        Icon(Icons.Default.Settings, null, tint = StitchOutline)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF8FAFC)
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAFC))
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = StitchBackground
     ) { padding ->
 
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator(color = StitchPrimary)
             }
-            is UiState.Error   -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+            is UiState.Error -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
                 Text(stringResource(R.string.error_generico))
             }
             is UiState.Success -> {
                 val data = state.data
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Spacer(Modifier.height(4.dp))
 
-                    // ── Welcome header ────────────────────────────────────
-                    Column {
-                        LabelCaps("Bienvenido")
-                        Spacer(Modifier.height(4.dp))
-                        Text(data.saludo, fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
-                    }
-
-                    // Total spent card con gradiente suave
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape    = RoundedCornerShape(16.dp),
-                        color    = Color(0xFFFFFFFF),
-                        shadowElevation = 1.dp,
-                        border = CardDefaults.outlinedCardBorder().copy(
-                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                        )
+                    // ═══════════════════════════════════════════════════════
+                    //  HERO CARD — gradiente verde
+                    // ═══════════════════════════════════════════════════════
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
-                                Column {
-                                    LabelCaps("TOTAL GASTADO ESTE MES")
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        text = "$ %,.2f".format(data.gastoMes),
-                                        fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        letterSpacing = (-0.56).sp
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(HeroBgTop, HeroBgBottom, Color(0xFF00C27A)),
+                                        start  = Offset(0f, 0f),
+                                        end    = Offset(900f, 550f)
                                     )
-                                }
-                                Surface(
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                )
+                        ) {
+                            // Círculos decorativos
+                            Box(
+                                modifier = Modifier
+                                    .size(160.dp)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 40.dp, y = (-40).dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.08f))
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(90.dp)
+                                    .align(Alignment.BottomStart)
+                                    .offset(x = (-25).dp, y = 25.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.06f))
+                            )
+
+                            Column(modifier = Modifier.padding(22.dp)) {
+                                // Fila superior: saludo + badge compras
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    Arrangement.SpaceBetween, Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    Column {
+                                        Text(
+                                            "Hola, ${data.saludo.substringBefore(" ")} 👋",
+                                            fontSize   = 15.sp,
+                                            color      = Color.White.copy(alpha = 0.85f),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        Text(
+                                            "Tu resumen del mes",
+                                            fontSize = 13.sp,
+                                            color    = Color.White.copy(alpha = 0.58f)
+                                        )
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(Color.White.copy(alpha = 0.18f))
+                                            .padding(horizontal = 12.dp, vertical = 5.dp)
                                     ) {
-                                        Icon(Icons.Default.TrendingUp, null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(16.dp))
-                                        Text("${data.cantidadCompras} compras",
-                                            color = MaterialTheme.colorScheme.primary,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.ShoppingBag, null,
+                                                tint = Color.White, modifier = Modifier.size(14.dp)
+                                            )
+                                            Text(
+                                                "${data.cantidadCompras} compras",
+                                                color      = Color.White, fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(Modifier.height(16.dp))
+
+                                // Monto total
+                                Text(
+                                    "$ %,.2f".format(data.gastoMes),
+                                    fontSize      = 36.sp,
+                                    fontWeight    = FontWeight.ExtraBold,
+                                    color         = Color.White,
+                                    letterSpacing = (-0.72).sp
+                                )
+                                Text(
+                                    "Gasto total del mes",
+                                    fontSize = 13.sp, color = Color.White.copy(alpha = 0.62f)
+                                )
+
+                                Spacer(Modifier.height(20.dp))
+
+                                // Mini bar chart semanal
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                    verticalAlignment     = Alignment.Bottom
+                                ) {
+                                    barHeights.forEachIndexed { i, h ->
+                                        val isLast = i == barHeights.lastIndex
+                                        Column(
+                                            modifier            = Modifier.weight(1f),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Bottom
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height((44 * h).dp)
+                                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                                    .background(
+                                                        if (isLast) Color.White.copy(alpha = 0.95f)
+                                                        else Color.White.copy(alpha = 0.28f)
+                                                    )
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                barDays[i],
+                                                fontSize   = 9.sp,
+                                                color      = if (isLast) Color.White else Color.White.copy(.50f),
+                                                fontWeight = if (isLast) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        }
                                     }
                                 }
                             }
-                            Spacer(Modifier.height(16.dp))
-                            // Mini gráfico de barras decorativo
+                        }
+                    }
+
+                    // ═══════════════════════════════════════════════════════
+                    //  ACCIONES RÁPIDAS
+                    // ═══════════════════════════════════════════════════════
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        LabelCaps("Acciones rápidas")
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            QuickActionCard(
+                                modifier    = Modifier.weight(1f),
+                                icon        = Icons.Default.ListAlt,
+                                label       = stringResource(R.string.home_mis_compras),
+                                accentColor = Color(0xFF1565C0),
+                                bgColor     = Color(0xFFE8EEF9),
+                                onClick     = onListadoClick
+                            )
+                            QuickActionCard(
+                                modifier    = Modifier.weight(1f),
+                                icon        = Icons.Default.CalendarMonth,
+                                label       = stringResource(R.string.home_historial),
+                                accentColor = Color(0xFF6A1B9A),
+                                bgColor     = Color(0xFFF3E5F5),
+                                onClick     = onHistorialClick
+                            )
+                            QuickActionCard(
+                                modifier    = Modifier.weight(1f),
+                                icon        = Icons.Default.BarChart,
+                                label       = stringResource(R.string.home_estadisticas),
+                                accentColor = Color(0xFFE65100),
+                                bgColor     = Color(0xFFFFF3E0),
+                                onClick     = onEstadisticasClick
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(18.dp))
+
+                    // ═══════════════════════════════════════════════════════
+                    //  BOTÓN NUEVA COMPRA con glow pulsante
+                    // ═══════════════════════════════════════════════════════
+                    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                        // Glow animado
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.92f)
+                                .height(56.dp)
+                                .align(Alignment.BottomCenter)
+                                .offset(y = 8.dp)
+                                .blur(20.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(StitchPrimary.copy(alpha = pulseAlpha))
+                        )
+                        Button(
+                            onClick   = onNuevaCompraClick,
+                            modifier  = Modifier.fillMaxWidth().height(56.dp),
+                            shape     = RoundedCornerShape(16.dp),
+                            colors    = ButtonDefaults.buttonColors(
+                                containerColor = StitchPrimary,
+                                contentColor   = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(4.dp)
+                        ) {
+                            Icon(Icons.Default.AddShoppingCart, null, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                stringResource(R.string.home_nueva_compra),
+                                fontWeight = FontWeight.Bold, fontSize = 16.sp
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(18.dp))
+
+                    // ═══════════════════════════════════════════════════════
+                    //  ÚLTIMA COMPRA
+                    // ═══════════════════════════════════════════════════════
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            Arrangement.SpaceBetween, Alignment.CenterVertically
+                        ) {
+                            LabelCaps("Última compra")
+                            TextButton(onClick = onListadoClick, contentPadding = PaddingValues(0.dp)) {
+                                Text(
+                                    "Ver todas →", color = StitchPrimary,
+                                    fontSize = 12.sp, fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(4.dp, RoundedCornerShape(18.dp), ambientColor = StitchPrimary.copy(.08f))
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(CardBg)
+                                .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
+                                .clickable { onListadoClick() }
+                                .padding(16.dp)
+                        ) {
                             Row(
-                                Modifier.fillMaxWidth().height(48.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.Bottom
+                                Modifier.fillMaxWidth(),
+                                Arrangement.SpaceBetween, Alignment.CenterVertically
                             ) {
-                                val heights = listOf(0.4f, 0.6f, 0.5f, 0.8f, 0.65f, 0.9f, 0.7f)
-                                heights.forEach { h ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(
                                         modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxHeight(h)
-                                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                                            .size(52.dp)
+                                            .clip(RoundedCornerShape(14.dp))
                                             .background(
-                                                Brush.verticalGradient(
-                                                    listOf(
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                    )
+                                                Brush.linearGradient(
+                                                    listOf(StitchPrimary.copy(.12f), StitchPrimary.copy(.05f))
                                                 )
-                                            )
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Storefront, null,
+                                            tint = StitchPrimary, modifier = Modifier.size(26.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            data.ultimoSuper,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize   = 16.sp,
+                                            color      = StitchOnBackground
+                                        )
+                                        Text(
+                                            data.ultimaFecha,
+                                            fontSize = 13.sp, color = StitchOutline
+                                        )
+                                        Spacer(Modifier.height(5.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(20.dp))
+                                                .background(BadgeBg)
+                                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Box(
+                                                    Modifier.size(6.dp).clip(CircleShape)
+                                                        .background(BadgeText)
+                                                )
+                                                Text(
+                                                    "Completada",
+                                                    fontSize   = 10.sp, color = BadgeText,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        "$ %,.0f".format(data.ultimoTotal),
+                                        fontSize      = 20.sp,
+                                        fontWeight    = FontWeight.ExtraBold,
+                                        color         = StitchPrimary
+                                    )
+                                    Icon(
+                                        Icons.Default.ChevronRight, null,
+                                        tint = StitchOutline, modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
                         }
                     }
 
-                    // ── Última compra card ────────────────────────────────
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().clickable { onListadoClick() },
-                        shape    = RoundedCornerShape(16.dp),
-                        color    = Color(0xFFFFFFFF),
-                        shadowElevation = 1.dp,
-                        border = CardDefaults.outlinedCardBorder().copy(
-                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                        )
-                    ) {
+                    Spacer(Modifier.height(18.dp))
+
+                    // ═══════════════════════════════════════════════════════
+                    //  KPIs — 3 tarjetas pequeñas
+                    // ═══════════════════════════════════════════════════════
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        LabelCaps("Resumen de actividad")
+                        Spacer(Modifier.height(10.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Column {
-                                LabelCaps(stringResource(R.string.home_ultima_compra))
-                                Spacer(Modifier.height(4.dp))
-                                Text(data.ultimoSuper, style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(data.ultimaFecha, style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline)
-                            }
-                            Text("$ %,.0f".format(data.ultimoTotal),
-                                fontSize = 22.sp, fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary)
+                            KpiCard(
+                                modifier = Modifier.weight(1f),
+                                icon     = Icons.Default.ShoppingCart,
+                                valor    = "${data.cantidadCompras}",
+                                label    = "Compras",
+                                iconBg   = Color(0xFFE8F7F1),
+                                iconTint = StitchPrimary
+                            )
+                            KpiCard(
+                                modifier = Modifier.weight(1f),
+                                icon     = Icons.Default.Payments,
+                                valor    = "$ %,.0f".format(
+                                    if (data.cantidadCompras > 0) data.gastoMes / data.cantidadCompras else 0.0
+                                ),
+                                label    = "Promedio",
+                                iconBg   = Color(0xFFE8EEF9),
+                                iconTint = Color(0xFF1565C0)
+                            )
+                            KpiCard(
+                                modifier = Modifier.weight(1f),
+                                icon     = Icons.Default.TrendingDown,
+                                valor    = "15%",
+                                label    = "Ahorro",
+                                iconBg   = Color(0xFFFFF3E0),
+                                iconTint = Color(0xFFE65100)
+                            )
                         }
                     }
 
-                    // ── Botón nueva compra ────────────────────────────────
-                    Button(
-                        onClick   = onNuevaCompraClick,
-                        modifier  = Modifier.fillMaxWidth().height(56.dp),
-                        shape     = RoundedCornerShape(14.dp),
-                        colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        elevation = ButtonDefaults.buttonElevation(4.dp)
-                    ) {
-                        Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.home_nueva_compra),
-                            fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    }
-
-                    // ── Quick access grid ─────────────────────────────────
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        QuickCard(Modifier.weight(1f), "📋", stringResource(R.string.home_mis_compras), onListadoClick)
-                        QuickCard(Modifier.weight(1f), "📅", stringResource(R.string.home_historial), onHistorialClick)
-                        QuickCard(Modifier.weight(1f), "📊", stringResource(R.string.home_estadisticas), onEstadisticasClick)
-                    }
-
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(32.dp))
                 }
             }
         }
     }
 }
 
+// ─── Quick Action Card ─────────────────────────────────────────────────────────
 @Composable
-private fun QuickCard(modifier: Modifier, emoji: String, label: String, onClick: () -> Unit) {
-    Surface(
-        modifier = modifier.clickable { onClick() },
-        shape    = RoundedCornerShape(14.dp),
-        color    = Color(0xFFFFFFFF),
-        shadowElevation = 1.dp,
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-        )
+private fun QuickActionCard(
+    modifier    : Modifier,
+    icon        : ImageVector,
+    label       : String,
+    accentColor : Color,
+    bgColor     : Color,
+    onClick     : () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .shadow(3.dp, RoundedCornerShape(16.dp), ambientColor = accentColor.copy(.10f))
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(1.dp, accentColor.copy(.12f), RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+            .padding(vertical = 14.dp, horizontal = 8.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier.fillMaxWidth()
         ) {
-            Text(emoji, fontSize = 28.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface)
+            Box(
+                modifier         = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(bgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = accentColor, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.height(7.dp))
+            Text(
+                label,
+                fontSize   = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color      = StitchOnSurface,
+                textAlign  = TextAlign.Center,
+                maxLines   = 2,
+                lineHeight = 14.sp
+            )
+        }
+    }
+}
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
+@Composable
+private fun KpiCard(
+    modifier : Modifier,
+    icon     : ImageVector,
+    valor    : String,
+    label    : String,
+    iconBg   : Color,
+    iconTint : Color
+) {
+    Box(
+        modifier = modifier
+            .shadow(2.dp, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White)
+            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+            .padding(12.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box(
+                modifier         = Modifier
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(iconBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(17.dp))
+            }
+            Text(valor, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = StitchOnSurface)
+            Text(label, fontSize = 11.sp, color = StitchOutline, fontWeight = FontWeight.Medium)
         }
     }
 }
