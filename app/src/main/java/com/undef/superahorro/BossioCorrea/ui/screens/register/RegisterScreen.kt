@@ -43,7 +43,8 @@ fun RegisterScreen(
     var email       by remember { mutableStateOf("") }
     var password    by remember { mutableStateOf("") }
     var confirmar   by remember { mutableStateOf("") }
-    var verPassword by remember { mutableStateOf(false) }
+    var verPassword  by remember { mutableStateOf(false) }
+    var verConfirmar by remember { mutableStateOf(false) }
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor   = MaterialTheme.colorScheme.primary,
@@ -134,11 +135,22 @@ fun RegisterScreen(
                     // Confirmar
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         LabelCaps("CONFIRMAR CONTRASEÑA")
-                        OutlinedTextField(value = confirmar, onValueChange = { confirmar = it },
+                        OutlinedTextField(
+                            value = confirmar, onValueChange = { confirmar = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
+                            visualTransformation = if (verConfirmar) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors,
+                            trailingIcon = {
+                                IconButton(onClick = { verConfirmar = !verConfirmar }) {
+                                    Icon(
+                                        if (verConfirmar) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = if (verConfirmar) "Ocultar contraseña" else "Ver contraseña",
+                                        tint = MaterialTheme.colorScheme.outline
+                                    )
+                                }
+                            }
+                        )
                     }
 
                     if (uiState is UiState.Error) {
