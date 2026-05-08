@@ -26,6 +26,7 @@
 
     <string name="register_nombre">First Name</string>
     <string name="register_nombre_Error">Enter your name</string>
+    <string name="register_empeza">Start saving on your next purchase</string>
     <string name="register_email_error">Enter your email</string>
     <string name="register_contraseña_error">Password must be at least 6 characters</string>
     <string name="register_contraseña_diferentes">Passwords do not match</string>

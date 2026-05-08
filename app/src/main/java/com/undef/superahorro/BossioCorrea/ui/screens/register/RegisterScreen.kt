@@ -68,7 +68,7 @@ fun RegisterScreen(
             Text(stringResource(R.string.register_btn_crear), fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
             Spacer(Modifier.height(4.dp))
-            Text("Empezá a ahorrar en tu próxima compra",
+            Text(stringResource(R.string.register_empeza),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline)
 
