@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -117,26 +118,23 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // ── Logo clickeable — abre el sheet igual que MP ──
+
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(
-                                    Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
-                                )
                                 .clickable { showSheet = true },   // ← AQUÍ abre el sheet
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.ShoppingCart, null,
-                                tint     = Color.White,
-                                modifier = Modifier.size(17.dp)
+                            Image(
+                                painter            = painterResource(R.drawable.logo_sin_letra),
+                                contentDescription = "Logo Super Ahorro",
+                                modifier           = Modifier.size(110.dp)
                             )
                         }
                         Spacer(Modifier.width(9.dp))
                         Text(
-                            "SUPER AHORRO",
+                            stringResource(R.string.app_name_mayuscula),
                             fontWeight    = FontWeight.ExtraBold,
                             fontSize      = 17.sp,
                             color         = StitchPrimary,
