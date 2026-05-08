@@ -116,7 +116,7 @@ fun ListadoComprasScreen(
                 ) { Text("Cancelar") }
             },
             shape          = RoundedCornerShape(20.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     }
 
@@ -196,8 +196,8 @@ fun ListadoComprasScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor    = CardBorder,
                                 focusedBorderColor      = StitchPrimary,
-                                focusedContainerColor   = Color.White,
-                                unfocusedContainerColor = Color.White
+                                focusedContainerColor   = MaterialTheme.colorScheme.surfaceContainerLow,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
                             ),
                             singleLine = true
                         )
@@ -481,7 +481,7 @@ fun CompraCard(compra: Compra, onClick: () -> Unit = {}) {
     Surface(
         modifier        = Modifier.fillMaxWidth().clickable { onClick() },
         shape           = RoundedCornerShape(14.dp),
-        color           = Color(0xFFFFFFFF),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
         shadowElevation = 1.dp,
         border          = CardDefaults.outlinedCardBorder().copy(
             brush = SolidColor(CardBorder)

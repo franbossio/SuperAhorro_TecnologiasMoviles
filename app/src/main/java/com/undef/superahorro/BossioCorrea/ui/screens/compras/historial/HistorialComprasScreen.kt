@@ -97,7 +97,7 @@ fun HistorialComprasScreen(
                 ) { Text(stringResource(R.string.cancelar)) }
             },
             shape          = RoundedCornerShape(20.dp),
-            containerColor = Color(0xFFFFFFFF)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     }
 
@@ -153,7 +153,7 @@ fun HistorialComprasScreen(
                             Surface(
                                 modifier        = Modifier.fillMaxWidth(),
                                 shape           = RoundedCornerShape(16.dp),
-                                color           = Color(0xFFFFFFFF),
+                                color           = MaterialTheme.colorScheme.surfaceContainerLow,
                                 shadowElevation = 1.dp,
                                 border          = CardDefaults.outlinedCardBorder().copy(
                                     brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
@@ -334,7 +334,7 @@ private fun AnioSelector(
     Surface(
         modifier        = Modifier.fillMaxWidth(),
         shape           = RoundedCornerShape(14.dp),
-        color           = Color(0xFFFFFFFF),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
         shadowElevation = 1.dp,
         border          = CardDefaults.outlinedCardBorder().copy(
             brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
@@ -494,7 +494,7 @@ private fun HistorialRow(compra: Compra, onClick: () -> Unit) {
     Surface(
         modifier        = Modifier.fillMaxWidth().clickable { onClick() },
         shape           = RoundedCornerShape(14.dp),
-        color           = Color(0xFFFFFFFF),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
         shadowElevation = 1.dp,
         border          = CardDefaults.outlinedCardBorder().copy(
             brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))

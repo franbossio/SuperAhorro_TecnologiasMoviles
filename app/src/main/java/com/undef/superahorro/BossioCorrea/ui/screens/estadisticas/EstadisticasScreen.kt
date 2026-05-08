@@ -131,7 +131,7 @@ fun EstadisticasScreen(
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape    = RoundedCornerShape(16.dp),
-                            color    = Color(0xFFFFFFFF),
+                            color    = MaterialTheme.colorScheme.surfaceContainerLow,
                             shadowElevation = 1.dp,
                             border   = CardDefaults.outlinedCardBorder().copy(
                                 brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
@@ -272,7 +272,7 @@ private fun EvolucionMensualCard() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
-        color    = Color(0xFFFFFFFF),
+        color    = MaterialTheme.colorScheme.surfaceContainerLow,
         shadowElevation = 1.dp,
         border   = CardDefaults.outlinedCardBorder().copy(
             brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
@@ -354,7 +354,7 @@ private fun TopProductosCard(topProductos: List<Pair<String, Int>>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
-        color    = Color(0xFFFFFFFF),
+        color    = MaterialTheme.colorScheme.surfaceContainerLow,
         shadowElevation = 1.dp,
         border   = CardDefaults.outlinedCardBorder().copy(
             brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))

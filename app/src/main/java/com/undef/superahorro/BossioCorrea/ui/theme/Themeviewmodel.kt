@@ -4,17 +4,24 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * ViewModel de ciclo de vida de la aplicación que persiste el modo oscuro
- * mientras la app esté en memoria. En la Segunda Entrega se puede reemplazar
- * el respaldo en memoria por DataStore para que el valor sobreviva reinicios.
- */
 class ThemeViewModel : ViewModel() {
 
+    // El modo oscuro elegido manualmente (solo importa si useSystemTheme = false)
     private val _isDarkMode = MutableStateFlow(false)
     val isDarkMode = _isDarkMode.asStateFlow()
 
+    // Cuando es true, el MainActivity usa isSystemInDarkTheme() del dispositivo
+    private val _useSystemTheme = MutableStateFlow(true)  // por defecto respeta el sistema
+    val useSystemTheme = _useSystemTheme.asStateFlow()
+
+    /** Llamado desde SettingsScreen cuando el usuario elige Claro u Oscuro manualmente */
     fun setDarkMode(enabled: Boolean) {
-        _isDarkMode.value = enabled
+        _useSystemTheme.value = false
+        _isDarkMode.value     = enabled
+    }
+
+    /** Llamado desde SettingsScreen cuando el usuario elige "Sistema" */
+    fun setSystemTheme() {
+        _useSystemTheme.value = true
     }
 }

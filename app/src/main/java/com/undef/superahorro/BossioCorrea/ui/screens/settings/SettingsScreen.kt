@@ -34,13 +34,20 @@ fun SettingsScreen(
     themeViewModel : ThemeViewModel,
     onBackClick    : () -> Unit = {}
 ) {
-    val isDark by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
+    val isDark          by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
+    val useSystemTheme  by themeViewModel.useSystemTheme.collectAsStateWithLifecycle()
     var notificaciones by remember { mutableStateOf(true) }
 
     // Modo actual derivado del estado real del ViewModel
     // (SYSTEM no se persiste aún en este mock, pero el selector lo muestra)
-    var themeMode by remember(isDark) {
-        mutableStateOf(if (isDark) ThemeMode.DARK else ThemeMode.LIGHT)
+    var themeMode by remember(isDark, useSystemTheme) {
+        mutableStateOf(
+            when {
+                useSystemTheme -> ThemeMode.SYSTEM
+                isDark         -> ThemeMode.DARK
+                else           -> ThemeMode.LIGHT
+            }
+        )
     }
 
     Scaffold(
@@ -130,7 +137,7 @@ fun SettingsScreen(
                                 ThemeMode.LIGHT  -> themeViewModel.setDarkMode(false)
                                 ThemeMode.DARK   -> themeViewModel.setDarkMode(true)
                                 // SYSTEM: respeta el sistema → usar isSystemInDarkTheme en el futuro
-                                ThemeMode.SYSTEM -> themeViewModel.setDarkMode(false)
+                                ThemeMode.SYSTEM -> themeViewModel.setSystemTheme()
                             }
                         }
                     )

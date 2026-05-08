@@ -63,8 +63,8 @@ fun PerfilScreen(
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor      = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
-        focusedContainerColor   = Color(0xFFFFFFFF),
-        unfocusedContainerColor = Color(0xFFF2F4F6)
+        focusedContainerColor   = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
     )
 
     if (showLogoutDialog) {
@@ -145,7 +145,7 @@ fun PerfilScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape    = RoundedCornerShape(16.dp),
-                color    = Color(0xFFFFFFFF),
+                color    = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 1.dp,
                 border   = CardDefaults.outlinedCardBorder().copy(
                     brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))

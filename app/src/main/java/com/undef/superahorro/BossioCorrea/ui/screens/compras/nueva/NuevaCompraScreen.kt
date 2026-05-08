@@ -95,7 +95,7 @@ fun NuevaCompraScreen(
                 }
             },
             colors = DatePickerDefaults.colors(
-                containerColor = Color(0xFFFFFFFF)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
             shape = RoundedCornerShape(20.dp)
         ) {
@@ -119,7 +119,7 @@ fun NuevaCompraScreen(
         Dialog(onDismissRequest = { showAgregarDialog = false; nuevoSuperNombre = "" }) {
             Surface(
                 shape           = RoundedCornerShape(20.dp),
-                color           = Color(0xFFFFFFFF),
+                color           = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 4.dp
             ) {
                 Column(
@@ -146,8 +146,8 @@ fun NuevaCompraScreen(
                         colors        = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor      = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
-                            focusedContainerColor   = Color(0xFFFFFFFF),
-                            unfocusedContainerColor = Color(0xFFF2F4F6)
+                            focusedContainerColor   = MaterialTheme.colorScheme.surfaceContainerLow,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                         leadingIcon = {
                             Icon(Icons.Default.Store, null, tint = MaterialTheme.colorScheme.primary)
@@ -190,8 +190,8 @@ fun NuevaCompraScreen(
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor    = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor  = MaterialTheme.colorScheme.outlineVariant,
-        focusedContainerColor = Color(0xFFFFFFFF),
-        unfocusedContainerColor = Color(0xFFF2F4F6)
+        focusedContainerColor   = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
     )
 
     Scaffold(
@@ -220,7 +220,7 @@ fun NuevaCompraScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape    = RoundedCornerShape(16.dp),
-                color    = Color(0xFFFFFFFF),
+                color    = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 1.dp,
                 border = CardDefaults.outlinedCardBorder().copy(
                     brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
@@ -284,7 +284,7 @@ fun NuevaCompraScreen(
                             Surface(
                                 modifier        = Modifier.fillMaxWidth().heightIn(max = 220.dp),
                                 shape           = RoundedCornerShape(12.dp),
-                                color           = Color(0xFFFFFFFF),
+                                color           = MaterialTheme.colorScheme.surfaceContainerLow,
                                 shadowElevation = 4.dp,
                                 border          = CardDefaults.outlinedCardBorder().copy(
                                     brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.4f))

@@ -78,7 +78,7 @@ fun RegisterScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape    = RoundedCornerShape(16.dp),
-                color    = Color(0xFFFFFFFF),
+                color    = MaterialTheme.colorScheme.surfaceContainerLow,
                 shadowElevation = 1.dp,
                 border = CardDefaults.outlinedCardBorder().copy(
                     brush = androidx.compose.ui.graphics.SolidColor(
