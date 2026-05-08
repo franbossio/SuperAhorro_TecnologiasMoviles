@@ -168,13 +168,17 @@ fun HomeScreen(
 
         when (val state = uiState) {
             is UiState.Loading -> Box(
-                Modifier.fillMaxSize().padding(padding), Alignment.Center
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding), Alignment.Center
             ) {
                 CircularProgressIndicator(color = StitchPrimary)
             }
 
             is UiState.Error -> Box(
-                Modifier.fillMaxSize().padding(padding), Alignment.Center
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding), Alignment.Center
             ) {
                 Text(stringResource(R.string.error_generico))
             }
@@ -204,8 +208,8 @@ fun HomeScreen(
                                 .background(
                                     Brush.linearGradient(
                                         colors = listOf(HeroBgTop, HeroBgBottom, Color(0xFF00C27A)),
-                                        start  = Offset(0f, 0f),
-                                        end    = Offset(900f, 550f)
+                                        start = Offset(0f, 0f),
+                                        end = Offset(900f, 550f)
                                     )
                                 )
                         ) {
@@ -239,7 +243,7 @@ fun HomeScreen(
                                             fontWeight = FontWeight.Medium
                                         )
                                         Text(
-                                            "Tu resumen del mes",
+                                            stringResource(R.string.resumen),
                                             fontSize = 13.sp,
                                             color    = Color.White.copy(alpha = 0.58f)
                                         )
@@ -278,7 +282,7 @@ fun HomeScreen(
                                     letterSpacing = (-0.72).sp
                                 )
                                 Text(
-                                    "Gasto total del mes",
+                                    stringResource(R.string.home_gasto_mes),
                                     fontSize = 13.sp,
                                     color    = Color.White.copy(alpha = 0.62f)
                                 )
@@ -301,7 +305,12 @@ fun HomeScreen(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .height((44 * h).dp)
-                                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                                    .clip(
+                                                        RoundedCornerShape(
+                                                            topStart = 4.dp,
+                                                            topEnd = 4.dp
+                                                        )
+                                                    )
                                                     .background(
                                                         if (isLast) Color.White.copy(alpha = 0.95f)
                                                         else Color.White.copy(alpha = 0.28f)
@@ -325,7 +334,7 @@ fun HomeScreen(
                     //  ACCIONES RÁPIDAS
                     // ══════════════════════════════════════════════════════
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        LabelCaps("Acciones rápidas")
+                        LabelCaps(stringResource(R.string.home_acciones_rapidas))
                         Spacer(Modifier.height(10.dp))
                         Row(
                             Modifier.fillMaxWidth(),
@@ -363,7 +372,9 @@ fun HomeScreen(
                     // ══════════════════════════════════════════════════════
                     //  BOTÓN NUEVA COMPRA con glow pulsante
                     // ══════════════════════════════════════════════════════
-                    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.92f)
@@ -376,7 +387,9 @@ fun HomeScreen(
                         )
                         Button(
                             onClick   = onNuevaCompraClick,
-                            modifier  = Modifier.fillMaxWidth().height(56.dp),
+                            modifier  = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
                             shape     = RoundedCornerShape(16.dp),
                             colors    = ButtonDefaults.buttonColors(
                                 containerColor = StitchPrimary,
@@ -403,7 +416,7 @@ fun HomeScreen(
                             Modifier.fillMaxWidth(),
                             Arrangement.SpaceBetween, Alignment.CenterVertically
                         ) {
-                            LabelCaps("Última compra")
+                            LabelCaps(stringResource(R.string.home_ultima_compra))
                             TextButton(onClick = onListadoClick, contentPadding = PaddingValues(0.dp)) {
                                 Text(
                                     "Ver todas →", color = StitchPrimary,
@@ -416,7 +429,11 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(4.dp, RoundedCornerShape(18.dp), ambientColor = StitchPrimary.copy(.08f))
+                                .shadow(
+                                    4.dp,
+                                    RoundedCornerShape(18.dp),
+                                    ambientColor = StitchPrimary.copy(.08f)
+                                )
                                 .clip(RoundedCornerShape(18.dp))
                                 .background(CardBg)
                                 .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
@@ -434,7 +451,10 @@ fun HomeScreen(
                                             .clip(RoundedCornerShape(14.dp))
                                             .background(
                                                 Brush.linearGradient(
-                                                    listOf(StitchPrimary.copy(.12f), StitchPrimary.copy(.05f))
+                                                    listOf(
+                                                        StitchPrimary.copy(.12f),
+                                                        StitchPrimary.copy(.05f)
+                                                    )
                                                 )
                                             ),
                                         contentAlignment = Alignment.Center
@@ -465,7 +485,10 @@ fun HomeScreen(
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 Box(
-                                                    Modifier.size(6.dp).clip(CircleShape).background(BadgeText)
+                                                    Modifier
+                                                        .size(6.dp)
+                                                        .clip(CircleShape)
+                                                        .background(BadgeText)
                                                 )
                                                 Text(
                                                     "Completada", fontSize = 10.sp,
