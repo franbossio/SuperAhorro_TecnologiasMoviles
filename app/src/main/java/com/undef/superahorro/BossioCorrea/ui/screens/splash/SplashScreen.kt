@@ -161,7 +161,7 @@ fun SplashScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter            = painterResource(R.drawable.logo),
+                        painter            = painterResource(R.drawable.logo_sin_letra),
                         contentDescription = "Logo Super Ahorro",
                         modifier           = Modifier.size(110.dp)
                     )
