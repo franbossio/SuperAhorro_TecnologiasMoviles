@@ -53,10 +53,10 @@ fun SplashScreen(
         label = "ty"
     )
 
-    val infinite = rememberInfiniteTransition(label = "glow")
+    val infinite = rememberInfiniteTransition(label = "pulse")
     val glowAlpha by infinite.animateFloat(
-        initialValue  = 0.05f, targetValue = 0.12f,
-        animationSpec = infiniteRepeatable(tween(1800), RepeatMode.Reverse),
+        initialValue  = 0.18f, targetValue = 0.32f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = EaseInOutSine), RepeatMode.Reverse),
         label = "glow"
     )
     val iconScale by infinite.animateFloat(
@@ -64,65 +64,100 @@ fun SplashScreen(
         animationSpec = infiniteRepeatable(tween(1800), RepeatMode.Reverse),
         label = "scale"
     )
+    // Blob flotante secundario
+    val blobOffset by infinite.animateFloat(
+        initialValue  = 0f, targetValue = 18f,
+        animationSpec = infiniteRepeatable(tween(3000, easing = EaseInOutSine), RepeatMode.Reverse),
+        label = "blob"
+    )
 
     val primary = MaterialTheme.colorScheme.primary   // #006c49
-    val surface = MaterialTheme.colorScheme.surface   // #f7f9fb
+    val emerald = Color(0xFF10B981)                   // emerald-500
 
+    // Fondo: verde sólido de punta a punta, con acento esmeralda abajo
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.radialGradient(
-                    colors = listOf(primary.copy(alpha = 0.06f), surface),
-                    radius = 1400f
+                Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0.00f to primary,
+                        0.60f to primary,
+                        1.00f to Color(0xFF004D33)   // verde más oscuro al pie
+                    )
                 )
             )
     ) {
-        // Blob top-left
+
+        // ── Blob decorativo top-left (grande, difuso) ─────────────────────
         Box(
             modifier = Modifier
-                .size(300.dp)
-                .offset((-80).dp, (-80).dp)
+                .size(340.dp)
+                .offset((-90).dp, (-60).dp)
                 .clip(CircleShape)
-                .background(primary.copy(alpha = 0.05f))
-                .blur(60.dp)
-        )
-        // Blob bottom-right
-        Box(
-            modifier = Modifier
-                .size(300.dp)
-                .align(Alignment.BottomEnd)
-                .offset(80.dp, 80.dp)
-                .clip(CircleShape)
-                .background(primary.copy(alpha = 0.05f))
-                .blur(60.dp)
+                .background(emerald.copy(alpha = glowAlpha))
+                .blur(80.dp)
         )
 
+        // ── Blob decorativo bottom-right ──────────────────────────────────
+        Box(
+            modifier = Modifier
+                .size(260.dp)
+                .align(Alignment.BottomEnd)
+                .offset(70.dp, (blobOffset - 40).dp)
+                .clip(CircleShape)
+                .background(primary.copy(alpha = 0.18f))
+                .blur(70.dp)
+        )
+
+        // ── Blob accent central-left ──────────────────────────────────────
+        Box(
+            modifier = Modifier
+                .size(180.dp)
+                .align(Alignment.CenterStart)
+                .offset((-60).dp, (-blobOffset).dp)
+                .clip(CircleShape)
+                .background(emerald.copy(alpha = 0.12f))
+                .blur(50.dp)
+        )
+
+        // ── Contenido principal ───────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 24.dp)
                 .offset(y = translateY.dp)
                 .graphicsLayer(alpha = alpha),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ── Logo ──────────────────────────────────────────────────────
+
+            // ── Logo ───────────────────────────────────────────────────────
             Box(modifier = Modifier.size(140.dp), contentAlignment = Alignment.Center) {
+                // Halo exterior con color
                 Box(
                     modifier = Modifier
-                        .size(160.dp)
+                        .size(170.dp)
                         .clip(CircleShape)
-                        .background(primary.copy(alpha = glowAlpha))
-                        .blur(20.dp)
+                        .background(
+                            Brush.radialGradient(
+                                listOf(emerald.copy(alpha = glowAlpha * 0.8f), Color.Transparent)
+                            )
+                        )
+                        .blur(24.dp)
                 )
+                // Contenedor del logo
                 Box(
                     modifier = Modifier
                         .size(140.dp)
                         .scale(iconScale)
                         .clip(RoundedCornerShape(40.dp))
-                        .background(Color(0xFFFFFFFF))
-                        .border(1.dp, primary.copy(alpha = 0.10f), RoundedCornerShape(40.dp)),
+                        .background(Color.White)
+                        .border(
+                            width = 1.5.dp,
+                            brush = Brush.linearGradient(listOf(emerald.copy(0.5f), primary.copy(0.2f))),
+                            shape = RoundedCornerShape(40.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
@@ -135,12 +170,12 @@ fun SplashScreen(
 
             Spacer(Modifier.height(28.dp))
 
-            // ── Brand ─────────────────────────────────────────────────────
+            // ── Brand ──────────────────────────────────────────────────────
             Text(
                 text          = stringResource(R.string.splash_titulo).uppercase(),
                 fontSize      = 36.sp,
                 fontWeight    = FontWeight.ExtraBold,
-                color         = primary,
+                color         = Color.White,
                 letterSpacing = (-0.72).sp,
                 textAlign     = TextAlign.Center
             )
@@ -148,98 +183,131 @@ fun SplashScreen(
             Text(
                 text      = stringResource(R.string.splash_subtitulo),
                 style     = MaterialTheme.typography.bodyMedium,
-                color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                color     = Color.White.copy(alpha = 0.78f),
                 textAlign = TextAlign.Center,
                 modifier  = Modifier.widthIn(max = 260.dp)
             )
 
             Spacer(Modifier.height(36.dp))
 
-            // ── Feature bento 3 cards ─────────────────────────────────────
+            // ── Feature bento 3 cards ──────────────────────────────────────
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.ReceiptLong, "ESCANEO",  "Tickets")
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.Analytics,   "STATS",    "Tu gasto visual")
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  "OFERTAS",  "Precios")
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.ReceiptLong, "ESCANEO",  "Tickets",
+                    cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.Analytics,   "STATS",    "Tu gasto visual",
+                    cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  "OFERTAS",  "Precios",
+                    cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
             }
 
             Spacer(Modifier.height(36.dp))
 
-            // ── CTA primario ──────────────────────────────────────────────
+            // ── CTA primario ───────────────────────────────────────────────
             Button(
                 onClick   = onCrearCuentaClick,
                 modifier  = Modifier.fillMaxWidth().height(56.dp),
                 shape     = RoundedCornerShape(14.dp),
-                colors    = ButtonDefaults.buttonColors(containerColor = primary, contentColor = Color.White),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                colors    = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor   = primary
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
-                Text("Empezar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("Empezar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(8.dp))
                 Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
             }
 
             Spacer(Modifier.height(12.dp))
 
-            // ── CTA secundario ────────────────────────────────────────────
+            // ── CTA secundario ─────────────────────────────────────────────
             OutlinedButton(
-                onClick = onIngresarClick,
+                onClick  = onIngresarClick,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape    = RoundedCornerShape(14.dp),
-                colors   = ButtonDefaults.outlinedButtonColors(contentColor = primary),
+                colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                 border   = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(primary.copy(alpha = 0.35f))
+                    brush = androidx.compose.ui.graphics.SolidColor(Color.White.copy(alpha = 0.75f))
                 )
             ) {
-                Text(stringResource(R.string.splash_btn_ingresar), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    stringResource(R.string.splash_btn_ingresar),
+                    fontSize   = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
             Spacer(Modifier.height(28.dp))
 
-            // ── Trust badge ───────────────────────────────────────────────
+            // ── Trust badge ────────────────────────────────────────────────
             Row(
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier              = Modifier.graphicsLayer(alpha = 0.55f)
+                modifier              = Modifier.graphicsLayer(alpha = 0.60f)
             ) {
-                Icon(Icons.Default.VerifiedUser, null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(14.dp))
-                Text("DATOS SEGUROS Y ENCRIPTADOS",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 0.8.sp)
+                Icon(
+                    Icons.Default.VerifiedUser, null,
+                    tint     = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    "DATOS SEGUROS Y ENCRIPTADOS",
+                    style         = MaterialTheme.typography.labelSmall,
+                    color         = Color.White,
+                    letterSpacing = 0.8.sp
+                )
             }
         }
     }
 }
 
+// ── Feature card con fondo translúcido (glassmorphism suave) ─────────────────
+
 @Composable
-private fun FeatureCard(modifier: Modifier, icon: ImageVector, label: String, desc: String) {
-    val primary = MaterialTheme.colorScheme.primary
-    Card(
-        modifier  = modifier,
-        shape     = RoundedCornerShape(14.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF),
-            contentColor   = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(1.dp),
-        border    = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+private fun FeatureCard(
+    modifier  : Modifier,
+    icon      : ImageVector,
+    label     : String,
+    desc      : String,
+    cardColor : Color,
+    iconBg    : Color,
+    iconTint  : Color
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(cardColor)
+            .border(
+                width = 1.dp,
+                brush = Brush.linearGradient(
+                    listOf(Color.White.copy(0.40f), Color.White.copy(0.10f))
+                ),
+                shape = RoundedCornerShape(14.dp)
             )
-        )
+            .padding(10.dp)
     ) {
-        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Box(
-                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
-                    .background(primary.copy(alpha = 0.10f)),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, null, tint = primary, modifier = Modifier.size(18.dp))
+                Icon(icon, null, tint = iconTint, modifier = Modifier.size(18.dp))
             }
-            Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp)
-            Text(desc, style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                label,
+                fontSize      = 10.sp,
+                fontWeight    = FontWeight.Bold,
+                letterSpacing = 0.6.sp,
+                color         = Color.White
+            )
+            Text(
+                desc,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.72f)
+            )
         }
     }
 }

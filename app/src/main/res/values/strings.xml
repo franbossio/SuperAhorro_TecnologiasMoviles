@@ -116,4 +116,16 @@
     <!-- Si todavía no los tenés de la entrega anterior, agregar: -->
     <!-- <string name="eliminar_confirmar">Eliminar</string> -->
     <!-- <string name="cancelar">Cancelar</string> -->
+    <!-- Olvidé mi contraseña -->
+    <string name="olvide_password_titulo">Recuperar contraseña</string>
+    <string name="olvide_password_enviado_titulo">¡Revisá tu email!</string>
+    <string name="olvide_password_desc">Ingresá tu email y te enviamos un enlace para restablecer tu contraseña.</string>
+    <string name="olvide_password_enviado_desc">Enviamos las instrucciones a %1$s</string>
+    <string name="olvide_password_label_email">EMAIL</string>
+    <string name="olvide_password_info">Te enviaremos un correo con un enlace para crear una nueva contraseña. Revisá también tu carpeta de spam.</string>
+    <string name="olvide_password_btn_enviar">Enviar instrucciones</string>
+    <string name="olvide_password_revisar_spam">Si no lo ves, revisá la carpeta de spam.</string>
+    <string name="olvide_password_reenviar">No recibí el email, reenviar</string>
+    <string name="olvide_password_volver_login">Volver al inicio de sesión</string>
+
 </resources>
