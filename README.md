@@ -150,3 +150,7 @@ Splash
 Nombre 
 | Bossio, Francisco  
 | Correa, Sofia  
+
+## Presentacion Primera Entrega
+
+https://docs.google.com/presentation/d/1mYGUkIa217INziN8BKaNFLbPrw6QL1Of/edit?usp=sharing&ouid=113337839765885953025&rtpof=true&sd=true
