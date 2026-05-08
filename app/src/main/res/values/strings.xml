@@ -6,14 +6,24 @@
     <string name="splash_subtitulo">Controlá tus gastos de supermercado</string>
     <string name="splash_btn_ingresar">Ingresar</string>
     <string name="splash_btn_crear_cuenta">Crear cuenta</string>
+    <string name="escaneo">ESCANEO</string>
+    <string name="stats">ESTADISTICA</string>
+    <string name="ofertas">OFERTAS</string>
+    <string name="sub_escaneo">Escanea codigo</string>
+    <string name="sub_stats">Tu gasto visual</string>
+    <string name="sub_ofertas">Precios baratos</string>
+    <string name="empezar">Empezar</string>
+    <string name="seguridad">DATOS SEGUROS Y ENCRIPTADOS</string>
 
     <!-- Login -->
     <string name="login_titulo">Iniciar sesión</string>
     <string name="login_email">Correo electrónico</string>
     <string name="login_password">Contraseña</string>
+    <string name="bienvenido">Bienvenido!</string>
     <string name="login_btn_ingresar">Ingresar</string>
     <string name="login_olvide_password">¿Olvidaste tu contraseña?</string>
     <string name="login_sin_cuenta">¿No tenés cuenta? Registrate</string>
+    <string name="introduccion">Empezá a ahorrar en tu próxima compra</string>
 
     <!-- Registro -->
     <string name="register_titulo">Crear cuenta</string>
@@ -29,11 +39,13 @@
     <string name="home_bienvenida">¡Hola</string>
     <string name="app_name_mayuscula">SUPER AHORRO</string>
     <string name="home_gasto_mes">Gasto del mes</string>
+    <string name="resumen">Tu resumen del mes</string>
     <string name="home_ultima_compra">Última compra</string>
     <string name="home_nueva_compra">Nueva compra</string>
     <string name="home_mis_compras">Mis compras</string>
     <string name="home_historial">Historial</string>
     <string name="home_estadisticas">Estadísticas</string>
+    <string name="home_acciones_rapidas">Acciones rápidas</string>">
 
     <!-- Compras -->
     <string name="compra_nueva_titulo">Nueva compra</string>
@@ -104,19 +116,13 @@
     <!-- Agregar estos strings al res/values/strings.xml existente (dentro de <resources>) -->
     <string name="abrir_calendario">Abrir calendario</string>
     <string name="confirmar_fecha">Aceptar</string>
-    <!-- cancelar ya fue agregado en la entrega anterior del DetallleCompra -->
-    <!-- Si todavía no lo tenés, agregá también: -->
-    <!-- <string name="cancelar">Cancelar</string> -->
 
-    <!-- Agregar dentro de <resources> en res/values/strings.xml -->
 
     <string name="historial_eliminar_titulo">¿Eliminar compra?</string>
     <string name="historial_eliminar_mensaje">¿Querés eliminar la compra de "%1$s"? Esta acción no se puede deshacer.</string>
     <string name="historial_sin_compras">No hay compras registradas\npara este período.</string>
 
-    <!-- Si todavía no los tenés de la entrega anterior, agregar: -->
-    <!-- <string name="eliminar_confirmar">Eliminar</string> -->
-    <!-- <string name="cancelar">Cancelar</string> -->
+
     <!-- Olvidé mi contraseña -->
     <string name="olvide_password_titulo">Recuperar contraseña</string>
     <string name="olvide_password_enviado_titulo">¡Revisá tu email!</string>

@@ -1,0 +1,122 @@
+<resources>
+    <string name="app_name">Super Savings</string>
+
+    <string name="splash_titulo">Super Savings</string>
+    <string name="splash_subtitulo">Track your supermarket expenses</string>
+    <string name="splash_btn_ingresar">Login</string>
+    <string name="splash_btn_crear_cuenta">Create account</string>
+    <string name="escaneo">SCAN</string>
+    <string name="stats">STATISTICS</string>
+    <string name="ofertas">OFFERS</string>
+    <string name="sub_escaneo">Scan code</string>
+    <string name="sub_stats">Your visual spending</string>
+    <string name="sub_ofertas">Cheap prices</string>
+    <string name="empezar">Get started</string>
+    <string name="seguridad">SECURE AND ENCRYPTED DATA</string>
+
+    <string name="login_titulo">Sign in</string>
+    <string name="login_email">Email address</string>
+    <string name="login_password">Password</string>
+    <string name="bienvenido">Welcome!</string>
+    <string name="login_btn_ingresar">Login</string>
+    <string name="login_olvide_password">Forgot your password?</string>
+    <string name="login_sin_cuenta">Don\'t have an account? Sign up</string>
+    <string name="introduccion">Start saving on your next purchase</string>
+
+    <string name="register_titulo">Create account</string>
+    <string name="register_nombre">First Name</string>
+    <string name="register_apellido">Last Name</string>
+    <string name="register_email">Email address</string>
+    <string name="register_password">Password</string>
+    <string name="register_confirmar_password">Confirm password</string>
+    <string name="register_btn_crear">Create account</string>
+    <string name="register_ya_cuenta">Already have an account? Sign in</string>
+
+    <string name="home_bienvenida">Hello</string>
+    <string name="app_name_mayuscula">SUPER SAVINGS</string>
+    <string name="home_gasto_mes">Monthly spending</string>
+    <string name="resumen">Your monthly summary</string>
+    <string name="home_ultima_compra">Last purchase</string>
+    <string name="home_nueva_compra">New purchase</string>
+    <string name="home_mis_compras">My purchases</string>
+    <string name="home_historial">History</string>
+    <string name="home_estadisticas">Statistics</string>
+    <string name="home_acciones_rapidas">Quick actions</string>
+
+    <string name="compra_nueva_titulo">New purchase</string>
+    <string name="compra_fecha">Date</string>
+    <string name="compra_hora">Time</string>
+    <string name="compra_supermercado">Supermarket</string>
+    <string name="compra_total">Total ($)</string>
+    <string name="compra_guardar">Save purchase</string>
+    <string name="compra_agregar_producto">Add product</string>
+    <string name="compra_adjuntar_ticket">Attach receipt</string>
+    <string name="compra_listado_titulo">My purchases</string>
+    <string name="compra_sin_compras">You haven\'t registered any purchases yet</string>
+    <string name="compra_detalle_titulo">Purchase detail</string>
+    <string name="compra_historial_titulo">Purchase history</string>
+    <string name="compra_compartir">Share purchase</string>
+
+    <string name="producto_nuevo_titulo">New product</string>
+    <string name="producto_codigo">Barcode</string>
+    <string name="producto_nombre">Product name</string>
+    <string name="producto_descripcion">Description</string>
+    <string name="producto_cantidad">Quantity</string>
+    <string name="producto_precio">Unit price ($)</string>
+    <string name="producto_guardar">Save product</string>
+    <string name="producto_sin_productos">No products loaded</string>
+
+    <string name="estadisticas_titulo">Statistics</string>
+    <string name="estadisticas_total_gastado">Total spent</string>
+    <string name="estadisticas_cantidad_compras">Purchases</string>
+    <string name="estadisticas_promedio">Average</string>
+    <string name="estadisticas_por_supermercado">Spending by supermarket</string>
+    <string name="estadisticas_mas_comprados">Most purchased products</string>
+
+    <string name="perfil_titulo">My profile</string>
+    <string name="perfil_guardar">Save changes</string>
+    <string name="perfil_cerrar_sesion">Log out</string>
+
+    <string name="settings_titulo">Settings</string>
+    <string name="settings_notificaciones">Notifications</string>
+    <string name="settings_notificaciones_desc">Receive promotion alerts</string>
+    <string name="settings_tema_oscuro">Dark mode</string>
+    <string name="settings_tema_oscuro_desc">Enable dark theme</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_paquete">Package</string>
+
+    <string name="cargando">Loading…</string>
+    <string name="error_generico">An error occurred. Please try again.</string>
+    <string name="cancelar">Cancel</string>
+    <string name="guardar">Save</string>
+    <string name="eliminar">Delete</string>
+    <string name="editar">Edit</string>
+    <string name="aceptar">OK</string>
+    <string name="volver">Back</string>
+    <string name="productos">products</string>
+
+    <string name="swipe_para_eliminar">← swipe to delete</string>
+
+    <string name="eliminar_producto_titulo">Delete product?</string>
+    <string name="eliminar_producto_mensaje">Are you sure you want to delete "%1$s" from this purchase?</string>
+    <string name="eliminar_confirmar">Delete</string>
+
+    <string name="abrir_calendario">Open calendar</string>
+    <string name="confirmar_fecha">OK</string>
+
+    <string name="historial_eliminar_titulo">Delete purchase?</string>
+    <string name="historial_eliminar_mensaje">Do you want to delete the purchase from "%1$s"? This action cannot be undone.</string>
+    <string name="historial_sin_compras">No purchases recorded\nfor this period.</string>
+
+    <string name="olvide_password_titulo">Recover password</string>
+    <string name="olvide_password_enviado_titulo">Check your email!</string>
+    <string name="olvide_password_desc">Enter your email and we\'ll send you a link to reset your password.</string>
+    <string name="olvide_password_enviado_desc">We sent instructions to %1$s</string>
+    <string name="olvide_password_label_email">EMAIL</string>
+    <string name="olvide_password_info">We will send you an email with a link to create a new password. Please also check your spam folder.</string>
+    <string name="olvide_password_btn_enviar">Send instructions</string>
+    <string name="olvide_password_revisar_spam">If you don\'t see it, check your spam folder.</string>
+    <string name="olvide_password_reenviar">Didn\'t receive the email, resend</string>
+    <string name="olvide_password_volver_login">Return to login</string>
+
+</resources>

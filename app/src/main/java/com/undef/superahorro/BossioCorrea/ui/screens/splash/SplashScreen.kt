@@ -192,11 +192,11 @@ fun SplashScreen(
 
             // ── Feature bento 3 cards ──────────────────────────────────────
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.ReceiptLong, "ESCANEO",  "Tickets",
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.ReceiptLong, stringResource(R.string.escaneo),  stringResource(R.string.sub_escaneo),
                     cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.Analytics,   "STATS",    "Tu gasto visual",
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.Analytics,   stringResource(R.string.stats),    stringResource(R.string.sub_stats),
                     cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
-                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  "OFERTAS",  "Precios",
+                FeatureCard(Modifier.weight(1f), Icons.Outlined.PriceCheck,  stringResource(R.string.ofertas),    stringResource(R.string.sub_ofertas),
                     cardColor = Color.White.copy(alpha = 0.15f), iconBg = emerald.copy(0.30f), iconTint = Color.White)
             }
 
@@ -213,7 +213,7 @@ fun SplashScreen(
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
-                Text("Empezar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.empezar), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.width(8.dp))
                 Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
             }
@@ -251,7 +251,7 @@ fun SplashScreen(
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    "DATOS SEGUROS Y ENCRIPTADOS",
+                    stringResource(R.string.seguridad),
                     style         = MaterialTheme.typography.labelSmall,
                     color         = Color.White,
                     letterSpacing = 0.8.sp

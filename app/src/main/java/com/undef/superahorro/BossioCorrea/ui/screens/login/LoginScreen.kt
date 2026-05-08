@@ -62,17 +62,17 @@ fun LoginScreen(
 
             // ── Heading ───────────────────────────────────────────────────
             Text(
-                text          = "Bienvenidos",
-                fontSize      = 36.sp,
-                fontWeight    = FontWeight.ExtraBold,
-                color         = MaterialTheme.colorScheme.onSurface,
+                text      = stringResource(R.string.bienvenido),
+                fontSize  = 36.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color     = MaterialTheme.colorScheme.onSurface,
                 letterSpacing = (-0.72).sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text      = "Empezá a ahorrar en tu próxima compra",
-                style     = MaterialTheme.typography.bodyMedium,
-                color     = MaterialTheme.colorScheme.outline,
+                text  = stringResource(R.string.introduccion),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center,
                 modifier  = Modifier.widthIn(max = 280.dp)
             )
@@ -117,7 +117,7 @@ fun LoginScreen(
 
                     // Password
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("CONTRASEÑA")
+                        LabelCaps(stringResource(R.string.login_password).uppercase())
                         OutlinedTextField(
                             value         = password,
                             onValueChange = { password = it },
