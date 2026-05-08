@@ -26,9 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.data.mock.usuarioMock
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
+import kotlinx.coroutines.launch
 
 // ─── Colores locales del Home ──────────────────────────────────────────────────
 private val CardBg       = Color(0xFFFFFFFF)
@@ -55,38 +57,90 @@ fun HomeScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
-    // Animación pulsante sutil para el botón principal
+    // ── Bottom Sheet state (estilo Mercado Pago) ───────────────────────────
+    val sheetState    = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope         = rememberCoroutineScope()
+    var showSheet     by remember { mutableStateOf(false) }
+
+    // ── Animación pulsante del botón principal ─────────────────────────────
     val pulse = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.25f, targetValue = 0.45f,
+        initialValue  = 0.25f,
+        targetValue   = 0.45f,
         animationSpec = infiniteRepeatable(tween(1100, easing = EaseInOutSine), RepeatMode.Reverse),
-        label = "pulseAlpha"
+        label         = "pulseAlpha"
     )
+
+    // ── Bottom Sheet de Perfil ─────────────────────────────────────────────
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest  = { showSheet = false },
+            sheetState        = sheetState,
+            containerColor    = Color.White,
+            shape             = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            dragHandle        = {
+                // Handle visual igual que Mercado Pago
+                Column(
+                    modifier            = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 14.dp, bottom = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(4.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFDDE1E0))
+                    )
+                }
+            }
+        ) {
+            PerfilBottomSheetContent(
+                onVerPerfilClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false
+                        onPerfilClick()
+                    }
+                },
+                onCerrarClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false
+                    }
+                }
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // ── Logo clickeable — abre el sheet igual que MP ──
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
                                 .background(
                                     Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
-                                ),
+                                )
+                                .clickable { showSheet = true },   // ← AQUÍ abre el sheet
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.ShoppingCart, null,
-                                tint = Color.White, modifier = Modifier.size(17.dp)
+                                tint     = Color.White,
+                                modifier = Modifier.size(17.dp)
                             )
                         }
                         Spacer(Modifier.width(9.dp))
                         Text(
                             "SUPER AHORRO",
-                            fontWeight = FontWeight.ExtraBold, fontSize = 17.sp,
-                            color = StitchPrimary, letterSpacing = (-0.3).sp
+                            fontWeight    = FontWeight.ExtraBold,
+                            fontSize      = 17.sp,
+                            color         = StitchPrimary,
+                            letterSpacing = (-0.3).sp
                         )
                     }
                 },
@@ -95,7 +149,6 @@ fun HomeScreen(
                         IconButton(onClick = {}) {
                             Icon(Icons.Default.Notifications, null, tint = StitchOutline)
                         }
-                        // Badge rojo
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
@@ -104,9 +157,6 @@ fun HomeScreen(
                                 .clip(CircleShape)
                                 .background(Color(0xFFE53935))
                         )
-                    }
-                    IconButton(onClick = onPerfilClick) {
-                        Icon(Icons.Default.Person, null, tint = StitchOutline)
                     }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, null, tint = StitchOutline)
@@ -119,12 +169,18 @@ fun HomeScreen(
     ) { padding ->
 
         when (val state = uiState) {
-            is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+            is UiState.Loading -> Box(
+                Modifier.fillMaxSize().padding(padding), Alignment.Center
+            ) {
                 CircularProgressIndicator(color = StitchPrimary)
             }
-            is UiState.Error -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
+
+            is UiState.Error -> Box(
+                Modifier.fillMaxSize().padding(padding), Alignment.Center
+            ) {
                 Text(stringResource(R.string.error_generico))
             }
+
             is UiState.Success -> {
                 val data = state.data
 
@@ -135,9 +191,9 @@ fun HomeScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
 
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     //  HERO CARD — gradiente verde
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -155,7 +211,6 @@ fun HomeScreen(
                                     )
                                 )
                         ) {
-                            // Círculos decorativos
                             Box(
                                 modifier = Modifier
                                     .size(160.dp)
@@ -174,7 +229,6 @@ fun HomeScreen(
                             )
 
                             Column(modifier = Modifier.padding(22.dp)) {
-                                // Fila superior: saludo + badge compras
                                 Row(
                                     Modifier.fillMaxWidth(),
                                     Arrangement.SpaceBetween, Alignment.CenterVertically
@@ -199,12 +253,13 @@ fun HomeScreen(
                                             .padding(horizontal = 12.dp, vertical = 5.dp)
                                     ) {
                                         Row(
-                                            verticalAlignment = Alignment.CenterVertically,
+                                            verticalAlignment     = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
                                             Icon(
                                                 Icons.Default.ShoppingBag, null,
-                                                tint = Color.White, modifier = Modifier.size(14.dp)
+                                                tint     = Color.White,
+                                                modifier = Modifier.size(14.dp)
                                             )
                                             Text(
                                                 "${data.cantidadCompras} compras",
@@ -217,7 +272,6 @@ fun HomeScreen(
 
                                 Spacer(Modifier.height(16.dp))
 
-                                // Monto total
                                 Text(
                                     "$ %,.2f".format(data.gastoMes),
                                     fontSize      = 36.sp,
@@ -227,12 +281,12 @@ fun HomeScreen(
                                 )
                                 Text(
                                     "Gasto total del mes",
-                                    fontSize = 13.sp, color = Color.White.copy(alpha = 0.62f)
+                                    fontSize = 13.sp,
+                                    color    = Color.White.copy(alpha = 0.62f)
                                 )
 
                                 Spacer(Modifier.height(20.dp))
 
-                                // Mini bar chart semanal
                                 Row(
                                     Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -269,9 +323,9 @@ fun HomeScreen(
                         }
                     }
 
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     //  ACCIONES RÁPIDAS
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         LabelCaps("Acciones rápidas")
                         Spacer(Modifier.height(10.dp))
@@ -308,11 +362,10 @@ fun HomeScreen(
 
                     Spacer(Modifier.height(18.dp))
 
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     //  BOTÓN NUEVA COMPRA con glow pulsante
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                        // Glow animado
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.92f)
@@ -344,9 +397,9 @@ fun HomeScreen(
 
                     Spacer(Modifier.height(18.dp))
 
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     //  ÚLTIMA COMPRA
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Row(
                             Modifier.fillMaxWidth(),
@@ -401,10 +454,7 @@ fun HomeScreen(
                                             fontSize   = 16.sp,
                                             color      = StitchOnBackground
                                         )
-                                        Text(
-                                            data.ultimaFecha,
-                                            fontSize = 13.sp, color = StitchOutline
-                                        )
+                                        Text(data.ultimaFecha, fontSize = 13.sp, color = StitchOutline)
                                         Spacer(Modifier.height(5.dp))
                                         Box(
                                             modifier = Modifier
@@ -413,17 +463,15 @@ fun HomeScreen(
                                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                                         ) {
                                             Row(
-                                                verticalAlignment = Alignment.CenterVertically,
+                                                verticalAlignment     = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 Box(
-                                                    Modifier.size(6.dp).clip(CircleShape)
-                                                        .background(BadgeText)
+                                                    Modifier.size(6.dp).clip(CircleShape).background(BadgeText)
                                                 )
                                                 Text(
-                                                    "Completada",
-                                                    fontSize   = 10.sp, color = BadgeText,
-                                                    fontWeight = FontWeight.SemiBold
+                                                    "Completada", fontSize = 10.sp,
+                                                    color = BadgeText, fontWeight = FontWeight.SemiBold
                                                 )
                                             }
                                         }
@@ -432,9 +480,8 @@ fun HomeScreen(
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text(
                                         "$ %,.0f".format(data.ultimoTotal),
-                                        fontSize      = 20.sp,
-                                        fontWeight    = FontWeight.ExtraBold,
-                                        color         = StitchPrimary
+                                        fontSize   = 20.sp, fontWeight = FontWeight.ExtraBold,
+                                        color      = StitchPrimary
                                     )
                                     Icon(
                                         Icons.Default.ChevronRight, null,
@@ -447,9 +494,9 @@ fun HomeScreen(
 
                     Spacer(Modifier.height(18.dp))
 
-                    // ═══════════════════════════════════════════════════════
-                    //  KPIs — 3 tarjetas pequeñas
-                    // ═══════════════════════════════════════════════════════
+                    // ══════════════════════════════════════════════════════
+                    //  KPIs
+                    // ══════════════════════════════════════════════════════
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         LabelCaps("Resumen de actividad")
                         Spacer(Modifier.height(10.dp))
@@ -493,6 +540,175 @@ fun HomeScreen(
     }
 }
 
+// ─── Bottom Sheet Contenido (estilo Mercado Pago) ─────────────────────────────
+@Composable
+private fun PerfilBottomSheetContent(
+    onVerPerfilClick : () -> Unit,
+    onCerrarClick    : () -> Unit
+) {
+    val usuario = usuarioMock
+    val iniciales = "${usuario.nombre.firstOrNull() ?: ""}${usuario.apellido.firstOrNull() ?: ""}"
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+    ) {
+        // ── Cabecera: avatar + datos ───────────────────────────────────────
+        Row(
+            modifier              = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Avatar con iniciales
+            Box(
+                modifier = Modifier
+                    .size(58.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = iniciales,
+                    fontSize   = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color      = Color.White
+                )
+            }
+
+            // Nombre + email
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text       = "${usuario.nombre} ${usuario.apellido}",
+                    fontSize   = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color      = Color(0xFF1A1C1A)
+                )
+                Text(
+                    text     = usuario.email,
+                    fontSize = 13.sp,
+                    color    = Color(0xFF637067)
+                )
+                Spacer(Modifier.height(5.dp))
+                // Badge "Super Ahorrador"
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(BadgeBg)
+                        .padding(horizontal = 9.dp, vertical = 3.dp)
+                ) {
+                    Row(
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star, null,
+                            tint     = BadgeText,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            "Super Ahorrador",
+                            fontSize   = 11.sp,
+                            color      = BadgeText,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+
+        HorizontalDivider(color = Color(0xFFF0F1EE), thickness = 1.dp)
+
+        // ── Opciones del sheet ─────────────────────────────────────────────
+        SheetMenuItem(
+            icon    = Icons.Default.Person,
+            title   = "Mi Perfil",
+            subtitle = "Ver y editar mis datos",
+            onClick  = onVerPerfilClick
+        )
+        SheetMenuItem(
+            icon    = Icons.Default.BarChart,
+            title   = "Mis estadísticas",
+            subtitle = "Resumen de ahorro y gastos",
+            onClick  = {}
+        )
+        SheetMenuItem(
+            icon     = Icons.Default.Share,
+            title    = "Compartir app",
+            subtitle = "Invitá a un amigo",
+            onClick  = {}
+        )
+
+        HorizontalDivider(color = Color(0xFFF0F1EE), thickness = 1.dp)
+
+        // ── Cerrar ─────────────────────────────────────────────────────────
+        TextButton(
+            onClick  = onCerrarClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .height(48.dp)
+        ) {
+            Text(
+                text       = "Cerrar",
+                fontSize   = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color      = Color(0xFF637067)
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+// ─── Item de menú del sheet ────────────────────────────────────────────────────
+@Composable
+private fun SheetMenuItem(
+    icon     : ImageVector,
+    title    : String,
+    subtitle : String,
+    onClick  : () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 24.dp, vertical = 14.dp),
+        verticalAlignment     = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Ícono con fondo suave
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFE8F7F1)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = HeroBgTop, modifier = Modifier.size(22.dp))
+        }
+        // Texto
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text       = title,
+                fontSize   = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color      = Color(0xFF1A1C1A)
+            )
+            Text(text = subtitle, fontSize = 12.sp, color = Color(0xFF637067))
+        }
+        Icon(
+            Icons.Default.ChevronRight, null,
+            tint     = Color(0xFFBBCABF),
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
 // ─── Quick Action Card ─────────────────────────────────────────────────────────
 @Composable
 private fun QuickActionCard(
@@ -517,7 +733,7 @@ private fun QuickActionCard(
             modifier            = Modifier.fillMaxWidth()
         ) {
             Box(
-                modifier         = Modifier
+                modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(bgColor),
@@ -559,7 +775,7 @@ private fun KpiCard(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(
-                modifier         = Modifier
+                modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(9.dp))
                     .background(iconBg),
