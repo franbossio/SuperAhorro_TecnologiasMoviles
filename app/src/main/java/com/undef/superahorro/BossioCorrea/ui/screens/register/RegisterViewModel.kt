@@ -2,6 +2,7 @@ package com.undef.superahorro.BossioCorrea.ui.screens.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +18,10 @@ class RegisterViewModel : ViewModel() {
             _uiState.value = UiState.Loading
             delay(1000)
             when {
-                nombre.isBlank()         -> _uiState.value = UiState.Error("Ingresá tu nombre")
-                email.isBlank()          -> _uiState.value = UiState.Error("Ingresá tu email")
-                password.length < 6      -> _uiState.value = UiState.Error("La contraseña debe tener al menos 6 caracteres")
-                password != confirmar    -> _uiState.value = UiState.Error("Las contraseñas no coinciden")
+                nombre.isBlank()         -> _uiState.value = UiState.Error(R.string.register_email_error)
+                email.isBlank()          -> _uiState.value = UiState.Error(R.string.register_email_error)
+                password.length < 6      -> _uiState.value = UiState.Error(R.string.register_contraseña_error)
+                password != confirmar    -> _uiState.value = UiState.Error(R.string.register_contraseña_diferentes)
                 else -> { _uiState.value = UiState.Success(Unit); onExito() }
             }
         }

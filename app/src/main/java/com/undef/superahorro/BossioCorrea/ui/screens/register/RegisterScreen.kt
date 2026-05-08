@@ -65,7 +65,7 @@ fun RegisterScreen(
         ) {
             Spacer(Modifier.height(32.dp))
 
-            Text("Crear cuenta", fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
+            Text(stringResource(R.string.register_btn_crear), fontSize = 36.sp, fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.72).sp)
             Spacer(Modifier.height(4.dp))
             Text("Empezá a ahorrar en tu próxima compra",
@@ -91,13 +91,13 @@ fun RegisterScreen(
                     // Nombre / Apellido
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("NOMBRE")
+                            LabelCaps(stringResource(R.string.register_nombre))
                             OutlinedTextField(value = nombre, onValueChange = { nombre = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("APELLIDO")
+                            LabelCaps(stringResource(R.string.register_apellido))
                             OutlinedTextField(value = apellido, onValueChange = { apellido = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
@@ -106,7 +106,7 @@ fun RegisterScreen(
 
                     // Email
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL ADDRESS")
+                        LabelCaps(stringResource(R.string.register_email))
                         OutlinedTextField(value = email, onValueChange = { email = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             placeholder = { Text("nombre@email.com", color = MaterialTheme.colorScheme.outline) },
@@ -116,7 +116,7 @@ fun RegisterScreen(
 
                     // Password
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("CONTRASEÑA")
+                        LabelCaps(stringResource(R.string.register_password))
                         OutlinedTextField(
                             value = password, onValueChange = { password = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -134,7 +134,7 @@ fun RegisterScreen(
 
                     // Confirmar
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("CONFIRMAR CONTRASEÑA")
+                        LabelCaps(stringResource(R.string.register_confirmar_password))
                         OutlinedTextField(
                             value = confirmar, onValueChange = { confirmar = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -154,7 +154,7 @@ fun RegisterScreen(
                     }
 
                     if (uiState is UiState.Error) {
-                        Text((uiState as UiState.Error).msg,
+                        Text(stringResource((uiState as UiState.Error).msg),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium)
                     }

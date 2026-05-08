@@ -71,13 +71,13 @@ fun SettingsScreen(
                 letterSpacing = (-0.72).sp
             )
             Text(
-                "Personalizá tu experiencia",
+                stringResource(R.string.settings_personalizar),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )
 
             // ── Sección Apariencia ─────────────────────────────────────────
-            SettingsSection(title = "APARIENCIA") {
+            SettingsSection(title = stringResource(R.string.settings_apariencia)) {
 
                 // Toggle de notificaciones
                 ToggleSettingRow(
@@ -145,12 +145,12 @@ fun SettingsScreen(
             }
 
             // ── Sección Cuenta ─────────────────────────────────────────────
-            SettingsSection(title = "CUENTA") {
-                ActionSettingRow(Icons.Outlined.Language, "Idioma", "Español (Argentina)")
+            SettingsSection(title = stringResource(R.string.settings_cuenta).uppercase()) {
+                ActionSettingRow(Icons.Outlined.Language, stringResource(R.string.settings_idioma), "Español (Argentina)")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ActionSettingRow(Icons.Outlined.Security, "Privacidad y seguridad", "")
+                ActionSettingRow(Icons.Outlined.Security, stringResource(R.string.settings_privacidad), "")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ActionSettingRow(Icons.Outlined.FileDownload, "Exportar datos", "CSV / PDF")
+                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), "CSV / PDF")
             }
 
             // ── Sección Acerca de ──────────────────────────────────────────
@@ -159,7 +159,7 @@ fun SettingsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                 InfoRow(Icons.Outlined.Code, stringResource(R.string.settings_paquete), "com.undef.superahorro")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                InfoRow(Icons.Outlined.Group, "Equipo", "BossioCorrea · 2026")
+                InfoRow(Icons.Outlined.Group, stringResource(R.string.settings_equipo), "BossioCorrea · 2026")
             }
 
             Spacer(Modifier.height(32.dp))
@@ -176,9 +176,9 @@ private fun ThemeModeSelector(
     onSelect : (ThemeMode) -> Unit
 ) {
     val options = listOf(
-        ThemeMode.LIGHT  to "☀️  Claro",
-        ThemeMode.DARK   to "🌙  Oscuro",
-        ThemeMode.SYSTEM to "⚙️  Sistema"
+        ThemeMode.LIGHT  to stringResource(R.string.settings_claro),
+        ThemeMode.DARK   to stringResource(R.string.settings_oscuro),
+        ThemeMode.SYSTEM to stringResource(R.string.settings_sistema)
     )
 
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

@@ -178,7 +178,7 @@ fun HomeScreen(
                             Column(modifier = Modifier.padding(22.dp)) {
                                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
                                     Column {
-                                        Text("Hola, ${data.saludo.substringBefore(" ")} 👋",
+                                        Text(stringResource(R.string.home_bienvenida, data.saludo.substringBefore(" ")),
                                             fontSize = 15.sp, color = Color.White.copy(alpha = 0.85f),
                                             fontWeight = FontWeight.Medium)
                                         Text(stringResource(R.string.resumen),
@@ -191,7 +191,7 @@ fun HomeScreen(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                             Icon(Icons.Default.ShoppingBag, null,
                                                 tint = Color.White, modifier = Modifier.size(14.dp))
-                                            Text("${data.cantidadCompras} compras",
+                                            Text(stringResource(R.string.home_cantidad_compras, data.cantidadCompras),
                                                 color = Color.White, fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold)
                                         }
@@ -283,7 +283,7 @@ fun HomeScreen(
                         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
                             LabelCaps(stringResource(R.string.home_ultima_compra))
                             TextButton(onClick = onListadoClick, contentPadding = PaddingValues(0.dp)) {
-                                Text("Ver todas →", color = MaterialTheme.colorScheme.primary,
+                                Text(stringResource(R.string.home_ver), color = MaterialTheme.colorScheme.primary,
                                     fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
@@ -350,20 +350,20 @@ fun HomeScreen(
 
                     // ── KPIs ──────────────────────────────────────────────────
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        LabelCaps("Resumen de actividad")
+                        LabelCaps(stringResource(R.string.home_resumen_actividad))
                         Spacer(Modifier.height(10.dp))
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             KpiCard(Modifier.weight(1f), Icons.Default.ShoppingCart,
-                                "${data.cantidadCompras}", "Compras",
+                                "${data.cantidadCompras}", stringResource(R.string.home_compras),
                                 iconBg   = MaterialTheme.colorScheme.primaryContainer.copy(.35f),
                                 iconTint = MaterialTheme.colorScheme.primary)
                             KpiCard(Modifier.weight(1f), Icons.Default.Payments,
                                 "$ %,.0f".format(if (data.cantidadCompras > 0) data.gastoMes / data.cantidadCompras else 0.0),
-                                "Promedio",
+                                stringResource(R.string.home_prom),
                                 iconBg   = MaterialTheme.colorScheme.tertiaryContainer.copy(.35f),
                                 iconTint = MaterialTheme.colorScheme.tertiary)
                             KpiCard(Modifier.weight(1f), Icons.Default.TrendingDown,
-                                "15%", "Ahorro",
+                                "15%", stringResource(R.string.home_ahorro),
                                 iconBg   = MaterialTheme.colorScheme.errorContainer.copy(.25f),
                                 iconTint = MaterialTheme.colorScheme.error)
                         }

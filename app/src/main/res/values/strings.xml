@@ -24,10 +24,14 @@
     <string name="login_olvide_password">¿Olvidaste tu contraseña?</string>
     <string name="login_sin_cuenta">¿No tenés cuenta? Registrate</string>
     <string name="introduccion">Empezá a ahorrar en tu próxima compra</string>
+    <string name="login_error">Email o contraseña inválidos</string>
 
     <!-- Registro -->
-    <string name="register_titulo">Crear cuenta</string>
     <string name="register_nombre">Nombre</string>
+    <string name="register_nombre_Error">Ingresá tu nombre</string>
+    <string name="register_email_error">Ingresá tu email</string>
+    <string name="register_contraseña_error">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="register_contraseña_diferentes">Las contraseñas no coinciden</string>
     <string name="register_apellido">Apellido</string>
     <string name="register_email">Correo electrónico</string>
     <string name="register_password">Contraseña</string>
@@ -36,14 +40,20 @@
     <string name="register_ya_cuenta">¿Ya tenés cuenta? Iniciá sesión</string>
 
     <!-- Home -->
-    <string name="home_bienvenida">¡Hola</string>
+    <string name="home_bienvenida">¡Hola %1$s!</string>
     <string name="app_name_mayuscula">SUPER AHORRO</string>
     <string name="home_gasto_mes">Gasto del mes</string>
     <string name="resumen">Tu resumen del mes</string>
     <string name="home_ultima_compra">Última compra</string>
     <string name="home_nueva_compra">Nueva compra</string>
     <string name="home_mis_compras">Mis compras</string>
+    <string name="home_ver">Ver todas →</string>
+    <string name="home_compras">Compras</string>
+    <string name="home_prom">Promedio</string>
+    <string name="home_ahorro">Ahorro</string>
+    <string name="home_resumen_actividad">Resumen de actividad</string>
     <string name="home_historial">Historial</string>
+    <string name="home_cantidad_compras">%1$d compras</string>
     <string name="home_estadisticas">Estadísticas</string>
     <string name="home_acciones_rapidas">Acciones rápidas</string>">
 
@@ -88,9 +98,19 @@
     <!-- Settings -->
     <string name="settings_titulo">Configuración</string>
     <string name="settings_notificaciones">Notificaciones</string>
+    <string name="settings_apariencia">Apariencia</string>
+    <string name="settings_claro">☀️ Claro</string>
+    <string name="settings_oscuro">🌙 Oscuro</string>
+    <string name="settings_sistema">⚙️ Sistema</string>
+    <string name="settings_cuenta">Cuenta</string>
+    <string name="settings_idioma">Idioma</string>
+    <string name="settings_equipo">Equipo</string>
+    <string name="settings_privacidad">Privacidad y seguridad</string>
+    <string name="settings_exportar">Exportar datos</string>
+    <string name="settings_personalizar">Personalizá tu experiencia</string>
     <string name="settings_notificaciones_desc">Recibir alertas de promociones</string>
-    <string name="settings_tema_oscuro">Modo oscuro</string>
-    <string name="settings_tema_oscuro_desc">Activar tema oscuro</string>
+    <string name="settings_tema_oscuro">Tema</string>
+    <string name="settings_tema_oscuro_desc">Modificar tema</string>
     <string name="settings_version">Versión</string>
     <string name="settings_paquete">Paquete</string>
 
@@ -107,6 +127,7 @@
 
     <!-- ── Detalle de compra ─────────────────────────────────── -->
     <string name="swipe_para_eliminar">← deslizá para eliminar</string>
+    <string name="detalle_no_encontrado">No encontrada</string>
 
     <!-- ── Diálogo eliminar producto ───────────────────────────── -->
     <string name="eliminar_producto_titulo">¿Eliminar producto?</string>

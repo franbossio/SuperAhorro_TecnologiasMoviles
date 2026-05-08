@@ -145,7 +145,7 @@ fun LoginScreen(
 
                     if (uiState is UiState.Error) {
                         Text(
-                            (uiState as UiState.Error).msg,
+                            stringResource((uiState as UiState.Error).msg),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium
                         )

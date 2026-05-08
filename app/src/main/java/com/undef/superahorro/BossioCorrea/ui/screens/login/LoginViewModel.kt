@@ -2,6 +2,7 @@ package com.undef.superahorro.BossioCorrea.ui.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,7 @@ class LoginViewModel : ViewModel() {
                 _uiState.value = UiState.Success(Unit)
                 onExito()
             } else {
-                _uiState.value = UiState.Error("Email o contraseña inválidos")
+                _uiState.value = UiState.Error(R.string.login_error)
             }
         }
     }
