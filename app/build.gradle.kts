@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)                  // ← nuevo: necesario para Room
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -62,6 +62,12 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // OkHttp — para llamadas a Groq API
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Coil — para mostrar la imagen del ticket en la UI
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

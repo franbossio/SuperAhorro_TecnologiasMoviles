@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+        Permite al FileProvider compartir archivos del caché interno con la app de cámara.
+        Se usa para guardar la foto del ticket antes de subirla a la IA.
+    -->
+    <cache-path name="ticket_images" path="." />
+</paths>
