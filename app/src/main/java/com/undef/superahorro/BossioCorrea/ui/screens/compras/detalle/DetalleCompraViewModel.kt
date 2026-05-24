@@ -2,6 +2,7 @@ package com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.data.mock.comprasMock
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
@@ -19,7 +20,7 @@ class DetalleCompraViewModel : ViewModel() {
         _uiState.value = UiState.Loading
         delay(400)
         val compra = comprasMock.firstOrNull { it.id == id }
-        _uiState.value = if (compra != null) UiState.Success(compra) else UiState.Error("No encontrada")
+        _uiState.value = if (compra != null) UiState.Success(compra) else UiState.Error(R.string.detalle_no_encontrado)
     }
 
     /**

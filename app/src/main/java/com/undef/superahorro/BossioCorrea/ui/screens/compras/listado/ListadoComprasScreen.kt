@@ -122,18 +122,9 @@ fun ListadoComprasScreen(
 
     Scaffold(
         topBar         = { StitchTopBar(stringResource(R.string.compra_listado_titulo), onBackClick) },
-        containerColor = StitchBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             Box {
-                // Glow pulsante
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .align(Alignment.Center)
-                        .clip(CircleShape)
-                        .background(StitchPrimary.copy(alpha = pulseAlpha))
-                        .blur(14.dp)
-                )
                 FloatingActionButton(
                     onClick        = onNuevaCompraClick,
                     containerColor = StitchPrimary,

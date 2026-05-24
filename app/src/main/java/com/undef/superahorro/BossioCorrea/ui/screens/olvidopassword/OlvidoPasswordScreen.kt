@@ -120,7 +120,7 @@ fun OlvidoPasswordScreen(
                 Surface(
                     modifier        = Modifier.fillMaxWidth(),
                     shape           = RoundedCornerShape(16.dp),
-                    color           = Color(0xFFFFFFFF),
+                    color           = MaterialTheme.colorScheme.surfaceContainerLow,
                     tonalElevation  = 0.dp,
                     shadowElevation = 1.dp,
                     border          = CardDefaults.outlinedCardBorder().copy(
