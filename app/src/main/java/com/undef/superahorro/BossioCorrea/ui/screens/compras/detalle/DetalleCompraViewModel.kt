@@ -20,7 +20,7 @@ class DetalleCompraViewModel : ViewModel() {
         _uiState.value = UiState.Loading
         delay(400)
         val compra = comprasMock.firstOrNull { it.id == id }
-        _uiState.value = if (compra != null) UiState.Success(compra) else UiState.Error(R.string.detalle_no_encontrado)
+        _uiState.value = if (compra != null) UiState.Success(compra) else UiState.Error(R.string.detalle_no_encontrado.toString())
     }
 
     /**
