@@ -154,7 +154,7 @@ fun RegisterScreen(
                     }
 
                     if (uiState is UiState.Error) {
-                        Text(stringResource((uiState as UiState.Error).msg),
+                        Text((uiState as UiState.Error).mensaje,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyMedium)
                     }
@@ -166,7 +166,7 @@ fun RegisterScreen(
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                         else -> Button(
-                            onClick   = { vm.registrar(nombre, email, password, confirmar, onRegistroExitoso) },
+                            onClick = { vm.registrar(nombre, apellido, email, password, confirmar, onRegistroExitoso) },
                             modifier  = Modifier.fillMaxWidth().height(52.dp),
                             shape     = RoundedCornerShape(12.dp),
                             colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),

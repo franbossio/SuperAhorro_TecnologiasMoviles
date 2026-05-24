@@ -1,28 +1,55 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.register
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
+import com.undef.superahorro.BossioCorrea.data.local.SessionManager
+import com.undef.superahorro.BossioCorrea.data.repository.AuthRepository
+import com.undef.superahorro.BossioCorrea.data.repository.AuthResult
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repo = AuthRepository(
+        db      = AppDatabase.getInstance(application),
+        session = SessionManager(application)
+    )
+
     private val _uiState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
     val uiState = _uiState.asStateFlow()
 
-    fun registrar(nombre: String, email: String, password: String, confirmar: String, onExito: () -> Unit) {
+    fun registrar(
+        nombre    : String,
+        apellido  : String,
+        email     : String,
+        password  : String,
+        confirmar : String,
+        onExito   : () -> Unit
+    ) {
+        // Validaciones locales antes de ir a la BD
+        when {
+            nombre.isBlank()      -> { _uiState.value = UiState.Error("Ingresá tu nombre"); return }
+            apellido.isBlank()    -> { _uiState.value = UiState.Error("Ingresá tu apellido"); return }
+            email.isBlank()       -> { _uiState.value = UiState.Error("Ingresá tu email"); return }
+            password.length < 6   -> { _uiState.value = UiState.Error("La contraseña debe tener al menos 6 caracteres"); return }
+            password != confirmar -> { _uiState.value = UiState.Error("Las contraseñas no coinciden"); return }
+        }
+
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            delay(1000)
-            when {
-                nombre.isBlank()         -> _uiState.value = UiState.Error(R.string.register_email_error)
-                email.isBlank()          -> _uiState.value = UiState.Error(R.string.register_email_error)
-                password.length < 6      -> _uiState.value = UiState.Error(R.string.register_contraseña_error)
-                password != confirmar    -> _uiState.value = UiState.Error(R.string.register_contraseña_diferentes)
-                else -> { _uiState.value = UiState.Success(Unit); onExito() }
+
+            when (val resultado = repo.registrar(nombre, apellido, email, password)) {
+                is AuthResult.Exito -> {
+                    _uiState.value = UiState.Success(Unit)
+                    onExito()
+                }
+                is AuthResult.Error -> {
+                    _uiState.value = UiState.Error(resultado.mensaje)
+                }
             }
         }
     }
