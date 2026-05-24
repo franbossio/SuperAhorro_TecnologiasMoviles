@@ -90,9 +90,8 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
         // ── Compras ─────────────────────────────────────────────────────────
         composable(Routes.NUEVA_COMPRA) {
             NuevaCompraScreen(
-                onGuardarClick         = { navController.popBackStack() },
-                onAgregarProductoClick = { navController.navigate(Routes.NUEVO_PRODUCTO) },
-                onBackClick            = { navController.popBackStack() }
+                onGuardarClick = { navController.popBackStack() },
+                onBackClick    = { navController.popBackStack() }
             )
         }
 

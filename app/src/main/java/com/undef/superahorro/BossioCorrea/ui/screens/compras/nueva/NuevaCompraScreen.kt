@@ -1,5 +1,8 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.nueva
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,15 +12,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
@@ -27,10 +27,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.data.mock.supermercadosMock
+import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,154 +42,111 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NuevaCompraScreen(
+    vm                     : NuevaCompraViewModel = viewModel(),
     onGuardarClick         : () -> Unit = {},
-    onAgregarProductoClick : () -> Unit = {},
     onBackClick            : () -> Unit = {}
 ) {
-    var fecha             by remember { mutableStateOf("") }
-    var hora              by remember { mutableStateOf("") }
-    var supermercado      by remember { mutableStateOf("") }
-    var total             by remember { mutableStateOf("") }
+    val uiState   by vm.uiState.collectAsStateWithLifecycle()
+    val productos by vm.productos.collectAsStateWithLifecycle()
 
-    // ── Estado autocomplete supermercado ──────────────────────────────────────
+    var fecha        by remember { mutableStateOf("") }
+    var hora         by remember { mutableStateOf("") }
+    var supermercado by remember { mutableStateOf("") }
+    var total        by remember { mutableStateOf("") }
+
+    // Autocomplete supermercado
     var supermercados     by remember { mutableStateOf(supermercadosMock.toMutableList()) }
     var superQuery        by remember { mutableStateOf("") }
     var dropdownOpen      by remember { mutableStateOf(false) }
     var showAgregarDialog by remember { mutableStateOf(false) }
     var nuevoSuperNombre  by remember { mutableStateOf("") }
 
+    // BottomSheet para agregar producto
+    val sheetState  = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showSheet   by remember { mutableStateOf(false) }
+
     val supersFiltrados = remember(superQuery, supermercados) {
         if (superQuery.isBlank()) supermercados
         else supermercados.filter { it.contains(superQuery.trim(), ignoreCase = true) }
     }
 
-    // ── Estado del DatePicker ─────────────────────────────────────────────────
+    // DatePicker
     var mostrarCalendario by remember { mutableStateOf(false) }
-    val datePickerState   = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
-    )
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
 
-    // Cuando el diálogo se confirma, formateamos la fecha seleccionada
     if (mostrarCalendario) {
         DatePickerDialog(
             onDismissRequest = { mostrarCalendario = false },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                            fecha = sdf.format(Date(millis))
-                        }
-                        mostrarCalendario = false
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
                     }
-                ) {
-                    Text(
-                        stringResource(R.string.confirmar_fecha),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                    mostrarCalendario = false
+                }) { Text("Aceptar", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarCalendario = false }) {
-                    Text(
-                        stringResource(R.string.cancelar),
-                        color = MaterialTheme.colorScheme.outline
-                    )
+                    Text("Cancelar", color = MaterialTheme.colorScheme.outline)
                 }
             },
-            colors = DatePickerDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(20.dp),
+            colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
-            DatePicker(
-                state  = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    todayContentColor          = MaterialTheme.colorScheme.primary,
-                    todayDateBorderColor       = MaterialTheme.colorScheme.primary,
-                    selectedDayContainerColor  = MaterialTheme.colorScheme.primary,
-                    selectedDayContentColor    = Color.White,
-                    selectedYearContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedYearContentColor   = Color.White
-                )
-            )
+            DatePicker(state = datePickerState, colors = DatePickerDefaults.colors(
+                selectedDayContainerColor  = MaterialTheme.colorScheme.primary,
+                selectedDayContentColor    = Color.White,
+                todayContentColor          = MaterialTheme.colorScheme.primary,
+                todayDateBorderColor       = MaterialTheme.colorScheme.primary
+            ))
         }
     }
-    // ─────────────────────────────────────────────────────────────────────────
 
-    // ── Dialog: agregar nuevo supermercado ────────────────────────────────────
+    // Dialog agregar supermercado
     if (showAgregarDialog) {
         Dialog(onDismissRequest = { showAgregarDialog = false; nuevoSuperNombre = "" }) {
-            Surface(
-                shape           = RoundedCornerShape(20.dp),
-                color           = MaterialTheme.colorScheme.surfaceContainerLow,
-                shadowElevation = 4.dp
-            ) {
-                Column(
-                    modifier            = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        "Agregar supermercado",
-                        style      = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "\"${superQuery.trim()}\" no está en la lista. Confirmá el nombre para agregarlo.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
-                    )
+            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 4.dp) {
+                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text("Agregar supermercado", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     OutlinedTextField(
-                        value         = nuevoSuperNombre,
-                        onValueChange = { nuevoSuperNombre = it },
-                        label         = { Text("Nombre del supermercado") },
-                        singleLine    = true,
-                        modifier      = Modifier.fillMaxWidth(),
-                        shape         = RoundedCornerShape(12.dp),
-                        colors        = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor      = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor    = MaterialTheme.colorScheme.outlineVariant,
-                            focusedContainerColor   = MaterialTheme.colorScheme.surfaceContainerLow,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        leadingIcon = {
-                            Icon(Icons.Default.Store, null, tint = MaterialTheme.colorScheme.primary)
-                        }
+                        value = nuevoSuperNombre, onValueChange = { nuevoSuperNombre = it },
+                        label = { Text("Nombre del supermercado") }, singleLine = true,
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant)
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(
-                            onClick  = { showAgregarDialog = false; nuevoSuperNombre = "" },
-                            modifier = Modifier.weight(1f),
-                            shape    = RoundedCornerShape(12.dp)
-                        ) { Text("Cancelar") }
+                        OutlinedButton(onClick = { showAgregarDialog = false; nuevoSuperNombre = "" }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) { Text("Cancelar") }
                         Button(
-                            onClick  = {
+                            onClick = {
                                 val nuevo = nuevoSuperNombre.trim()
-                                if (nuevo.isNotBlank()) {
-                                    supermercados = (supermercados + nuevo).toMutableList()
-                                    supermercado  = nuevo
-                                    superQuery    = nuevo
-                                    dropdownOpen  = false
-                                }
-                                showAgregarDialog = false
-                                nuevoSuperNombre  = ""
+                                if (nuevo.isNotBlank()) { supermercados = (supermercados + nuevo).toMutableList(); supermercado = nuevo; superQuery = nuevo; dropdownOpen = false }
+                                showAgregarDialog = false; nuevoSuperNombre = ""
                             },
-                            modifier = Modifier.weight(1f),
-                            shape    = RoundedCornerShape(12.dp),
-                            enabled  = nuevoSuperNombre.isNotBlank(),
-                            colors   = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("Agregar", fontWeight = FontWeight.SemiBold)
-                        }
+                            modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), enabled = nuevoSuperNombre.isNotBlank(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) { Text("Agregar", fontWeight = FontWeight.SemiBold) }
                     }
                 }
             }
         }
     }
-    // ─────────────────────────────────────────────────────────────────────────
+
+    // BottomSheet agregar producto
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        ) {
+            AgregarProductoSheet(
+                onGuardar = { producto -> vm.agregarProducto(producto); showSheet = false },
+                onCancelar = { showSheet = false }
+            )
+        }
+    }
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor    = MaterialTheme.colorScheme.primary,
@@ -199,144 +160,58 @@ fun NuevaCompraScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             Spacer(Modifier.height(16.dp))
-
-            // ── Section header ────────────────────────────────────────────
-            Text("Detalles del ticket", fontSize = 24.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
-            Text("Ingresá la información básica de tu compra.",
-                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-
+            Text("Detalles del ticket", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
+            Text("Ingresá la información básica de tu compra.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(20.dp))
 
-            // ── Form card ─────────────────────────────────────────────────
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = RoundedCornerShape(16.dp),
-                color    = MaterialTheme.colorScheme.surfaceContainerLow,
-                shadowElevation = 1.dp,
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
-                )
+            // ── Form card ──────────────────────────────────────────────────────
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 1.dp,
+                border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(0.3f)))
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-                    // Supermercado — autocomplete con búsqueda y agregar nuevo
+                    // Supermercado
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         LabelCaps("SUPERMERCADO")
-
-                        // Campo de búsqueda editable
                         OutlinedTextField(
-                            value         = superQuery,
-                            onValueChange = {
-                                superQuery   = it
-                                supermercado = ""
-                                dropdownOpen = it.isNotBlank()
-                            },
-                            placeholder   = { Text("Buscá o escribí un supermercado", color = MaterialTheme.colorScheme.outline) },
-                            modifier      = Modifier.fillMaxWidth(),
-                            singleLine    = true,
-                            shape         = RoundedCornerShape(12.dp),
-                            colors        = fieldColors,
-                            leadingIcon   = {
-                                Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary)
-                            },
-                            trailingIcon  = {
-                                IconButton(onClick = { dropdownOpen = !dropdownOpen; if (dropdownOpen) superQuery = "" }) {
-                                    ExposedDropdownMenuDefaults.TrailingIcon(dropdownOpen)
-                                }
-                            }
+                            value = superQuery, onValueChange = { superQuery = it; supermercado = ""; dropdownOpen = it.isNotBlank() },
+                            placeholder = { Text("Buscá o escribí un supermercado", color = MaterialTheme.colorScheme.outline) },
+                            modifier = Modifier.fillMaxWidth(), singleLine = true,
+                            shape = RoundedCornerShape(12.dp), colors = fieldColors,
+                            leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
+                            trailingIcon = { IconButton(onClick = { dropdownOpen = !dropdownOpen }) { ExposedDropdownMenuDefaults.TrailingIcon(dropdownOpen) } }
                         )
-
-                        // Chip de confirmación cuando hay uno seleccionado
                         if (supermercado.isNotBlank()) {
-                            Surface(
-                                shape = RoundedCornerShape(20.dp),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                            ) {
-                                Row(
-                                    modifier              = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                    verticalAlignment     = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Icon(Icons.Default.Store, null,
-                                        tint     = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(14.dp))
-                                    Text(
-                                        supermercado,
-                                        style      = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color      = MaterialTheme.colorScheme.primary
-                                    )
+                            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)) {
+                                Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Icon(Icons.Default.Store, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                                    Text(supermercado, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
-
-                        // Dropdown con resultados filtrados
                         if (dropdownOpen) {
-                            Surface(
-                                modifier        = Modifier.fillMaxWidth().heightIn(max = 220.dp),
-                                shape           = RoundedCornerShape(12.dp),
-                                color           = MaterialTheme.colorScheme.surfaceContainerLow,
-                                shadowElevation = 4.dp,
-                                border          = CardDefaults.outlinedCardBorder().copy(
-                                    brush = SolidColor(Color(0xFFBBCABF).copy(alpha = 0.4f))
-                                )
-                            ) {
+                            Surface(modifier = Modifier.fillMaxWidth().heightIn(max = 220.dp), shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 4.dp) {
                                 LazyColumn {
                                     items(supersFiltrados) { s ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    supermercado = s
-                                                    superQuery   = s
-                                                    dropdownOpen = false
-                                                }
-                                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                                            verticalAlignment     = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Icon(Icons.Default.Store, null,
-                                                tint     = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(18.dp))
+                                        Row(modifier = Modifier.fillMaxWidth().clickable { supermercado = s; superQuery = s; dropdownOpen = false }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            Icon(Icons.Default.Store, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                             Text(s, style = MaterialTheme.typography.bodyMedium)
                                         }
-                                        if (s != supersFiltrados.last())
-                                            HorizontalDivider(color = Color(0xFFBBCABF).copy(alpha = 0.2f))
+                                        if (s != supersFiltrados.last()) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.2f))
                                     }
-
-                                    // Sin resultados → opción de agregar
                                     if (supersFiltrados.isEmpty() && superQuery.isNotBlank()) {
                                         item {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clickable {
-                                                        nuevoSuperNombre  = superQuery.trim()
-                                                        dropdownOpen      = false
-                                                        showAgregarDialog = true
-                                                    }
-                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                                verticalAlignment     = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                            ) {
-                                                Icon(Icons.Default.Add, null,
-                                                    tint     = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(18.dp))
-                                                Text(
-                                                    "Agregar \"${superQuery.trim()}\"",
-                                                    style      = MaterialTheme.typography.bodyMedium,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    color      = MaterialTheme.colorScheme.primary
-                                                )
+                                            Row(modifier = Modifier.fillMaxWidth().clickable { nuevoSuperNombre = superQuery.trim(); dropdownOpen = false; showAgregarDialog = true }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                                Text("Agregar \"${superQuery.trim()}\"", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                                             }
                                         }
                                     }
@@ -347,38 +222,18 @@ fun NuevaCompraScreen(
 
                     // Fecha / Hora
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                        // ── FECHA con ícono de calendario ─────────────────
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             LabelCaps("FECHA")
-                            OutlinedTextField(
-                                value         = fecha,
-                                onValueChange = {},           // solo lectura; se edita via picker
-                                readOnly      = true,
-                                placeholder   = { Text("dd/mm/aaaa", color = MaterialTheme.colorScheme.outline) },
-                                trailingIcon  = {
-                                    IconButton(onClick = { mostrarCalendario = true }) {
-                                        Icon(
-                                            imageVector        = Icons.Default.DateRange,
-                                            contentDescription = stringResource(R.string.abrir_calendario),
-                                            tint               = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape  = RoundedCornerShape(12.dp),
-                                colors = fieldColors
-                            )
+                            OutlinedTextField(value = fecha, onValueChange = {}, readOnly = true,
+                                placeholder = { Text("dd/mm/aaaa", color = MaterialTheme.colorScheme.outline) },
+                                trailingIcon = { IconButton(onClick = { mostrarCalendario = true }) { Icon(Icons.Default.DateRange, null, tint = MaterialTheme.colorScheme.primary) } },
+                                modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
-
-                        // ── HORA (texto libre) ────────────────────────────
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             LabelCaps("HORA")
                             OutlinedTextField(value = hora, onValueChange = { hora = it },
                                 placeholder = { Text("hh:mm", color = MaterialTheme.colorScheme.outline) },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true,
-                                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+                                modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                     }
 
@@ -395,69 +250,149 @@ fun NuevaCompraScreen(
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
-
-            // ── Ticket ────────────────────────────────────────────────────
-            Text("Ticket de compra", fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface)
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                onClick  = {},
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape    = RoundedCornerShape(12.dp),
-                colors   = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                border   = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(
-                        MaterialTheme.colorScheme.outlineVariant))
-            ) {
-                Icon(Icons.Default.CameraAlt, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.compra_adjuntar_ticket), fontWeight = FontWeight.Medium)
+            // ── Error ──────────────────────────────────────────────────────────
+            if (uiState is UiState.Error) {
+                Spacer(Modifier.height(8.dp))
+                Text((uiState as UiState.Error).mensaje, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // ── Productos ─────────────────────────────────────────────────
-            Text("Productos", fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface)
-            Spacer(Modifier.height(8.dp))
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = RoundedCornerShape(12.dp),
-                color    = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ) {
-                Box(Modifier.padding(16.dp)) {
-                    Text(stringResource(R.string.producto_sin_productos),
-                        color = MaterialTheme.colorScheme.outline)
+            // ── Productos ──────────────────────────────────────────────────────
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                Text("Productos (${productos.size})", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                TextButton(onClick = { showSheet = true }) {
+                    Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Agregar", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                 }
             }
+            Spacer(Modifier.height(8.dp))
 
-            Spacer(Modifier.height(12.dp))
-
-            OutlinedButton(
-                onClick  = onAgregarProductoClick,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape    = RoundedCornerShape(12.dp),
-                colors   = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("➕  ${stringResource(R.string.compra_agregar_producto)}", fontWeight = FontWeight.Medium)
+            if (productos.isEmpty()) {
+                Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
+                    Box(Modifier.padding(16.dp)) { Text(stringResource(R.string.producto_sin_productos), color = MaterialTheme.colorScheme.outline) }
+                }
+            } else {
+                productos.forEach { p ->
+                    ProductoItemRow(producto = p, onEliminar = { vm.eliminarProducto(p.id) })
+                    Spacer(Modifier.height(8.dp))
+                }
             }
 
             Spacer(Modifier.height(20.dp))
 
-            Button(
-                onClick   = onGuardarClick,
-                modifier  = Modifier.fillMaxWidth().height(56.dp),
-                shape     = RoundedCornerShape(14.dp),
-                colors    = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                elevation = ButtonDefaults.buttonElevation(4.dp)
-            ) {
-                Text(stringResource(R.string.compra_guardar), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            // ── Botón guardar ──────────────────────────────────────────────────
+            when (uiState) {
+                is UiState.Loading -> Box(Modifier.fillMaxWidth(), Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+                else -> Button(
+                    onClick = { vm.guardar(supermercado, fecha, hora, total, onGuardarClick) },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    elevation = ButtonDefaults.buttonElevation(4.dp)
+                ) {
+                    Text(stringResource(R.string.compra_guardar), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
             }
 
             Spacer(Modifier.height(32.dp))
         }
+    }
+}
+
+// ── Fila de producto en la lista de Nueva Compra ──────────────────────────────
+
+@Composable
+private fun ProductoItemRow(producto: Producto, onEliminar: () -> Unit) {
+    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 1.dp,
+        border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(0.25f)))
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(producto.nombre, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                Text("x${producto.cantidad}  ·  $ %,.2f c/u".format(producto.precio), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("$ %,.2f".format(producto.subtotal), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                IconButton(onClick = onEliminar, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+// ── BottomSheet para agregar un producto ──────────────────────────────────────
+
+@Composable
+private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -> Unit) {
+    var nombre      by remember { mutableStateOf("") }
+    var codigo      by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var cantidad    by remember { mutableStateOf("1") }
+    var precio      by remember { mutableStateOf("") }
+    val subtotal = (cantidad.toDoubleOrNull() ?: 0.0) * (precio.toDoubleOrNull() ?: 0.0)
+
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+
+    Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Box(modifier = Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(MaterialTheme.colorScheme.outlineVariant.copy(0.5f)).align(Alignment.CenterHorizontally))
+        Text("Agregar producto", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+
+        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre del producto") },
+            modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
+        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción (opcional)") },
+            modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 3, shape = RoundedCornerShape(12.dp), colors = fieldColors)
+        OutlinedTextField(value = codigo, onValueChange = { codigo = it }, label = { Text("Código de barras") },
+            modifier = Modifier.fillMaxWidth(), singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            shape = RoundedCornerShape(12.dp), colors = fieldColors)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(value = cantidad, onValueChange = { cantidad = it }, label = { Text("Cantidad") },
+                modifier = Modifier.weight(1f), singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+            OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio unitario") },
+                modifier = Modifier.weight(1f), singleLine = true,
+                leadingIcon = { Text("$", color = MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Bold) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                shape = RoundedCornerShape(12.dp), colors = fieldColors)
+        }
+
+        if (subtotal > 0) {
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primary.copy(0.08f)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Subtotal  (${cantidad}×)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text("$ %,.2f".format(subtotal), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp)) { Text("Cancelar") }
+            Button(
+                onClick = {
+                    onGuardar(Producto(
+                        id = System.currentTimeMillis().toInt(), codigo = codigo,
+                        nombre = nombre, descripcion = descripcion,
+                        cantidad = cantidad.toIntOrNull() ?: 1, precio = precio.toDoubleOrNull() ?: 0.0
+                    ))
+                },
+                modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                enabled = nombre.isNotBlank() && precio.isNotBlank()
+            ) { Text("Guardar", fontWeight = FontWeight.SemiBold) }
+        }
+        Spacer(Modifier.height(8.dp))
     }
 }
 

@@ -6,13 +6,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [UsuarioEntity::class],
-    version = 1,
+    entities = [
+        UsuarioEntity::class,
+        CompraEntity::class,
+        ProductoEntity::class
+    ],
+    version = 2,                 // ← subimos de 1 a 2 por las tablas nuevas
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun usuarioDao(): UsuarioDao
+    abstract fun compraDao(): CompraDao
+    abstract fun productoDao(): ProductoDao
 
     companion object {
         @Volatile
@@ -24,7 +30,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "superahorro.db"
-                ).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration()  // en dev: borra y recrea si cambia la versión
+                    .build()
+                    .also { INSTANCE = it }
             }
         }
     }
