@@ -6,7 +6,7 @@ import com.undef.superahorro.BossioCorrea.data.local.ProductoEntity
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -15,17 +15,26 @@ class CompraRepository(private val db: AppDatabase) {
     private val compraDao   = db.compraDao()
     private val productoDao = db.productoDao()
 
-    // ── Observar compras del usuario (Flow — se actualiza automáticamente) ────
+    // ── Observar compras del usuario ──────────────────────────────────────────
+    //
+    // FIX DEL CRASH: el operador map{} de Flow NO es suspendable.
+    // Llamar a productoDao.getProductosDeCompra() (suspend fun) dentro de
+    // map{} lanza IllegalStateException en runtime → crash en "Mis Compras".
+    //
+    // La solución es usar mapLatest{} que SÍ ejecuta su bloque en una
+    // corrutina, permitiendo llamadas suspend dentro.
 
     fun getComprasFlow(usuarioId: Int): Flow<List<Compra>> =
-        compraDao.getComprasDeUsuario(usuarioId).map { entities ->
+        compraDao.getComprasDeUsuario(usuarioId).mapLatest { entities ->
+            // mapLatest: si llega una nueva emisión cancela la anterior
+            // y lanza una nueva corrutina — seguro para llamadas suspend
             entities.map { entity ->
-                val productos = productoDao.getProductosDeCompra(entity.id)
+                val productos = productoDao.getProductosDeCompra(entity.id) // suspend ✅
                 entity.toDomain(productos)
             }
         }
 
-    // ── Guardar una compra con sus productos ──────────────────────────────────
+    // ── Guardar compra con productos ──────────────────────────────────────────
 
     suspend fun guardarCompra(
         usuarioId    : Int,
@@ -33,45 +42,33 @@ class CompraRepository(private val db: AppDatabase) {
         hora         : String,
         supermercado : String,
         total        : Double,
-        productos    : List<Producto>
+        productos    : List<Producto>,
+        ticketUri    : String? = null
     ): Int {
         val compraId = compraDao.insertar(
             CompraEntity(
-                usuarioId    = usuarioId,
-                fecha        = fecha,
-                hora         = hora,
-                supermercado = supermercado,
-                total        = total
+                usuarioId      = usuarioId,
+                fecha          = fecha,
+                hora           = hora,
+                supermercado   = supermercado,
+                total          = total,
+                ticketImageUri = ticketUri
             )
         ).toInt()
 
         if (productos.isNotEmpty()) {
-            productoDao.insertarTodos(
-                productos.map { it.toEntity(compraId) }
-            )
+            productoDao.insertarTodos(productos.map { it.toEntity(compraId) })
         }
         return compraId
     }
-
-    // ── Agregar un producto a una compra ya existente ─────────────────────────
 
     suspend fun agregarProducto(compraId: Int, producto: Producto) {
         productoDao.insertar(producto.toEntity(compraId))
     }
 
-    // ── Eliminar compra (los productos se borran en cascada) ──────────────────
+    suspend fun eliminarCompra(compraId: Int) { compraDao.eliminar(compraId) }
 
-    suspend fun eliminarCompra(compraId: Int) {
-        compraDao.eliminar(compraId)
-    }
-
-    // ── Eliminar un producto puntual ──────────────────────────────────────────
-
-    suspend fun eliminarProducto(productoId: Int) {
-        productoDao.eliminar(productoId)
-    }
-
-    // ── Obtener una compra puntual con sus productos ──────────────────────────
+    suspend fun eliminarProducto(productoId: Int) { productoDao.eliminar(productoId) }
 
     suspend fun getCompraById(compraId: Int): Compra? {
         val entity    = compraDao.getById(compraId) ?: return null
@@ -84,12 +81,12 @@ class CompraRepository(private val db: AppDatabase) {
 
 private fun CompraEntity.toDomain(productos: List<ProductoEntity>): Compra =
     Compra(
-        id           = id,
-        fecha        = LocalDate.parse(fecha),
-        hora         = LocalTime.parse(hora),
-        supermercado = supermercado,
-        total        = total,
-        productos    = productos.map { it.toDomain() },
+        id             = id,
+        fecha          = LocalDate.parse(fecha),
+        hora           = LocalTime.parse(hora),
+        supermercado   = supermercado,
+        total          = total,
+        productos      = productos.map { it.toDomain() },
         ticketImageUri = ticketImageUri
     )
 
