@@ -327,7 +327,7 @@ fun HomeScreen(
                                             ) {
                                                 Box(Modifier.size(6.dp).clip(CircleShape)
                                                     .background(MaterialTheme.colorScheme.primary))
-                                                Text("Completada", fontSize = 10.sp,
+                                                Text(stringResource(R.string.home_completada), fontSize = 10.sp,
                                                     color = MaterialTheme.colorScheme.primary,
                                                     fontWeight = FontWeight.SemiBold)
                                             }
@@ -407,7 +407,7 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
                         horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(12.dp))
-                        Text("Super Ahorrador", fontSize = 11.sp,
+                        Text(stringResource(R.string.home_super_ahorrador), fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     }
                 }
@@ -416,9 +416,9 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 
-        SheetMenuItem(Icons.Default.Person, "Mi Perfil", "Ver y editar mis datos", onVerPerfilClick)
-        SheetMenuItem(Icons.Default.BarChart, "Mis estadísticas", "Resumen de ahorro y gastos", {})
-        SheetMenuItem(Icons.Default.Share, "Compartir app", "Invitá a un amigo", {})
+        SheetMenuItem(Icons.Default.Person, stringResource(R.string.home_mi_perfil), stringResource(R.string.home_mi_perfil_desc), onVerPerfilClick)
+        SheetMenuItem(Icons.Default.BarChart, stringResource(R.string.home_mis_estadisticas), stringResource(R.string.home_mis_estadisticas_desc), {})
+        SheetMenuItem(Icons.Default.Share, stringResource(R.string.home_compartir_app), stringResource(R.string.home_compartir_app_desc), {})
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 
@@ -426,7 +426,7 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
             onClick  = onCerrarClick,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).height(48.dp)
         ) {
-            Text("Cerrar", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            Text(stringResource(R.string.cerrar), fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.outline)
         }
         Spacer(Modifier.height(8.dp))

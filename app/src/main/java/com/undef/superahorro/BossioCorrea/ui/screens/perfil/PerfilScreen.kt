@@ -70,17 +70,17 @@ fun PerfilScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar sesión", fontWeight = FontWeight.Bold) },
-            text  = { Text("¿Seguro que querés cerrar sesión?",
+            title = { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Bold) },
+            text  = { Text(stringResource(R.string.perfil_cerrar_sesion_confirmacion),
                 color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 Button(
                     onClick = { showLogoutDialog = false; onCerrarSesionClick() },
                     colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Cerrar sesión", color = Color.White) }
+                ) { Text(stringResource(R.string.perfil_cerrar_sesion), color = Color.White) }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") }
+                OutlinedButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.cancelar)) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -154,20 +154,20 @@ fun PerfilScreen(
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("NOMBRE")
+                            LabelCaps(stringResource(R.string.register_nombre))
                             OutlinedTextField(value = nombre, onValueChange = { nombre = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("APELLIDO")
+                            LabelCaps(stringResource(R.string.register_apellido))
                             OutlinedTextField(value = apellido, onValueChange = { apellido = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL")
+                        LabelCaps(stringResource(R.string.campo_email))
                         OutlinedTextField(value = email, onValueChange = { email = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             shape = RoundedCornerShape(12.dp), colors = fieldColors)
@@ -223,21 +223,21 @@ private fun StatsRow() {
             modifier  = Modifier.weight(1f),
             emoji     = "🛒",
             value     = "5",
-            label     = "Compras",
+            label     = stringResource(R.string.home_compras),
             gradient  = CardCompras
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "📦",
             value     = "23",
-            label     = "Productos",
+            label     = stringResource(R.string.perfil_stat_productos),
             gradient  = CardProductos
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "💰",
             value     = "$ 64k",
-            label     = "Ahorrado",
+            label     = stringResource(R.string.perfil_stat_ahorrado),
             gradient  = CardAhorrado
         )
     }

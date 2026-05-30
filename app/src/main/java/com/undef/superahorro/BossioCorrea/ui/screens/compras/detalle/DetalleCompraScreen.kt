@@ -1,9 +1,11 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle
 
+import android.content.Intent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -55,6 +57,9 @@ fun DetalleCompraScreen(
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(compraId) { vm.cargar(compraId) }
 
+    val context = LocalContext.current
+    val compra  = (uiState as? UiState.Success)?.data
+
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
     productoAEliminar?.let { producto ->
@@ -99,7 +104,33 @@ fun DetalleCompraScreen(
                 title       = stringResource(R.string.compra_detalle_titulo),
                 onBackClick = onBackClick,
                 actions     = {
-                    IconButton(onClick = {}) {
+                    IconButton(
+                        onClick  = {
+                            compra?.let { c ->
+                                val fmt   = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                val texto = buildString {
+                                    appendLine("🛒 Compra en ${c.supermercado}")
+                                    appendLine("📅 ${c.fecha.format(fmt)} · ${c.hora}")
+                                    appendLine()
+                                    c.productos.forEach { p ->
+                                        appendLine("• ${p.nombre}  ×${p.cantidad}  ${"$%,.2f".format(p.subtotal)}")
+                                    }
+                                    appendLine()
+                                    appendLine("Total: ${"$%,.2f".format(c.total)}")
+                                    appendLine()
+                                    appendLine("Enviado desde Super Ahorro 💚")
+                                }
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, texto)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(intent, "Compartir compra")
+                                )
+                            }
+                        },
+                        enabled = compra != null
+                    ) {
                         Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary)
                     }
                 }

@@ -130,6 +130,46 @@
     <string name="historial_eliminar_mensaje">Do you want to delete the purchase from "%1$s"? This action cannot be undone.</string>
     <string name="historial_sin_compras">No purchases recorded\nfor this period.</string>
 
+    <!-- Nueva Compra Screen -->
+    <string name="nueva_compra_titulo_seccion">Ticket details</string>
+    <string name="nueva_compra_subtitulo">Enter the details or scan the receipt with AI.</string>
+    <string name="nueva_compra_ticket_label">Purchase receipt</string>
+    <string name="nueva_compra_btn_foto">Photo</string>
+    <string name="nueva_compra_btn_cambiar_foto">Change</string>
+    <string name="nueva_compra_analizando">Analyzing...</string>
+    <string name="nueva_compra_btn_escanear_ia">Scan with AI</string>
+    <string name="nueva_compra_ticket_analizado">Receipt analyzed! Review the details before saving.</string>
+    <string name="nueva_compra_super_placeholder">Search or type a supermarket</string>
+    <string name="nueva_compra_super_agregar">Add \"%1$s\"</string>
+    <string name="nueva_compra_fecha_placeholder">dd/mm/yyyy</string>
+    <string name="nueva_compra_hora_placeholder">hh:mm</string>
+    <string name="compra_total_label">Total</string>
+    <string name="nueva_compra_total_placeholder">0.00</string>
+    <string name="nueva_compra_productos_header">Products (%1$d)</string>
+    <string name="nueva_compra_btn_agregar">Add</string>
+    <string name="nueva_compra_subtotal_label">Subtotal (%1$s×)</string>
+    <string name="dialog_agregar_super_titulo">Add supermarket</string>
+    <string name="dialog_agregar_super_campo">Supermarket name</string>
+    <string name="producto_descripcion_opcional">Description (optional)</string>
+    <string name="nueva_compra_precio_label">Unit price</string>
+
+    <!-- Perfil Screen -->
+    <string name="perfil_cerrar_sesion_confirmacion">Are you sure you want to log out?</string>
+    <string name="campo_email">Email</string>
+    <string name="perfil_stat_productos">Products</string>
+    <string name="perfil_stat_ahorrado">Saved</string>
+
+    <!-- Home Screen -->
+    <string name="home_completada">Completed</string>
+    <string name="home_super_ahorrador">Super Saver</string>
+    <string name="cerrar">Close</string>
+    <string name="home_mi_perfil">My Profile</string>
+    <string name="home_mi_perfil_desc">View and edit my data</string>
+    <string name="home_mis_estadisticas">My statistics</string>
+    <string name="home_mis_estadisticas_desc">Savings and spending summary</string>
+    <string name="home_compartir_app">Share app</string>
+    <string name="home_compartir_app_desc">Invite a friend</string>
+
     <string name="olvide_password_titulo">Recover password</string>
     <string name="olvide_password_enviado_titulo">Check your email!</string>
     <string name="olvide_password_desc">Enter your email and we will send you a link to reset your password.</string>

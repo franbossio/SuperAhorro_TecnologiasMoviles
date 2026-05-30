@@ -122,9 +122,9 @@ fun NuevaCompraScreen(
                         fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
                     }
                     mostrarCalendario = false
-                }) { Text("Aceptar", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
+                }) { Text(stringResource(R.string.aceptar), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
             },
-            dismissButton = { TextButton(onClick = { mostrarCalendario = false }) { Text("Cancelar", color = MaterialTheme.colorScheme.outline) } },
+            dismissButton = { TextButton(onClick = { mostrarCalendario = false }) { Text(stringResource(R.string.cancelar), color = MaterialTheme.colorScheme.outline) } },
             shape = RoundedCornerShape(20.dp),
             colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
@@ -141,19 +141,19 @@ fun NuevaCompraScreen(
         Dialog(onDismissRequest = { showAgregarDialog = false; nuevoSuperNombre = "" }) {
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 4.dp) {
                 Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Agregar supermercado", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.dialog_agregar_super_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     OutlinedTextField(value = nuevoSuperNombre, onValueChange = { nuevoSuperNombre = it },
-                        label = { Text("Nombre del supermercado") }, singleLine = true,
+                        label = { Text(stringResource(R.string.dialog_agregar_super_campo)) }, singleLine = true,
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OutlinedButton(onClick = { showAgregarDialog = false; nuevoSuperNombre = "" }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) { Text("Cancelar") }
+                        OutlinedButton(onClick = { showAgregarDialog = false; nuevoSuperNombre = "" }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) { Text(stringResource(R.string.cancelar)) }
                         Button(onClick = {
                             val nuevo = nuevoSuperNombre.trim()
                             if (nuevo.isNotBlank()) { supermercados = (supermercados + nuevo).toMutableList(); supermercado = nuevo; superQuery = nuevo; dropdownOpen = false }
                             showAgregarDialog = false; nuevoSuperNombre = ""
                         }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), enabled = nuevoSuperNombre.isNotBlank(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) { Text("Agregar", fontWeight = FontWeight.SemiBold) }
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) { Text(stringResource(R.string.nueva_compra_btn_agregar), fontWeight = FontWeight.SemiBold) }
                     }
                 }
             }
@@ -225,8 +225,8 @@ fun NuevaCompraScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(16.dp))
-            Text("Detalles del ticket", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
-            Text("Ingresá los datos o escaneá el ticket con IA.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+            Text(stringResource(R.string.nueva_compra_titulo_seccion), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
+            Text(stringResource(R.string.nueva_compra_subtitulo), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(16.dp))
 
             // ── SECCIÓN TICKET ────────────────────────────────────────────────
@@ -234,13 +234,13 @@ fun NuevaCompraScreen(
                 color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 1.dp,
                 border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(MaterialTheme.colorScheme.outlineVariant.copy(0.3f)))) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LabelCaps("TICKET DE COMPRA")
+                    LabelCaps(stringResource(R.string.nueva_compra_ticket_label))
 
                     // Previsualización de la imagen
                     if (ticketUri != null) {
                         AsyncImage(
                             model             = ticketUri,
-                            contentDescription = "Ticket de compra",
+                            contentDescription = stringResource(R.string.nueva_compra_ticket_label),
                             modifier          = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp)),
                             contentScale      = ContentScale.Crop
                         )
@@ -257,7 +257,7 @@ fun NuevaCompraScreen(
                         ) {
                             Icon(Icons.Default.CameraAlt, null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text(if (ticketUri == null) "Foto" else "Cambiar", fontWeight = FontWeight.Medium)
+                            Text(if (ticketUri == null) stringResource(R.string.nueva_compra_btn_foto) else stringResource(R.string.nueva_compra_btn_cambiar_foto), fontWeight = FontWeight.Medium)
                         }
 
                         // Botón escanear con IA
@@ -278,11 +278,11 @@ fun NuevaCompraScreen(
                             if (analizando) {
                                 CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                                 Spacer(Modifier.width(6.dp))
-                                Text("Analizando...", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.nueva_compra_analizando), fontWeight = FontWeight.SemiBold)
                             } else {
                                 Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Escanear con IA", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.nueva_compra_btn_escanear_ia), fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -297,7 +297,7 @@ fun NuevaCompraScreen(
                         Surface(shape = RoundedCornerShape(10.dp), color = MaterialTheme.colorScheme.primary.copy(0.10f)) {
                             Row(modifier = Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                                Text("¡Ticket analizado! Revisá los datos antes de guardar.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.nueva_compra_ticket_analizado), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                             }
                         }
                     }
@@ -314,10 +314,10 @@ fun NuevaCompraScreen(
 
                     // Supermercado
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("SUPERMERCADO")
+                        LabelCaps(stringResource(R.string.compra_supermercado))
                         OutlinedTextField(value = superQuery,
                             onValueChange = { superQuery = it; supermercado = ""; dropdownOpen = it.isNotBlank() },
-                            placeholder = { Text("Buscá o escribí un supermercado", color = MaterialTheme.colorScheme.outline) },
+                            placeholder = { Text(stringResource(R.string.nueva_compra_super_placeholder), color = MaterialTheme.colorScheme.outline) },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             shape = RoundedCornerShape(12.dp), colors = fieldColors,
                             leadingIcon = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
@@ -349,7 +349,7 @@ fun NuevaCompraScreen(
                                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                                                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                                 Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                                                Text("Agregar \"${superQuery.trim()}\"", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                                                Text(stringResource(R.string.nueva_compra_super_agregar, superQuery.trim()), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                                             }
                                         }
                                     }
@@ -361,25 +361,25 @@ fun NuevaCompraScreen(
                     // Fecha / Hora
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("FECHA")
+                            LabelCaps(stringResource(R.string.compra_fecha))
                             OutlinedTextField(value = fecha, onValueChange = {}, readOnly = true,
-                                placeholder = { Text("dd/mm/aaaa", color = MaterialTheme.colorScheme.outline) },
+                                placeholder = { Text(stringResource(R.string.nueva_compra_fecha_placeholder), color = MaterialTheme.colorScheme.outline) },
                                 trailingIcon = { IconButton(onClick = { mostrarCalendario = true }) { Icon(Icons.Default.DateRange, null, tint = MaterialTheme.colorScheme.primary) } },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("HORA")
+                            LabelCaps(stringResource(R.string.compra_hora))
                             OutlinedTextField(value = hora, onValueChange = { hora = it },
-                                placeholder = { Text("hh:mm", color = MaterialTheme.colorScheme.outline) },
+                                placeholder = { Text(stringResource(R.string.nueva_compra_hora_placeholder), color = MaterialTheme.colorScheme.outline) },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                     }
 
                     // Total
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("TOTAL")
+                        LabelCaps(stringResource(R.string.compra_total_label))
                         OutlinedTextField(value = total, onValueChange = { total = it },
-                            placeholder = { Text("0.00", color = MaterialTheme.colorScheme.outline) },
+                            placeholder = { Text(stringResource(R.string.nueva_compra_total_placeholder), color = MaterialTheme.colorScheme.outline) },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             leadingIcon = { Text("$", color = MaterialTheme.colorScheme.outline) },
@@ -398,11 +398,11 @@ fun NuevaCompraScreen(
 
             // ── PRODUCTOS ─────────────────────────────────────────────────────
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                Text("Productos (${productos.size})", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.nueva_compra_productos_header, productos.size), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 TextButton(onClick = { showSheet = true }) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Agregar", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.nueva_compra_btn_agregar), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -478,19 +478,19 @@ private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -
 
     Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(modifier = Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(MaterialTheme.colorScheme.outlineVariant.copy(0.5f)).align(Alignment.CenterHorizontally))
-        Text("Agregar producto", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(R.string.compra_agregar_producto), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
 
-        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre del producto") },
+        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text(stringResource(R.string.producto_nombre)) },
             modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors)
-        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción (opcional)") },
+        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text(stringResource(R.string.producto_descripcion_opcional)) },
             modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 3, shape = RoundedCornerShape(12.dp), colors = fieldColors)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(value = cantidad, onValueChange = { cantidad = it }, label = { Text("Cantidad") },
+            OutlinedTextField(value = cantidad, onValueChange = { cantidad = it }, label = { Text(stringResource(R.string.producto_cantidad)) },
                 modifier = Modifier.weight(1f), singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
-            OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio unitario") },
+            OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text(stringResource(R.string.nueva_compra_precio_label)) },
                 modifier = Modifier.weight(1f), singleLine = true,
                 leadingIcon = { Text("$", color = MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Bold) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -500,14 +500,14 @@ private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -
         if (subtotal > 0) {
             Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primary.copy(0.08f)) {
                 Row(modifier = Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Subtotal  (${cantidad}×)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.nueva_compra_subtotal_label, cantidad), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                     Text("$ %,.2f".format(subtotal), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp)) { Text("Cancelar") }
+            OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp)) { Text(stringResource(R.string.cancelar)) }
             Button(
                 onClick = {
                     onGuardar(Producto(id = System.currentTimeMillis().toInt(), codigo = "", nombre = nombre,
@@ -516,7 +516,7 @@ private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -
                 modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 enabled = nombre.isNotBlank() && precio.isNotBlank()
-            ) { Text("Guardar", fontWeight = FontWeight.SemiBold) }
+            ) { Text(stringResource(R.string.guardar), fontWeight = FontWeight.SemiBold) }
         }
         Spacer(Modifier.height(8.dp))
     }
