@@ -326,8 +326,3 @@ private fun InfoRow(icon: ImageVector, title: String, value: String) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun SettingsPreview() {
-    SuperAhorroTheme { SettingsScreen(themeViewModel = ThemeViewModel()) }
-}
