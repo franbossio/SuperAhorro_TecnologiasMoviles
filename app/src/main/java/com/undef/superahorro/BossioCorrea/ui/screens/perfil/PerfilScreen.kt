@@ -46,17 +46,23 @@ fun PerfilScreen(
     onBackClick         : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    var nombre   by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
-    var email    by remember { mutableStateOf("") }
-    var showLogoutDialog by remember { mutableStateOf(false) }
+    var nombre            by remember { mutableStateOf("") }
+    var apellido          by remember { mutableStateOf("") }
+    var email             by remember { mutableStateOf("") }
+    var cantidadCompras   by remember { mutableStateOf(0) }
+    var cantidadProductos by remember { mutableStateOf(0) }
+    var totalGastado      by remember { mutableStateOf(0.0) }
+    var showLogoutDialog  by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success) {
-            val u = (uiState as UiState.Success).data
-            nombre   = u.nombre
-            apellido = u.apellido
-            email    = u.email
+            val u = (uiState as UiState.Success<PerfilData>).data
+            nombre            = u.nombre
+            apellido          = u.apellido
+            email             = u.email
+            cantidadCompras   = u.cantidadCompras
+            cantidadProductos = u.cantidadProductos
+            totalGastado      = u.totalGastado
         }
     }
 
@@ -137,7 +143,11 @@ fun PerfilScreen(
             Spacer(Modifier.height(24.dp))
 
             // ── Stats cards rediseñadas ────────────────────────────────────
-            StatsRow()
+            StatsRow(
+                cantidadCompras   = cantidadCompras,
+                cantidadProductos = cantidadProductos,
+                totalGastado      = totalGastado
+            )
 
             Spacer(Modifier.height(24.dp))
 
@@ -214,7 +224,16 @@ fun PerfilScreen(
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun StatsRow() {
+private fun StatsRow(
+    cantidadCompras   : Int,
+    cantidadProductos : Int,
+    totalGastado      : Double
+) {
+    val gastoFormateado = when {
+        totalGastado >= 1_000_000 -> "$ %.1fM".format(totalGastado / 1_000_000)
+        totalGastado >= 1_000     -> "$ %.0fk".format(totalGastado / 1_000)
+        else                      -> "$ %.0f".format(totalGastado)
+    }
     Row(
         modifier              = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -222,21 +241,21 @@ private fun StatsRow() {
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "🛒",
-            value     = "5",
+            value     = "$cantidadCompras",
             label     = stringResource(R.string.home_compras),
             gradient  = CardCompras
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "📦",
-            value     = "23",
+            value     = "$cantidadProductos",
             label     = stringResource(R.string.perfil_stat_productos),
             gradient  = CardProductos
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "💰",
-            value     = "$ 64k",
+            value     = gastoFormateado,
             label     = stringResource(R.string.perfil_stat_ahorrado),
             gradient  = CardAhorrado
         )

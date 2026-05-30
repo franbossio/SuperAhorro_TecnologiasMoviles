@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class NuevaCompraViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -137,12 +139,18 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
                 val partes  = fecha.split("/")
                 val fechaBD = "${partes[2]}-${partes[1]}-${partes[0]}"
 
+                // Normaliza la hora a "HH:mm" para garantizar parseo correcto al leer
+                val horaBD = try {
+                    LocalTime.parse(hora.trim(), DateTimeFormatter.ofPattern("H:mm"))
+                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+                } catch (_: Exception) { hora.trim() }
+
                 val ticketPath = _ticketUri.value?.let { copiarImagenInterna(it) }
 
                 repo.guardarCompra(
                     usuarioId    = usuarioId,
                     fecha        = fechaBD,
-                    hora         = hora,
+                    hora         = horaBD,
                     supermercado = supermercado,
                     total        = totalDouble,
                     productos    = _productos.value,

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
-import com.undef.superahorro.BossioCorrea.data.mock.usuarioMock
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
@@ -53,6 +52,19 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope      = rememberCoroutineScope()
     var showSheet  by remember { mutableStateOf(false) }
+
+    var perfilNombre   by remember { mutableStateOf("") }
+    var perfilApellido by remember { mutableStateOf("") }
+    var perfilEmail    by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState) {
+        if (uiState is UiState.Success) {
+            val d = (uiState as UiState.Success<HomeData>).data
+            perfilNombre   = d.usuarioNombre
+            perfilApellido = d.usuarioApellido
+            perfilEmail    = d.usuarioEmail
+        }
+    }
 
     val pulse = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by pulse.animateFloat(
@@ -81,6 +93,9 @@ fun HomeScreen(
             }
         ) {
             PerfilBottomSheetContent(
+                nombre   = perfilNombre,
+                apellido = perfilApellido,
+                email    = perfilEmail,
                 onVerPerfilClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         showSheet = false; onPerfilClick()
@@ -377,9 +392,14 @@ fun HomeScreen(
 }
 
 @Composable
-private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick: () -> Unit) {
-    val usuario  = usuarioMock
-    val iniciales = "${usuario.nombre.firstOrNull() ?: ""}${usuario.apellido.firstOrNull() ?: ""}"
+private fun PerfilBottomSheetContent(
+    nombre          : String,
+    apellido        : String,
+    email           : String,
+    onVerPerfilClick: () -> Unit,
+    onCerrarClick   : () -> Unit
+) {
+    val iniciales = "${nombre.firstOrNull() ?: ""}${apellido.firstOrNull() ?: ""}"
 
     Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
         Row(
@@ -395,10 +415,10 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
                 Text(iniciales, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text("${usuario.nombre} ${usuario.apellido}",
+                Text("$nombre $apellido",
                     fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface)
-                Text(usuario.email, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
+                Text(email, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
                 Spacer(Modifier.height(5.dp))
                 Surface(shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(.4f)) {

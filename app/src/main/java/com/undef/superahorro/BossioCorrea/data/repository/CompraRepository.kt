@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class CompraRepository(private val db: AppDatabase) {
 
@@ -26,11 +27,11 @@ class CompraRepository(private val db: AppDatabase) {
 
     fun getComprasFlow(usuarioId: Int): Flow<List<Compra>> =
         compraDao.getComprasDeUsuario(usuarioId).mapLatest { entities ->
-            // mapLatest: si llega una nueva emisión cancela la anterior
-            // y lanza una nueva corrutina — seguro para llamadas suspend
-            entities.map { entity ->
-                val productos = productoDao.getProductosDeCompra(entity.id) // suspend ✅
-                entity.toDomain(productos)
+            entities.mapNotNull { entity ->
+                try {
+                    val productos = productoDao.getProductosDeCompra(entity.id)
+                    entity.toDomain(productos)
+                } catch (_: Exception) { null }
             }
         }
 
@@ -79,11 +80,14 @@ class CompraRepository(private val db: AppDatabase) {
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
+private val FMT_HORA_LENIENTE = DateTimeFormatter.ofPattern("H:mm")
+
 private fun CompraEntity.toDomain(productos: List<ProductoEntity>): Compra =
     Compra(
         id             = id,
         fecha          = LocalDate.parse(fecha),
-        hora           = LocalTime.parse(hora),
+        hora           = try { LocalTime.parse(hora) }
+                         catch (_: Exception) { LocalTime.parse(hora, FMT_HORA_LENIENTE) },
         supermercado   = supermercado,
         total          = total,
         productos      = productos.map { it.toDomain() },

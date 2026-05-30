@@ -33,4 +33,7 @@ interface UsuarioDao {
      */
     @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
     suspend fun getById(id: Int): UsuarioEntity?
+
+    @Query("UPDATE usuarios SET nombre = :nombre, apellido = :apellido, email = :email WHERE id = :id")
+    suspend fun actualizar(id: Int, nombre: String, apellido: String, email: String)
 }
