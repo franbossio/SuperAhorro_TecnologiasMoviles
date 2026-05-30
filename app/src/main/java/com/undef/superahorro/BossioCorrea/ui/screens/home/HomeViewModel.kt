@@ -52,8 +52,20 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val email    = usuario?.email    ?: ""
 
             val ahora  = LocalDate.now()
+            // Muestra el mes actual; si no tiene compras, muestra el mes más reciente con datos
             val delMes = compras.filter {
                 it.fecha.year == ahora.year && it.fecha.monthValue == ahora.monthValue
+            }.let { esteM ->
+                if (esteM.isNotEmpty()) esteM
+                else {
+                    val mesMasReciente = compras.maxByOrNull { it.fecha }?.fecha
+                    if (mesMasReciente != null)
+                        compras.filter {
+                            it.fecha.year == mesMasReciente.year &&
+                            it.fecha.monthValue == mesMasReciente.monthValue
+                        }
+                    else emptyList()
+                }
             }
             val ultima = compras.maxByOrNull { it.fecha.atTime(it.hora) }
 

@@ -101,6 +101,11 @@ fun HomeScreen(
                         showSheet = false; onPerfilClick()
                     }
                 },
+                onEstadisticasClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false; onEstadisticasClick()
+                    }
+                },
                 onCerrarClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion { showSheet = false }
                 }
@@ -393,11 +398,12 @@ fun HomeScreen(
 
 @Composable
 private fun PerfilBottomSheetContent(
-    nombre          : String,
-    apellido        : String,
-    email           : String,
-    onVerPerfilClick: () -> Unit,
-    onCerrarClick   : () -> Unit
+    nombre              : String,
+    apellido            : String,
+    email               : String,
+    onVerPerfilClick    : () -> Unit,
+    onEstadisticasClick : () -> Unit,
+    onCerrarClick       : () -> Unit
 ) {
     val iniciales = "${nombre.firstOrNull() ?: ""}${apellido.firstOrNull() ?: ""}"
 
@@ -437,7 +443,7 @@ private fun PerfilBottomSheetContent(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 
         SheetMenuItem(Icons.Default.Person, stringResource(R.string.home_mi_perfil), stringResource(R.string.home_mi_perfil_desc), onVerPerfilClick)
-        SheetMenuItem(Icons.Default.BarChart, stringResource(R.string.home_mis_estadisticas), stringResource(R.string.home_mis_estadisticas_desc), {})
+        SheetMenuItem(Icons.Default.BarChart, stringResource(R.string.home_mis_estadisticas), stringResource(R.string.home_mis_estadisticas_desc), onEstadisticasClick)
         SheetMenuItem(Icons.Default.Share, stringResource(R.string.home_compartir_app), stringResource(R.string.home_compartir_app_desc), {})
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
