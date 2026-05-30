@@ -22,6 +22,16 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
     val uiState = _uiState.asStateFlow()
 
+    fun loginConBiometria(onExito: () -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            when (val resultado = repo.loginConBiometria()) {
+                is AuthResult.Exito -> { _uiState.value = UiState.Success(Unit); onExito() }
+                is AuthResult.Error -> { _uiState.value = UiState.Error(resultado.mensaje) }
+            }
+        }
+    }
+
     fun login(email: String, password: String, onExito: () -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             _uiState.value = UiState.Error("Completá todos los campos")

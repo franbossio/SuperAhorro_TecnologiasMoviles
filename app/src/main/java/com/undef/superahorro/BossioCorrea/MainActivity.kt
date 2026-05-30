@@ -1,8 +1,8 @@
 package com.undef.superahorro.BossioCorrea
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -15,7 +15,7 @@ import com.undef.superahorro.BossioCorrea.ui.navigation.NavGraph
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
 

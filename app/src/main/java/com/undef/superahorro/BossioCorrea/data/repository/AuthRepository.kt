@@ -3,6 +3,7 @@ package com.undef.superahorro.BossioCorrea.data.repository
 import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.local.UsuarioEntity
+import kotlinx.coroutines.flow.first
 
 /**
  * Resultado sellado para las operaciones de autenticación.
@@ -61,6 +62,25 @@ class AuthRepository(
             AuthResult.Exito(usuario)
         } else {
             AuthResult.Error("Email o contraseña incorrectos")
+        }
+    }
+
+    /**
+     * Login por biometría: la huella/cara ya fue validada por el sistema.
+     * Si hay un userId guardado en sesión, lo usamos para recuperar al usuario
+     * y confirmar que la cuenta sigue existiendo en la BD.
+     */
+    suspend fun loginConBiometria(): AuthResult {
+        val userId = session.userId.first()
+        if (userId == SessionManager.NO_SESSION) {
+            return AuthResult.Error("Iniciá sesión con email y contraseña primero")
+        }
+        val usuario = dao.getById(userId)
+        return if (usuario != null) {
+            session.guardarSesion(usuario.id, usuario.email, usuario.nombre)
+            AuthResult.Exito(usuario)
+        } else {
+            AuthResult.Error("No se encontró la cuenta. Iniciá sesión manualmente")
         }
     }
 

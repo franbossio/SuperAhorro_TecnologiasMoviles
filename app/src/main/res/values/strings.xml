@@ -145,6 +145,13 @@
     <string name="historial_sin_compras">No hay compras registradas\npara este período.</string>
 
 
+    <!-- Biometría -->
+    <string name="login_biometria_titulo">Ingresar a Super Ahorro</string>
+    <string name="login_biometria_subtitulo">Confirmá tu identidad con huella o cara</string>
+    <string name="login_biometria_btn">Ingresar con huella o cara</string>
+    <string name="login_biometria_sin_sesion">Iniciá sesión con email y contraseña primero</string>
+    <string name="login_o">o</string>
+
     <!-- Nueva Compra Screen -->
     <string name="nueva_compra_titulo_seccion">Detalles del ticket</string>
     <string name="nueva_compra_subtitulo">Ingresá los datos o escaneá el ticket con IA.</string>

@@ -130,6 +130,13 @@
     <string name="historial_eliminar_mensaje">Do you want to delete the purchase from "%1$s"? This action cannot be undone.</string>
     <string name="historial_sin_compras">No purchases recorded\nfor this period.</string>
 
+    <!-- Biometric -->
+    <string name="login_biometria_titulo">Log in to Super Ahorro</string>
+    <string name="login_biometria_subtitulo">Confirm your identity with fingerprint or face</string>
+    <string name="login_biometria_btn">Log in with fingerprint or face</string>
+    <string name="login_biometria_sin_sesion">Log in with email and password first</string>
+    <string name="login_o">or</string>
+
     <!-- Nueva Compra Screen -->
     <string name="nueva_compra_titulo_seccion">Ticket details</string>
     <string name="nueva_compra_subtitulo">Enter the details or scan the receipt with AI.</string>

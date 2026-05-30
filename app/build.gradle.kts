@@ -69,6 +69,12 @@ dependencies {
     // Coil — para mostrar la imagen del ticket en la UI
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Biometric — huella dactilar y reconocimiento facial
+    implementation("androidx.biometric:biometric:1.1.0")
+
+    // AppCompat — necesario para que BiometricPrompt funcione con FragmentActivity
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
