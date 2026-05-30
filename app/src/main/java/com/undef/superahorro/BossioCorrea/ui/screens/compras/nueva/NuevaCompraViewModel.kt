@@ -13,10 +13,13 @@ import com.undef.superahorro.BossioCorrea.data.repository.GroqRepository
 import com.undef.superahorro.BossioCorrea.data.repository.GroqResult
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class NuevaCompraViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -90,6 +93,15 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
 
     // ── Productos ─────────────────────────────────────────────────────────────
 
+    private suspend fun copiarImagenInterna(uri: Uri): String? = withContext(Dispatchers.IO) {
+        try {
+            val input = context.contentResolver.openInputStream(uri) ?: return@withContext null
+            val file  = File(context.filesDir, "ticket_${System.currentTimeMillis()}.jpg")
+            file.outputStream().use { out -> input.use { it.copyTo(out) } }
+            file.absolutePath
+        } catch (e: Exception) { null }
+    }
+
     fun agregarProducto(producto: Producto) {
         _productos.value = _productos.value + producto
     }
@@ -125,13 +137,16 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
                 val partes  = fecha.split("/")
                 val fechaBD = "${partes[2]}-${partes[1]}-${partes[0]}"
 
+                val ticketPath = _ticketUri.value?.let { copiarImagenInterna(it) }
+
                 repo.guardarCompra(
                     usuarioId    = usuarioId,
                     fecha        = fechaBD,
                     hora         = hora,
                     supermercado = supermercado,
                     total        = totalDouble,
-                    productos    = _productos.value
+                    productos    = _productos.value,
+                    ticketUri    = ticketPath
                 )
                 _uiState.value = UiState.Success(Unit)
                 onExito()

@@ -29,7 +29,7 @@ sealed class GroqResult {
 
 class GroqRepository {
 
-    private val apiKey = "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"
+    private val apiKey = "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"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
