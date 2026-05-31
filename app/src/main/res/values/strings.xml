@@ -114,6 +114,9 @@
     <string name="settings_tema_oscuro_desc">Modificar tema</string>
     <string name="settings_version">Versión</string>
     <string name="settings_paquete">Paquete</string>
+    <string name="settings_idioma_espanol">🇦🇷 Español</string>
+    <string name="settings_idioma_ingles">🇺🇸 Inglés</string>
+    <string name="settings_idioma_desc">Idioma de la aplicación</string>
 
     <!-- Generales -->
     <string name="cargando">Cargando…</string>

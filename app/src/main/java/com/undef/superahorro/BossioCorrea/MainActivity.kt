@@ -12,12 +12,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.undef.superahorro.BossioCorrea.ui.navigation.NavGraph
+import com.undef.superahorro.BossioCorrea.ui.theme.LanguageViewModel
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private val themeViewModel: ThemeViewModel by viewModels()
+    private val languageViewModel: LanguageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             val isDark = if (useSystemTheme) systemDark else userPreference
 
             SuperAhorroTheme(darkTheme = isDark) {
-                NavGraph(themeViewModel = themeViewModel)
+                NavGraph(themeViewModel = themeViewModel, languageViewModel = languageViewModel)
             }
         }
     }

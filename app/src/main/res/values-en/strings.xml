@@ -105,6 +105,9 @@
     <string name="settings_tema_oscuro_desc">Modify theme</string>
     <string name="settings_version">Version</string>
     <string name="settings_paquete">Package</string>
+    <string name="settings_idioma_espanol">🇦🇷 Spanish</string>
+    <string name="settings_idioma_ingles">🇺🇸 English</string>
+    <string name="settings_idioma_desc">App language</string>
 
     <string name="cargando">Loading…</string>
     <string name="error_generico">An error occurred. Try again.</string>
