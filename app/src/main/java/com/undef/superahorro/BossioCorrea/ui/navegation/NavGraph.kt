@@ -84,7 +84,12 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
                 onHistorialClick    = { navController.navigate(Routes.HISTORIAL_COMPRAS) },
                 onEstadisticasClick = { navController.navigate(Routes.ESTADISTICAS) },
                 onPerfilClick       = { navController.navigate(Routes.PERFIL) },
-                onSettingsClick     = { navController.navigate(Routes.SETTINGS) }
+                onSettingsClick     = { navController.navigate(Routes.SETTINGS) },
+                onCerrarSesionClick = {
+                    navController.navigate(Routes.SPLASH) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }
             )
         }
 

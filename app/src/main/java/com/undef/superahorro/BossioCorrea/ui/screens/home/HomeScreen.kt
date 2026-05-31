@@ -46,12 +46,14 @@ fun HomeScreen(
     onHistorialClick    : () -> Unit = {},
     onEstadisticasClick : () -> Unit = {},
     onPerfilClick       : () -> Unit = {},
-    onSettingsClick     : () -> Unit = {}
+    onSettingsClick     : () -> Unit = {},
+    onCerrarSesionClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope      = rememberCoroutineScope()
-    var showSheet  by remember { mutableStateOf(false) }
+    var showSheet       by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     var perfilNombre   by remember { mutableStateOf("") }
     var perfilApellido by remember { mutableStateOf("") }
@@ -72,6 +74,31 @@ fun HomeScreen(
         animationSpec = infiniteRepeatable(tween(1100, easing = EaseInOutSine), RepeatMode.Reverse),
         label         = "pulseAlpha"
     )
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Bold) },
+            text  = { Text(stringResource(R.string.perfil_cerrar_sesion_confirmacion), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            confirmButton = {
+                Button(
+                    onClick = { showLogoutDialog = false; onCerrarSesionClick() },
+                    colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape   = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.SemiBold) }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick  = { showLogoutDialog = false },
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.cancelar)) }
+            },
+            shape          = RoundedCornerShape(20.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    }
 
     if (showSheet) {
         ModalBottomSheet(
@@ -104,6 +131,11 @@ fun HomeScreen(
                 onEstadisticasClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         showSheet = false; onEstadisticasClick()
+                    }
+                },
+                onCerrarSesionClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false; showLogoutDialog = true
                     }
                 },
                 onCerrarClick = {
@@ -403,6 +435,7 @@ private fun PerfilBottomSheetContent(
     email               : String,
     onVerPerfilClick    : () -> Unit,
     onEstadisticasClick : () -> Unit,
+    onCerrarSesionClick : () -> Unit,
     onCerrarClick       : () -> Unit
 ) {
     val iniciales = "${nombre.firstOrNull() ?: ""}${apellido.firstOrNull() ?: ""}"
@@ -444,7 +477,7 @@ private fun PerfilBottomSheetContent(
 
         SheetMenuItem(Icons.Default.Person, stringResource(R.string.home_mi_perfil), stringResource(R.string.home_mi_perfil_desc), onVerPerfilClick)
         SheetMenuItem(Icons.Default.BarChart, stringResource(R.string.home_mis_estadisticas), stringResource(R.string.home_mis_estadisticas_desc), onEstadisticasClick)
-        SheetMenuItem(Icons.Default.Share, stringResource(R.string.home_compartir_app), stringResource(R.string.home_compartir_app_desc), {})
+        SheetMenuItem(Icons.Default.Logout, stringResource(R.string.perfil_cerrar_sesion), stringResource(R.string.home_cerrar_sesion_desc), onCerrarSesionClick)
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 

@@ -192,8 +192,7 @@
     <string name="home_mi_perfil_desc">View and edit my data</string>
     <string name="home_mis_estadisticas">My statistics</string>
     <string name="home_mis_estadisticas_desc">Savings and spending summary</string>
-    <string name="home_compartir_app">Share app</string>
-    <string name="home_compartir_app_desc">Invite a friend</string>
+    <string name="home_cerrar_sesion_desc">Sign out of your account</string>
 
     <!-- History -->
     <string name="historial_filtro_todos">All</string>

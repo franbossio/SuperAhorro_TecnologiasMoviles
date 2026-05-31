@@ -27,7 +27,7 @@ class ListadoComprasViewModel(application: Application) : AndroidViewModel(appli
         viewModelScope.launch {
             val usuarioId = session.userId.first()
             if (usuarioId == SessionManager.NO_SESSION) {
-                _uiState.value = UiState.Error("Sesión expirada")
+            _uiState.value = UiState.Error("Sesión expirada")
                 return@launch
             }
             // Flow: cada vez que cambia la BD, la UI se actualiza automáticamente

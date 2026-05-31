@@ -44,10 +44,6 @@ import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import java.time.format.DateTimeFormatter
 
-private val MESES = listOf(
-    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,7 +175,7 @@ fun HistorialComprasScreen(
                     // ── Lista agrupada por mes ────────────────────────────
                     val agrupado = compras.groupBy {
                         it.fecha.format(
-                            DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale("es", "AR"))
+                            DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale.getDefault())
                         )
                     }
 
@@ -278,7 +274,7 @@ private fun HeroCard(compras: List<Compra>) {
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "HISTORIAL DE COMPRAS",
+                stringResource(R.string.compra_historial_titulo).uppercase(),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = Color.White.copy(alpha = 0.65f),
                 fontWeight    = FontWeight.Bold,
@@ -299,8 +295,8 @@ private fun HeroCard(compras: List<Compra>) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                HeroStat("COMPRAS",  "${compras.size}")
-                HeroStat("PROMEDIO", "$ %,.0f".format(promedio))
+                HeroStat(stringResource(R.string.home_compras).uppercase(),  "${compras.size}")
+                HeroStat(stringResource(R.string.home_prom).uppercase(), "$ %,.0f".format(promedio))
             }
         }
     }
@@ -378,6 +374,13 @@ private fun MesesRow(
     mesSel        : Int?,
     onMesSelected : (Int?) -> Unit
 ) {
+    val currentLocale = java.util.Locale.getDefault()
+    val meses = remember(currentLocale) {
+        (1..12).map { mesNum ->
+            java.time.LocalDate.of(2000, mesNum, 1)
+                .format(DateTimeFormatter.ofPattern("MMM", currentLocale))
+        }
+    }
     val rowState = rememberLazyListState()
     LaunchedEffect(mesSel) {
         if (mesSel != null) rowState.animateScrollToItem((mesSel - 1).coerceAtLeast(0))
@@ -400,7 +403,7 @@ private fun MesesRow(
                 )
             )
         }
-        itemsIndexed(MESES) { idx, nombre ->
+        itemsIndexed(meses) { idx, nombre ->
             val mesNum = idx + 1
             FilterChip(
                 selected = mesSel == mesNum,
@@ -474,7 +477,7 @@ private fun SwipeBackground(state: SwipeToDismissBoxState) {
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                "Eliminar",
+                stringResource(R.string.eliminar_confirmar),
                 color      = MaterialTheme.colorScheme.error,
                 style      = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold
@@ -488,8 +491,8 @@ private fun SwipeBackground(state: SwipeToDismissBoxState) {
 @Composable
 private fun HistorialRow(compra: Compra, onClick: () -> Unit) {
     val fmtFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val fmtDia   = DateTimeFormatter.ofPattern("dd", java.util.Locale("es", "AR"))
-    val fmtMes   = DateTimeFormatter.ofPattern("MMM", java.util.Locale("es", "AR"))
+    val fmtDia   = DateTimeFormatter.ofPattern("dd")
+    val fmtMes   = DateTimeFormatter.ofPattern("MMM", java.util.Locale.getDefault())
 
     Surface(
         modifier        = Modifier.fillMaxWidth().clickable { onClick() },
@@ -541,7 +544,7 @@ private fun HistorialRow(compra: Compra, onClick: () -> Unit) {
                     color      = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "${compra.hora}  ·  ${compra.productos.size} producto(s)",
+                    "${compra.hora}  ·  ${stringResource(R.string.compra_card_productos, compra.productos.size)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
                 )

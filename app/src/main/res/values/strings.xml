@@ -193,8 +193,7 @@
     <string name="home_mi_perfil_desc">Ver y editar mis datos</string>
     <string name="home_mis_estadisticas">Mis estadísticas</string>
     <string name="home_mis_estadisticas_desc">Resumen de ahorro y gastos</string>
-    <string name="home_compartir_app">Compartir app</string>
-    <string name="home_compartir_app_desc">Invitá a un amigo</string>
+    <string name="home_cerrar_sesion_desc">Salir de tu cuenta</string>
 
     <!-- Historial -->
     <string name="historial_filtro_todos">Todos</string>
