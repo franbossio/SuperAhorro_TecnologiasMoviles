@@ -160,7 +160,7 @@ fun OlvidoPasswordScreen(
                                     shape           = RoundedCornerShape(12.dp),
                                     isError         = emailError,
                                     supportingText  = if (emailError) {
-                                        { Text("Ingresá un email válido", color = MaterialTheme.colorScheme.error) }
+                                        { Text(stringResource(R.string.olvide_email_invalido), color = MaterialTheme.colorScheme.error) }
                                     } else null,
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor   = MaterialTheme.colorScheme.primary,

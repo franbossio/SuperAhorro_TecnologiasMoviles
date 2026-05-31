@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,8 +56,13 @@ fun EstadisticasScreen(
     onBackClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    val periodos = listOf("7 días", "30 días", "3 meses", "1 año")
-    var periodoSel by remember { mutableStateOf("30 días") }
+    val periodos = listOf(
+        stringResource(R.string.estadisticas_periodo_7_dias),
+        stringResource(R.string.estadisticas_periodo_30_dias),
+        stringResource(R.string.estadisticas_periodo_3_meses),
+        stringResource(R.string.estadisticas_periodo_1_ano)
+    )
+    var periodoSel by remember { mutableStateOf(periodos[1]) }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.estadisticas_titulo), onBackClick) },
@@ -87,7 +93,7 @@ fun EstadisticasScreen(
                                 letterSpacing = (-0.72).sp
                             )
                             Text(
-                                "Análisis inteligente de tus gastos",
+                                stringResource(R.string.estadisticas_subtitulo),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.outline
                             )
@@ -207,7 +213,7 @@ private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double)
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "TOTAL GASTADO",
+                stringResource(R.string.estadisticas_total_gastado).uppercase(),
                 style      = MaterialTheme.typography.labelSmall,
                 color      = Color.White.copy(alpha = 0.65f),
                 fontWeight = FontWeight.Bold,
@@ -228,9 +234,9 @@ private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double)
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                HeroStat("COMPRAS",   "$cantidadCompras")
-                HeroStat("PROMEDIO",  "$ %,.0f".format(promedio))
-                HeroStat("TENDENCIA", "+12%")
+                HeroStat(stringResource(R.string.estadisticas_cantidad_compras).uppercase(), "$cantidadCompras")
+                HeroStat(stringResource(R.string.estadisticas_promedio).uppercase(), "$ %,.0f".format(promedio))
+                HeroStat(stringResource(R.string.estadisticas_tendencia).uppercase(), "+12%")
             }
         }
     }
@@ -251,7 +257,7 @@ private fun HeroStat(label: String, value: String) {
 
 @Composable
 private fun EvolucionMensualCard() {
-    val meses = listOf("E","F","M","A","M","J","J","A","S","O","N","D")
+    val meses = stringArrayResource(R.array.estadisticas_meses_cortos).toList()
     val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
 
     // Cada barra tiene su propio animatable para efecto stagger
@@ -279,7 +285,7 @@ private fun EvolucionMensualCard() {
         )
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            LabelCaps("EVOLUCIÓN MENSUAL")
+            LabelCaps(stringResource(R.string.estadisticas_evolucion_mensual).uppercase())
             Spacer(Modifier.height(20.dp))
 
             val barHeight: Dp = 120.dp

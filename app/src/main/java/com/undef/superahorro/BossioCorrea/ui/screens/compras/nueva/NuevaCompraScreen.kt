@@ -165,7 +165,7 @@ fun NuevaCompraScreen(
         Dialog(onDismissRequest = { showFotoDialog = false }) {
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 4.dp) {
                 Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Foto del ticket", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.nueva_compra_foto_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     // Cámara
                     Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
                         .clickable {
@@ -177,7 +177,7 @@ fun NuevaCompraScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Icon(Icons.Default.CameraAlt, null, tint = MaterialTheme.colorScheme.primary)
-                        Text("Tomar foto", fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.nueva_compra_tomar_foto), fontWeight = FontWeight.Medium)
                     }
                     // Galería
                     Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
@@ -190,10 +190,10 @@ fun NuevaCompraScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Icon(Icons.Default.Photo, null, tint = MaterialTheme.colorScheme.primary)
-                        Text("Elegir de galería", fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.nueva_compra_elegir_galeria), fontWeight = FontWeight.Medium)
                     }
                     TextButton(onClick = { showFotoDialog = false }, modifier = Modifier.align(Alignment.End)) {
-                        Text("Cancelar", color = MaterialTheme.colorScheme.outline)
+                        Text(stringResource(R.string.cancelar), color = MaterialTheme.colorScheme.outline)
                     }
                 }
             }
@@ -448,7 +448,7 @@ private fun ProductoItemRow(producto: Producto, onEliminar: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(producto.nombre, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                Text("x${producto.cantidad}  ·  $ %,.2f c/u".format(producto.precio), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("x${producto.cantidad}  ·  $ %,.2f ".format(producto.precio) + stringResource(R.string.producto_cada_uno), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("$ %,.2f".format(producto.subtotal), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

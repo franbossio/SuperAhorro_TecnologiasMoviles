@@ -146,20 +146,20 @@ fun SettingsScreen(
 
             // ── Sección Cuenta ─────────────────────────────────────────────
             SettingsSection(title = stringResource(R.string.settings_cuenta).uppercase()) {
-                ActionSettingRow(Icons.Outlined.Language, stringResource(R.string.settings_idioma), "Español (Argentina)")
+                ActionSettingRow(Icons.Outlined.Language, stringResource(R.string.settings_idioma), stringResource(R.string.settings_idioma_valor))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                 ActionSettingRow(Icons.Outlined.Security, stringResource(R.string.settings_privacidad), "")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), "CSV / PDF")
+                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), stringResource(R.string.settings_exportar_valor))
             }
 
             // ── Sección Acerca de ──────────────────────────────────────────
-            SettingsSection(title = "ACERCA DE") {
-                InfoRow(Icons.Outlined.Info, stringResource(R.string.settings_version), "1.0.0")
+            SettingsSection(title = stringResource(R.string.settings_acerca_de).uppercase()) {
+                InfoRow(Icons.Outlined.Info, stringResource(R.string.settings_version), stringResource(R.string.settings_version_valor))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                InfoRow(Icons.Outlined.Code, stringResource(R.string.settings_paquete), "com.undef.superahorro")
+                InfoRow(Icons.Outlined.Code, stringResource(R.string.settings_paquete), stringResource(R.string.settings_paquete_valor))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                InfoRow(Icons.Outlined.Group, stringResource(R.string.settings_equipo), "BossioCorrea · 2026")
+                InfoRow(Icons.Outlined.Group, stringResource(R.string.settings_equipo), stringResource(R.string.settings_equipo_valor))
             }
 
             Spacer(Modifier.height(32.dp))

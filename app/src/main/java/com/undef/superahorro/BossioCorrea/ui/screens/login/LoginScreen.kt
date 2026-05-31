@@ -135,12 +135,12 @@ fun LoginScreen(
                 ) {
                     // Email
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL ")
+                        LabelCaps(stringResource(R.string.campo_email))
                         OutlinedTextField(
                             value         = email,
                             onValueChange = { email = it },
                             modifier      = Modifier.fillMaxWidth(),
-                            placeholder   = { Text("nombre@email.com", color = MaterialTheme.colorScheme.outline) },
+                            placeholder   = { Text(stringResource(R.string.email_placeholder), color = MaterialTheme.colorScheme.outline) },
                             singleLine    = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             shape         = RoundedCornerShape(12.dp),

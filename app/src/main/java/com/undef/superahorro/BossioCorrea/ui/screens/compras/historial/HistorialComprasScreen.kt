@@ -392,7 +392,7 @@ private fun MesesRow(
             FilterChip(
                 selected = mesSel == null,
                 onClick  = { onMesSelected(null) },
-                label    = { Text("Todos", style = MaterialTheme.typography.labelSmall) },
+                label    = { Text(stringResource(R.string.historial_filtro_todos), style = MaterialTheme.typography.labelSmall) },
                 shape    = RoundedCornerShape(20.dp),
                 colors   = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,

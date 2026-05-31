@@ -54,6 +54,21 @@
     <string name="home_estadisticas">Statistics</string>
     <string name="home_acciones_rapidas">Quick actions</string>
 
+    <string-array name="estadisticas_meses_cortos">
+        <item>J</item>
+        <item>F</item>
+        <item>M</item>
+        <item>A</item>
+        <item>M</item>
+        <item>J</item>
+        <item>J</item>
+        <item>A</item>
+        <item>S</item>
+        <item>O</item>
+        <item>N</item>
+        <item>D</item>
+    </string-array>
+
     <string name="compra_nueva_titulo">New purchase</string>
     <string name="compra_fecha">Date</string>
     <string name="compra_hora">Time</string>
@@ -176,6 +191,60 @@
     <string name="home_mis_estadisticas_desc">Savings and spending summary</string>
     <string name="home_compartir_app">Share app</string>
     <string name="home_compartir_app_desc">Invite a friend</string>
+
+    <!-- History -->
+    <string name="historial_filtro_todos">All</string>
+
+    <!-- Validation -->
+    <string name="olvide_email_invalido">Enter a valid email</string>
+
+    <!-- New Product screen -->
+    <string name="producto_agregar_titulo">Add Products</string>
+    <string name="producto_agregar_subtitulo">Enter the details of your purchase.</string>
+    <string name="producto_nombre_placeholder">E.g. Whole Milk</string>
+    <string name="producto_codigo_placeholder">E.g. 7790040012345</string>
+    <string name="generico_subtotal">Subtotal</string>
+    <string name="producto_cada_uno">ea.</string>
+
+    <!-- Login / Register placeholders and accessibility -->
+    <string name="email_placeholder">name@email.com</string>
+    <string name="ver_password">Show password</string>
+    <string name="ocultar_password">Hide password</string>
+
+    <!-- Nueva Compra — photo dialog -->
+    <string name="nueva_compra_foto_titulo">Ticket photo</string>
+    <string name="nueva_compra_tomar_foto">Take photo</string>
+    <string name="nueva_compra_elegir_galeria">Choose from gallery</string>
+
+    <!-- Listado Compras -->
+    <string name="listado_eliminar_mensaje">The purchase at %1$s on %2$s will be deleted. This action cannot be undone.</string>
+    <string name="listado_buscar_placeholder">Search by supermarket or product</string>
+    <string name="listado_filtro_todo">All</string>
+    <string name="listado_filtro_7_dias">Last 7 days</string>
+    <string name="listado_filtro_mes">This month</string>
+    <string name="listado_filtro_categorias">Categories</string>
+    <string name="listado_compras_encontradas">%1$d purchases found</string>
+    <string name="listado_desliza_eliminar">Swipe to delete</string>
+    <string name="listado_sin_resultados">No results for \"%1$s\"</string>
+    <string name="compra_card_productos">%1$d product(s)</string>
+
+    <!-- Stats labels -->
+    <string name="stat_favorito">Favourite</string>
+    <string name="estadisticas_tendencia">Trend</string>
+    <string name="estadisticas_subtitulo">Smart analysis of your spending</string>
+    <string name="estadisticas_evolucion_mensual">Monthly evolution</string>
+    <string name="estadisticas_periodo_7_dias">7 days</string>
+    <string name="estadisticas_periodo_30_dias">30 days</string>
+    <string name="estadisticas_periodo_3_meses">3 months</string>
+    <string name="estadisticas_periodo_1_ano">1 year</string>
+
+    <!-- Settings — read-only values -->
+    <string name="settings_acerca_de">About</string>
+    <string name="settings_idioma_valor">English</string>
+    <string name="settings_exportar_valor">CSV / PDF</string>
+    <string name="settings_version_valor">1.0.0</string>
+    <string name="settings_paquete_valor">com.undef.superahorro</string>
+    <string name="settings_equipo_valor">BossioCorrea · 2026</string>
 
     <string name="olvide_password_titulo">Recover password</string>
     <string name="olvide_password_enviado_titulo">Check your email!</string>

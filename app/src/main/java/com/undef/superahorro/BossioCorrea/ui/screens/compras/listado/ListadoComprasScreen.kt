@@ -50,7 +50,14 @@ fun ListadoComprasScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     var busqueda        by remember { mutableStateOf("") }
-    var filtroSel       by remember { mutableStateOf("Todo") }
+    val filtroTodo      = stringResource(R.string.listado_filtro_todo)
+    val filtros         = listOf(
+        filtroTodo,
+        stringResource(R.string.listado_filtro_7_dias),
+        stringResource(R.string.listado_filtro_mes),
+        stringResource(R.string.listado_filtro_categorias)
+    )
+    var filtroSel       by remember { mutableStateOf(filtroTodo) }
     var compraAEliminar by remember { mutableStateOf<Compra?>(null) }
 
     // ── Animación pulsante del FAB ─────────────────────────────────────────
@@ -81,16 +88,18 @@ fun ListadoComprasScreen(
             },
             title = {
                 Text(
-                    "¿Eliminar compra?",
+                    stringResource(R.string.historial_eliminar_titulo),
                     fontWeight = FontWeight.Bold,
                     textAlign  = TextAlign.Center
                 )
             },
             text = {
                 Text(
-                    "Se eliminará la compra en ${compra.supermercado} del ${
+                    stringResource(
+                        R.string.listado_eliminar_mensaje,
+                        compra.supermercado,
                         compra.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                    }. Esta acción no se puede deshacer.",
+                    ),
                     color     = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     style     = MaterialTheme.typography.bodyMedium
@@ -105,7 +114,7 @@ fun ListadoComprasScreen(
                 ) {
                     Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Eliminar", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.eliminar), fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
@@ -113,7 +122,7 @@ fun ListadoComprasScreen(
                     onClick  = { compraAEliminar = null },
                     shape    = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Cancelar") }
+                ) { Text(stringResource(R.string.cancelar)) }
             },
             shape          = RoundedCornerShape(20.dp),
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -131,7 +140,7 @@ fun ListadoComprasScreen(
                     contentColor   = Color.White,
                     shape          = RoundedCornerShape(18.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Nueva compra")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.home_nueva_compra))
                 }
             }
         }
@@ -176,7 +185,7 @@ fun ListadoComprasScreen(
                             modifier      = Modifier.fillMaxWidth(),
                             placeholder   = {
                                 Text(
-                                    "Buscar por supermercado o producto",
+                                    stringResource(R.string.listado_buscar_placeholder),
                                     color = StitchOutline
                                 )
                             },
@@ -199,7 +208,7 @@ fun ListadoComprasScreen(
                     // ════════════════════════════════════════════════════════
                     item {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(listOf("Todo", "Últimos 7 días", "Este mes", "Categorías")) { f ->
+                            items(filtros) { f ->
                                 FilterChip(
                                     selected = f == filtroSel,
                                     onClick  = { filtroSel = f },
@@ -226,7 +235,7 @@ fun ListadoComprasScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment     = Alignment.CenterVertically
                             ) {
-                                LabelCaps("${comprasFiltradas.size} compras encontradas")
+                                LabelCaps(stringResource(R.string.listado_compras_encontradas, comprasFiltradas.size))
                                 Row(
                                     verticalAlignment     = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -237,7 +246,7 @@ fun ListadoComprasScreen(
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Text(
-                                        "Deslizá para eliminar",
+                                        stringResource(R.string.listado_desliza_eliminar),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = StitchOutline
                                     )
@@ -260,7 +269,7 @@ fun ListadoComprasScreen(
                                     Spacer(Modifier.height(12.dp))
                                     Text(
                                         if (busqueda.isNotBlank())
-                                            "Sin resultados para \"$busqueda\""
+                                            stringResource(R.string.listado_sin_resultados, busqueda)
                                         else stringResource(R.string.compra_sin_compras),
                                         color     = StitchOutline,
                                         textAlign = TextAlign.Center
@@ -339,7 +348,7 @@ private fun ListadoHeroCard(compras: List<Compra>) {
 
             // Label en caps con letterSpacing — igual al Historial
             Text(
-                "MIS COMPRAS",
+                stringResource(R.string.compra_listado_titulo).uppercase(),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = Color.White.copy(alpha = 0.65f),
                 fontWeight    = FontWeight.Bold,
@@ -369,9 +378,9 @@ private fun ListadoHeroCard(compras: List<Compra>) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                HeroStat(label = "COMPRAS",  value = "${compras.size}")
-                HeroStat(label = "PROMEDIO", value = "$ %,.0f".format(promedio))
-                HeroStat(label = "FAVORITO", value = superFav.take(8))
+                HeroStat(label = stringResource(R.string.estadisticas_cantidad_compras).uppercase(), value = "${compras.size}")
+                HeroStat(label = stringResource(R.string.estadisticas_promedio).uppercase(), value = "$ %,.0f".format(promedio))
+                HeroStat(label = stringResource(R.string.stat_favorito).uppercase(), value = superFav.take(8))
             }
         }
     }
@@ -450,13 +459,13 @@ private fun DeleteBackground(state: SwipeToDismissBoxState) {
             modifier            = Modifier.scale(iconScale)
         ) {
             Icon(
-                Icons.Default.Delete, "Eliminar",
+                Icons.Default.Delete, stringResource(R.string.eliminar),
                 tint     = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                "Eliminar",
+                stringResource(R.string.eliminar),
                 color      = MaterialTheme.colorScheme.error,
                 style      = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold
@@ -496,7 +505,7 @@ fun CompraCard(compra: Compra, onClick: () -> Unit = {}) {
                     color = MaterialTheme.colorScheme.outline
                 )
                 Text(
-                    "${compra.productos.size} producto(s)",
+                    stringResource(R.string.compra_card_productos, compra.productos.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
                 )
