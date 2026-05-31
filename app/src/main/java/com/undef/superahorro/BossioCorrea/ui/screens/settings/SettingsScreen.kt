@@ -23,20 +23,28 @@ import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+import com.undef.superahorro.BossioCorrea.ui.theme.LanguageViewModel
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 
 // Opciones del selector de tema
 private enum class ThemeMode { LIGHT, DARK, SYSTEM }
 
+// Opciones del selector de idioma
+private enum class LangMode { ES, EN }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    themeViewModel : ThemeViewModel,
-    onBackClick    : () -> Unit = {}
+    themeViewModel    : ThemeViewModel,
+    languageViewModel : LanguageViewModel,
+    onBackClick       : () -> Unit = {}
 ) {
     val isDark          by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
     val useSystemTheme  by themeViewModel.useSystemTheme.collectAsStateWithLifecycle()
+    val languageCode    by languageViewModel.languageCode.collectAsStateWithLifecycle()
     var notificaciones by remember { mutableStateOf(true) }
+
+    val langMode = if (languageCode == "en") LangMode.EN else LangMode.ES
 
     // Modo actual derivado del estado real del ViewModel
     // (SYSTEM no se persiste aún en este mock, pero el selector lo muestra)
@@ -146,20 +154,25 @@ fun SettingsScreen(
 
             // ── Sección Cuenta ─────────────────────────────────────────────
             SettingsSection(title = stringResource(R.string.settings_cuenta).uppercase()) {
-                ActionSettingRow(Icons.Outlined.Language, stringResource(R.string.settings_idioma), stringResource(R.string.settings_idioma_valor))
+                LanguageSelectorRow(
+                    selected = langMode,
+                    onSelect = { mode ->
+                        languageViewModel.setLanguage(if (mode == LangMode.EN) "en" else "es")
+                    }
+                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                 ActionSettingRow(Icons.Outlined.Security, stringResource(R.string.settings_privacidad), "")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), stringResource(R.string.settings_exportar_valor))
+                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), "CSV / PDF")
             }
 
             // ── Sección Acerca de ──────────────────────────────────────────
-            SettingsSection(title = stringResource(R.string.settings_acerca_de).uppercase()) {
-                InfoRow(Icons.Outlined.Info, stringResource(R.string.settings_version), stringResource(R.string.settings_version_valor))
+            SettingsSection(title = "ACERCA DE") {
+                InfoRow(Icons.Outlined.Info, stringResource(R.string.settings_version), "1.0.0")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                InfoRow(Icons.Outlined.Code, stringResource(R.string.settings_paquete), stringResource(R.string.settings_paquete_valor))
+                InfoRow(Icons.Outlined.Code, stringResource(R.string.settings_paquete), "com.undef.superahorro")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                InfoRow(Icons.Outlined.Group, stringResource(R.string.settings_equipo), stringResource(R.string.settings_equipo_valor))
+                InfoRow(Icons.Outlined.Group, stringResource(R.string.settings_equipo), "BossioCorrea · 2026")
             }
 
             Spacer(Modifier.height(32.dp))
@@ -196,6 +209,77 @@ private fun ThemeModeSelector(
                 icon = {}   // quitamos el check mark por defecto
             ) {
                 Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+// ── Selector de idioma ───────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageSelectorRow(
+    selected : LangMode,
+    onSelect : (LangMode) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(36.dp),
+                shape    = RoundedCornerShape(10.dp),
+                color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Outlined.Language, null,
+                        tint     = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Column {
+                Text(
+                    stringResource(R.string.settings_idioma),
+                    style      = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    stringResource(R.string.settings_idioma_desc),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+        }
+
+        val options = listOf(
+            LangMode.ES to stringResource(R.string.settings_idioma_espanol),
+            LangMode.EN to stringResource(R.string.settings_idioma_ingles)
+        )
+
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, (mode, label) ->
+                SegmentedButton(
+                    shape    = SegmentedButtonDefaults.itemShape(index, options.size),
+                    onClick  = { onSelect(mode) },
+                    selected = selected == mode,
+                    colors   = SegmentedButtonDefaults.colors(
+                        activeContainerColor   = MaterialTheme.colorScheme.primary,
+                        activeContentColor     = Color.White,
+                        inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                        inactiveContentColor   = MaterialTheme.colorScheme.onSurface
+                    ),
+                    icon = {}
+                ) {
+                    Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
+                }
             }
         }
     }

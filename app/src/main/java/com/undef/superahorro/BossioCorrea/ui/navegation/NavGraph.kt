@@ -19,10 +19,11 @@ import com.undef.superahorro.BossioCorrea.ui.screens.productos.nuevo.NuevoProduc
 import com.undef.superahorro.BossioCorrea.ui.screens.register.RegisterScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.settings.SettingsScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.splash.SplashScreen
+import com.undef.superahorro.BossioCorrea.ui.theme.LanguageViewModel
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 
 @Composable
-fun NavGraph(themeViewModel: ThemeViewModel) {
+fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewModel) {
     val navController = rememberNavController()
 
     NavHost(
@@ -153,8 +154,9 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
         // ── Settings ──────────────────────────────────────────────────────────
         composable(Routes.SETTINGS) {
             SettingsScreen(
-                themeViewModel = themeViewModel,
-                onBackClick    = { navController.popBackStack() }
+                themeViewModel    = themeViewModel,
+                languageViewModel = languageViewModel,
+                onBackClick       = { navController.popBackStack() }
             )
         }
     }
