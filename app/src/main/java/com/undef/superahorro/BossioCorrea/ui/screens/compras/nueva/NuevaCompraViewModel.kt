@@ -137,7 +137,10 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
                 }
 
                 val partes  = fecha.split("/")
-                val fechaBD = "${partes[2]}-${partes[1]}-${partes[0]}"
+                val anio    = partes[2].let { if (it.length == 2) "20$it" else it }
+                val mes     = partes[1].padStart(2, '0')
+                val dia     = partes[0].padStart(2, '0')
+                val fechaBD = "$anio-$mes-$dia"
 
                 // Normaliza la hora a "HH:mm" para garantizar parseo correcto al leer
                 val horaBD = try {

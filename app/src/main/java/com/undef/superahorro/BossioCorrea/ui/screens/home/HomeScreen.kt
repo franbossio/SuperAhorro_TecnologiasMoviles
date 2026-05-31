@@ -34,8 +34,6 @@ import kotlinx.coroutines.launch
 
 private val HeroBgTop    = Color(0xFF006C49)
 private val HeroBgBottom = Color(0xFF00A066)
-private val barHeights   = listOf(0.38f, 0.55f, 0.45f, 0.72f, 0.60f, 0.88f, 0.70f)
-private val barDays      = listOf("L", "M", "X", "J", "V", "S", "D")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +56,8 @@ fun HomeScreen(
     var perfilNombre   by remember { mutableStateOf("") }
     var perfilApellido by remember { mutableStateOf("") }
     var perfilEmail    by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) { vm.cargar() }
 
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success) {
@@ -194,6 +194,14 @@ fun HomeScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
+        val currentLocale = java.util.Locale.getDefault()
+        val dayLabels = remember(currentLocale) {
+            (1..7).map { dayNum ->
+                java.time.DayOfWeek.of(dayNum)
+                    .getDisplayName(java.time.format.TextStyle.NARROW, currentLocale)
+            }
+        }
+
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -256,24 +264,31 @@ fun HomeScreen(
                                 Text(stringResource(R.string.home_gasto_mes),
                                     fontSize = 13.sp, color = Color.White.copy(alpha = 0.62f))
                                 Spacer(Modifier.height(20.dp))
+                                val maxGasto = data.gastosPorDia.maxOrNull() ?: 0.0
+                                val barHeightsDyn = if (maxGasto > 0) {
+                                    data.gastosPorDia.map { (it / maxGasto).toFloat().coerceAtLeast(0.05f) }
+                                } else {
+                                    List(7) { 0.05f }
+                                }
+                                val todayIndex = java.time.LocalDate.now().dayOfWeek.value - 1
                                 Row(Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                                     verticalAlignment = Alignment.Bottom) {
-                                    barHeights.forEachIndexed { i, h ->
-                                        val isLast = i == barHeights.lastIndex
+                                    barHeightsDyn.forEachIndexed { i, h ->
+                                        val isToday = i == todayIndex
                                         Column(Modifier.weight(1f),
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Bottom) {
                                             Box(Modifier.fillMaxWidth().height((44 * h).dp)
                                                 .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                                                 .background(
-                                                    if (isLast) Color.White.copy(alpha = 0.95f)
+                                                    if (isToday) Color.White.copy(alpha = 0.95f)
                                                     else Color.White.copy(alpha = 0.28f)
                                                 ))
                                             Spacer(Modifier.height(4.dp))
-                                            Text(barDays[i], fontSize = 9.sp,
-                                                color = if (isLast) Color.White else Color.White.copy(.50f),
-                                                fontWeight = if (isLast) FontWeight.Bold else FontWeight.Normal)
+                                            Text(dayLabels[i], fontSize = 9.sp,
+                                                color = if (isToday) Color.White else Color.White.copy(.50f),
+                                                fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal)
                                         }
                                     }
                                 }

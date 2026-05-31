@@ -56,6 +56,9 @@ fun EstadisticasScreen(
     onBackClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) { vm.cargar() }
+
     val periodos = listOf(
         stringResource(R.string.estadisticas_periodo_7_dias),
         stringResource(R.string.estadisticas_periodo_30_dias),
@@ -129,7 +132,7 @@ fun EstadisticasScreen(
 
                     // ── Evolución mensual (barras animadas) ────────────────
                     item {
-                        EvolucionMensualCard()
+                        EvolucionMensualCard(gastosPorMes = data.gastosPorMes)
                     }
 
                     // ── Por supermercado ───────────────────────────────────
@@ -256,15 +259,20 @@ private fun HeroStat(label: String, value: String) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EvolucionMensualCard() {
+private fun EvolucionMensualCard(gastosPorMes: List<Double>) {
     val meses = stringArrayResource(R.array.estadisticas_meses_cortos).toList()
-    val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
+    val maxGasto = gastosPorMes.maxOrNull() ?: 0.0
+    val vals = if (maxGasto > 0) {
+        gastosPorMes.map { (it / maxGasto).toFloat().coerceAtLeast(0.03f) }
+    } else {
+        List(12) { 0.03f }
+    }
 
     // Cada barra tiene su propio animatable para efecto stagger
     val animatedHeights = vals.mapIndexed { idx, target ->
         val anim = remember { Animatable(0f) }
-        LaunchedEffect(Unit) {
-            kotlinx.coroutines.delay(idx * 60L)   // stagger: 60 ms por barra
+        LaunchedEffect(target) {
+            kotlinx.coroutines.delay(idx * 60L)
             anim.animateTo(
                 targetValue   = target,
                 animationSpec = tween(600, easing = EaseOutBack)

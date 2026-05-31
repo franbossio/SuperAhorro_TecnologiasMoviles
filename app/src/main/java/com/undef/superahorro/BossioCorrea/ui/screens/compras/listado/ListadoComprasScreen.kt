@@ -49,6 +49,9 @@ fun ListadoComprasScreen(
     onBackClick        : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) { vm.cargar() }
+
     var busqueda        by remember { mutableStateOf("") }
     val filtroTodo      = stringResource(R.string.listado_filtro_todo)
     val filtros         = listOf(

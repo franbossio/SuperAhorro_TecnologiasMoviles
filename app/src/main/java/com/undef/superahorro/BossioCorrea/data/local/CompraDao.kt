@@ -18,6 +18,7 @@ interface CompraDao {
     @Query("DELETE FROM compras WHERE id = :id")
     suspend fun eliminar(id: Int)
 
+    @Transaction
     @Query("SELECT * FROM compras WHERE usuarioId = :usuarioId ORDER BY fecha DESC, hora DESC")
     fun getComprasDeUsuario(usuarioId: Int): Flow<List<CompraEntity>>
 

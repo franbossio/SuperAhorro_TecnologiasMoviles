@@ -56,6 +56,8 @@ fun HistorialComprasScreen(
     val mesSel  by vm.mesSel.collectAsStateWithLifecycle()
     val anioSel by vm.anioSel.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) { vm.cargar() }
+
     var compraAEliminar by remember { mutableStateOf<Compra?>(null) }
 
     compraAEliminar?.let { compra ->

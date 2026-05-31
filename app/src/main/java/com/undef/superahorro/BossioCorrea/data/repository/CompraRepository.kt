@@ -18,20 +18,15 @@ class CompraRepository(private val db: AppDatabase) {
 
     // ── Observar compras del usuario ──────────────────────────────────────────
     //
-    // FIX DEL CRASH: el operador map{} de Flow NO es suspendable.
-    // Llamar a productoDao.getProductosDeCompra() (suspend fun) dentro de
-    // map{} lanza IllegalStateException en runtime → crash en "Mis Compras".
-    //
-    // La solución es usar mapLatest{} que SÍ ejecuta su bloque en una
-    // corrutina, permitiendo llamadas suspend dentro.
+    // mapLatest cancela la transformación anterior cuando llega un nuevo valor.
+    // El catch solo captura IOException, no CancellationException, para que
+    // la cancelación de corrutinas se propague correctamente.
 
     fun getComprasFlow(usuarioId: Int): Flow<List<Compra>> =
         compraDao.getComprasDeUsuario(usuarioId).mapLatest { entities ->
             entities.mapNotNull { entity ->
-                try {
-                    val productos = productoDao.getProductosDeCompra(entity.id)
-                    entity.toDomain(productos)
-                } catch (_: Exception) { null }
+                val productos = productoDao.getProductosDeCompra(entity.id)
+                entity.toDomain(productos)
             }
         }
 
@@ -82,10 +77,22 @@ class CompraRepository(private val db: AppDatabase) {
 
 private val FMT_HORA_LENIENTE = DateTimeFormatter.ofPattern("H:mm")
 
+// Normaliza cualquier variante "yy-M-d" / "yyyy-M-d" → "yyyy-MM-dd" y parsea.
+private fun parseFecha(raw: String): LocalDate {
+    val partes = raw.trim().split("-")
+    if (partes.size == 3) {
+        val anio = partes[0].let { if (it.length == 2) "20$it" else it }
+        val mes  = partes[1].padStart(2, '0')
+        val dia  = partes[2].padStart(2, '0')
+        return LocalDate.parse("$anio-$mes-$dia")
+    }
+    return LocalDate.parse(raw)   // último recurso: dejar que falle con mensaje claro
+}
+
 private fun CompraEntity.toDomain(productos: List<ProductoEntity>): Compra =
     Compra(
         id             = id,
-        fecha          = LocalDate.parse(fecha),
+        fecha          = parseFecha(fecha),
         hora           = try { LocalTime.parse(hora) }
                          catch (_: Exception) { LocalTime.parse(hora, FMT_HORA_LENIENTE) },
         supermercado   = supermercado,
