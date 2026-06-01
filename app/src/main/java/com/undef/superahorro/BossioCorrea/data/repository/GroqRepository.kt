@@ -42,87 +42,103 @@ class GroqRepository {
 
             val prompt = """
 Sos un experto en leer tickets de supermercados y almacenes de Argentina.
-Tu única tarea: extraer exactamente los productos que aparecen en el ticket. Devolvé un JSON. Sin texto extra. Sin bloques de código.
+TAREA: Extraer todos los productos del ticket. Responder SOLO con JSON válido. Sin texto extra. Sin bloques de código markdown.
 
-════════════════════════════════════════════
-ESTRUCTURA DE UN TICKET ARGENTINO
-════════════════════════════════════════════
+════════════════════════════════════════
+FORMATOS DE TICKET ARGENTINO
+════════════════════════════════════════
 
-Cada producto ocupa DOS líneas:
-  LÍNEA 1 (ignorar): "1,0000 (00) x 4500,0000"  → solo indica cantidad × precio unitario. NO ES UN PRODUCTO.
-  LÍNEA 2 (el producto): "COCA COLA RETORNABLE    4500,00"  → nombre + precio total de esa línea.
+Existen distintos formatos, identificar cuál corresponde al ticket:
 
-ZONA DE PRODUCTOS: empieza después de la línea "TIQUE" o "Fecha/Hora" y TERMINA exactamente en la línea que dice "TOTAL" o "Subtotal".
-TODO lo que está desde "TOTAL" hacia abajo NO es un producto. No lo incluyas.
+FORMATO A (almacenes, kioscos):
+  1,0000 (00) x 4500,0000      ← línea de cantidad/precio unitario → IGNORAR COMPLETAMENTE
+  COCA COLA RETORNABLE 4500,00 ← producto real (nombre + precio total)
 
-SEÑAL DE FIN DE PRODUCTOS: la palabra "TOTAL" seguida de un número grande es el límite. Nada después de eso es un producto.
+FORMATO B (Carrefour, Jumbo, Coto, Disco):
+  COCA COLA 1.5L               ← nombre del producto
+  1        $4.500,00  $4.500,00 ← cant, precio unit, precio total → tomar el último número
 
-EJEMPLO REAL de este ticket (LI XIAOYAN):
-  Productos:
-    1,0000 (00) x 4500,0000
-    COCA COLA RETORNABLE    4500,00         → producto 1
-    1,0000 (00) x 1800,0000
-    SODA SIFON SALDAN 2L    1800,00         → producto 2
-    1,0000 (00) x 4500,0000
-    COCA COLA RETORNABLE    4500,00         → producto 3
-    1,0000 (00) x 1200,0000
-    ALMACEN                 1200,00         → producto 4
-    1,0000 (00) x 1200,0000
-    BOLSA RESIDUOS 45*60    1200,00         → producto 5
-    1,0000 (00) x 1500,0000
-    BOLSA CONSORCIO CREE    1500,00         → producto 6
-  TOTAL                     14700,00        → STOP. Fin de productos. No crear más productos después de esta línea.
-  RECIBI/MOS                               → ignorar
-  EFECTIVO                                 → ignorar
-  Efectivo             14700,00            → ignorar (este número NO es un producto)
-  Suma de sus pagos    14700,00            → ignorar
-  Su Vuelto            0,00                → ignorar
+FORMATO C (línea única):
+  1 COCA COLA 1.5L   4500,00   ← cantidad + nombre + precio total en una sola línea
 
-El resultado CORRECTO para este ticket son exactamente 6 productos.
-El número 14700,00 es el TOTAL, no un producto. El número que aparece después de EFECTIVO tampoco es un producto.
+REGLA GENERAL: El precio del producto es siempre el ÚLTIMO número de la línea del producto.
 
-════════════════════════════════════════════
-REGLAS CRÍTICAS
-════════════════════════════════════════════
+════════════════════════════════════════
+ZONA DE PRODUCTOS
+════════════════════════════════════════
 
-1. CONTÁ las pares de líneas (línea cantidad + línea nombre) que hay ANTES del TOTAL. Esa es la cantidad exacta de productos.
-2. NO agregues productos después de ver la palabra TOTAL, Subtotal, RECIBI/MOS, Efectivo, Su Vuelto.
-3. El nombre del producto es el texto COMPLETO de la Línea 2 antes del precio. Nunca lo cortes.
-4. Si hay descuentos (ej: "Descuento JAMON COCIDO -318,65"), restá el descuento al precio del producto correspondiente y ponelo en descripcion: "Descuento aplicado: $318.65".
-5. Precios: el ticket usa coma decimal (1500,00). En el JSON usá punto (1500.00).
+INICIO: Después del encabezado (nombre del negocio, CUIT, dirección, fecha/hora).
+FIN: La primera línea que diga TOTAL, IMPORTE TOTAL, SUBTOTAL, SUMA TOTAL o similar.
 
-════════════════════════════════════════════
+NUNCA incluir líneas después del TOTAL. Ese número grande junto a TOTAL es el total del ticket, NO es un producto.
+
+════════════════════════════════════════
+DESCUENTOS — MUY IMPORTANTE
+════════════════════════════════════════
+
+Los descuentos aparecen DESPUÉS del producto al que aplican, generalmente con valor negativo.
+Ejemplos de cómo aparecen en el ticket:
+  "Descuento JAMON COCIDO       -318,65"
+  "Dto. 2da unidad              -500,00"
+  "DESC. JUBILADOS              -200,00"
+  "Bonificacion 10%             -150,00"
+  "AHORRO TARJETA               -300,00"
+  "Promo 2x1                    -800,00"
+
+QUÉ HACER con cada descuento:
+  1. Identificar el producto anterior al que aplica ese descuento
+  2. precio final del producto = precio original - monto del descuento
+  3. En el campo "descripcion" escribir exactamente: "Descuento aplicado: ${'$'}MONTO"
+  4. Si hay varios descuentos para el mismo producto, aplicar todos y listar cada uno en descripcion
+  5. NO crear una entrada separada para el descuento en la lista de productos
+
+EJEMPLO CORRECTO:
+  Ticket muestra:
+    JAMON COCIDO FRIG    2000,00
+    Desc. JAMON          -318,65
+
+  JSON correcto:
+    { "nombre": "JAMON COCIDO FRIG", "descripcion": "Descuento aplicado: $318.65", "cantidad": 1, "precio": 1681.35 }
+
+════════════════════════════════════════
 IGNORAR COMPLETAMENTE
-════════════════════════════════════════════
+════════════════════════════════════════
 
-Todo lo que está DESPUÉS de la línea TOTAL:
-RECIBI/MOS, Efectivo, Tarjeta, Su Vuelto, Suma de sus pagos, Cantidad Unidades, Cajero, Productos N°, IVA Contenido, Transparencia Fiscal, REGISTRO, V: 1., Vend, Rev.
+- Todo lo después del TOTAL: Efectivo, Tarjeta, Vuelto, Suma de pagos, Cajero, IVA, CUIT, Cod. Barra
+- Encabezado: nombre del negocio, dirección, teléfono, CUIT, Responsable Inscripto
+- Líneas de cantidad pura: "1,0000 (00) x 4500,0000"
+- Leyendas legales: Transparencia Fiscal, Régimen de, Reg. N°, Vend, Rev
 
-Y el encabezado del ticket (nombre del negocio, CUIT, domicilio, IVA responsable, etc.).
-
-════════════════════════════════════════════
-FORMATO DE RESPUESTA
-════════════════════════════════════════════
+════════════════════════════════════════
+FORMATO DE RESPUESTA — SOLO ESTE JSON
+════════════════════════════════════════
 
 {
   "supermercado": "nombre del negocio",
   "fecha": "dd/MM/yyyy",
   "hora": "HH:mm",
-  "total": "14700.00",
+  "total": "4500.00",
   "productos": [
     {
-      "nombre": "NOMBRE COMPLETO",
-      "descripcion": "",
+      "nombre": "NOMBRE COMPLETO DEL PRODUCTO TAL COMO APARECE EN EL TICKET",
+      "descripcion": "Descuento aplicado: $318.65",
       "cantidad": 1,
-      "precio": 4500.00
+      "precio": 1681.35
     }
   ]
 }
+
+REGLAS DEL JSON:
+- Usar punto decimal (1500.00), no coma
+- precio = precio FINAL ya con el descuento descontado
+- Si no hay descuento: descripcion: ""
+- cantidad: número entero mayor o igual a 1
+- No inventar ni modificar nombres de productos, copiar exactamente lo que dice el ticket
             """.trimIndent()
 
             val requestBody = JSONObject().apply {
                 put("model", "meta-llama/llama-4-scout-17b-16e-instruct")
-                put("max_tokens", 2048)
+                put("max_tokens", 3000)
                 put("temperature", 0.0)
                 put("messages", JSONArray().apply {
                     put(JSONObject().apply {
@@ -171,11 +187,38 @@ FORMATO DE RESPUESTA
 
             val ticket    = parsearTicket(cleanJson)
             val filtrados = filtrarProductosSospechosos(ticket.productos)
-            GroqResult.Exito(ticket.copy(productos = filtrados))
+            val conDescuentos = aplicarDescuentosSueltos(filtrados)
+            GroqResult.Exito(ticket.copy(productos = conDescuentos))
 
         } catch (e: Exception) {
             GroqResult.Error("Error al analizar el ticket: ${e.message}")
         }
+    }
+
+    private fun aplicarDescuentosSueltos(productos: List<Producto>): List<Producto> {
+        val patronDescuento = Regex(
+            """^(desc|dto\.?|descuento|bonif|ahorr|promo|rebaj|oferta)""",
+            RegexOption.IGNORE_CASE
+        )
+        val resultado = mutableListOf<Producto>()
+
+        for (producto in productos) {
+            val esDescuento = patronDescuento.containsMatchIn(producto.nombre.trim()) || producto.precio < 0
+            if (esDescuento && resultado.isNotEmpty()) {
+                val monto = Math.abs(producto.precio)
+                if (monto > 0) {
+                    val ultimo = resultado.last()
+                    val precioNuevo = (ultimo.precio - monto).coerceAtLeast(0.0)
+                    val notaDescuento = "Descuento aplicado: $${"%.2f".format(monto)}"
+                    val descripcionNueva = listOf(ultimo.descripcion, notaDescuento)
+                        .filter { it.isNotBlank() }.joinToString(". ")
+                    resultado[resultado.size - 1] = ultimo.copy(precio = precioNuevo, descripcion = descripcionNueva)
+                }
+            } else if (!esDescuento) {
+                resultado.add(producto)
+            }
+        }
+        return resultado
     }
 
     private fun filtrarProductosSospechosos(productos: List<Producto>): List<Producto> {
@@ -228,9 +271,9 @@ FORMATO DE RESPUESTA
     }
 
     private fun bitmapToBase64(bitmap: Bitmap): String {
-        val scaled = scaleBitmap(bitmap, maxDimension = 1024)
+        val scaled = scaleBitmap(bitmap, maxDimension = 1920)
         val output = ByteArrayOutputStream()
-        scaled.compress(Bitmap.CompressFormat.JPEG, 85, output)
+        scaled.compress(Bitmap.CompressFormat.JPEG, 90, output)
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
