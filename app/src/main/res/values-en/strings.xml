@@ -52,6 +52,7 @@
     <string name="home_historial">History</string>
     <string name="home_cantidad_compras">%1$d purchases</string>
     <string name="home_estadisticas">Statistics</string>
+    <string name="home_promociones">Deals</string>
     <string name="home_acciones_rapidas">Quick actions</string>
 
     <string-array name="estadisticas_meses_cortos">
@@ -239,6 +240,17 @@
     <string name="estadisticas_periodo_30_dias">30 days</string>
     <string name="estadisticas_periodo_3_meses">3 months</string>
     <string name="estadisticas_periodo_1_ano">1 year</string>
+
+    <!-- Promotions (query to external API - Open Prices / Open Food Facts) -->
+    <string name="promociones_titulo">Deals</string>
+    <string name="promociones_subtitulo">Real offers from Argentine supermarkets, fetched live from an API</string>
+    <string name="promociones_filtro_placeholder">Filter by city or supermarket (e.g. Córdoba)</string>
+    <string name="promociones_resultados">%1$d deals found</string>
+    <string name="promociones_sin_resultados">We couldn\'t find any deals in \"%1$s\" right now.</string>
+    <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
+    <string name="promociones_ver_todas">See all deals from Argentina</string>
+    <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>
+    <string name="promociones_fuente">Live data from Open Prices (Open Food Facts)</string>
 
     <!-- Settings — read-only values -->
     <string name="settings_acerca_de">About</string>

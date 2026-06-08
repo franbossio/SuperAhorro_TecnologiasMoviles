@@ -13,6 +13,7 @@ object Routes {
     const val DETALLE_COMPRA    = "detalle_compra/{compraId}"
     const val HISTORIAL_COMPRAS = "historial_compras"
     const val ESTADISTICAS      = "estadisticas"
+    const val PROMOCIONES       = "promociones"
     const val PERFIL            = "perfil"
     const val SETTINGS          = "settings"
 

@@ -56,6 +56,7 @@
     <string name="home_historial">Historial</string>
     <string name="home_cantidad_compras">%1$d compras</string>
     <string name="home_estadisticas">Estadísticas</string>
+    <string name="home_promociones">Promociones</string>
     <string name="home_acciones_rapidas">Acciones rápidas</string>
 
 
@@ -240,6 +241,17 @@
     <string name="estadisticas_periodo_30_dias">30 días</string>
     <string name="estadisticas_periodo_3_meses">3 meses</string>
     <string name="estadisticas_periodo_1_ano">1 año</string>
+
+    <!-- Promociones (consulta a API externa - Open Prices / Open Food Facts) -->
+    <string name="promociones_titulo">Promociones</string>
+    <string name="promociones_subtitulo">Ofertas reales en supermercados de Argentina, consultadas en vivo desde una API</string>
+    <string name="promociones_filtro_placeholder">Filtrar por ciudad o supermercado (ej: Córdoba)</string>
+    <string name="promociones_resultados">%1$d ofertas encontradas</string>
+    <string name="promociones_sin_resultados">No encontramos promociones en \"%1$s\" por el momento.</string>
+    <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
+    <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
+    <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>
+    <string name="promociones_fuente">Datos en vivo de Open Prices (Open Food Facts)</string>
 
     <!-- Settings — valores de sólo lectura -->
     <string name="settings_acerca_de">Acerca de</string>

@@ -43,6 +43,7 @@ fun HomeScreen(
     onListadoClick      : () -> Unit = {},
     onHistorialClick    : () -> Unit = {},
     onEstadisticasClick : () -> Unit = {},
+    onPromocionesClick  : () -> Unit = {},
     onPerfilClick       : () -> Unit = {},
     onSettingsClick     : () -> Unit = {},
     onCerrarSesionClick : () -> Unit = {}
@@ -316,6 +317,11 @@ fun HomeScreen(
                                 accentColor = Color(0xFFE65100),
                                 bgColor     = MaterialTheme.colorScheme.errorContainer.copy(.25f),
                                 onClick     = onEstadisticasClick)
+                            QuickActionCard(Modifier.weight(1f), Icons.Default.LocalOffer,
+                                stringResource(R.string.home_promociones),
+                                accentColor = MaterialTheme.colorScheme.primary,
+                                bgColor     = MaterialTheme.colorScheme.primaryContainer.copy(.35f),
+                                onClick     = onPromocionesClick)
                         }
                     }
 

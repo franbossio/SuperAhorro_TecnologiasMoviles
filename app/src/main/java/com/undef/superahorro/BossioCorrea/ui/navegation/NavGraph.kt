@@ -15,6 +15,7 @@ import com.undef.superahorro.BossioCorrea.ui.screens.home.HomeScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.login.LoginScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.olvidopassword.OlvidoPasswordScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.perfil.PerfilScreen
+import com.undef.superahorro.BossioCorrea.ui.screens.promociones.PromocionesScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.productos.nuevo.NuevoProductoScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.register.RegisterScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.settings.SettingsScreen
@@ -83,6 +84,7 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
                 onListadoClick      = { navController.navigate(Routes.LISTADO_COMPRAS) },
                 onHistorialClick    = { navController.navigate(Routes.HISTORIAL_COMPRAS) },
                 onEstadisticasClick = { navController.navigate(Routes.ESTADISTICAS) },
+                onPromocionesClick  = { navController.navigate(Routes.PROMOCIONES) },
                 onPerfilClick       = { navController.navigate(Routes.PERFIL) },
                 onSettingsClick     = { navController.navigate(Routes.SETTINGS) },
                 onCerrarSesionClick = {
@@ -139,6 +141,13 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
         // ── Estadísticas ─────────────────────────────────────────────────────
         composable(Routes.ESTADISTICAS) {
             EstadisticasScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // ── Promociones ───────────────────────────────────────────────────────
+        composable(Routes.PROMOCIONES) {
+            PromocionesScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
