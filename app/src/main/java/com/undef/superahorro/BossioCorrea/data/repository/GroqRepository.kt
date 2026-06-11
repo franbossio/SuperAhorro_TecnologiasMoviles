@@ -2,6 +2,7 @@ package com.undef.superahorro.BossioCorrea.data.repository
 
 import android.graphics.Bitmap
 import android.util.Base64
+import com.undef.superahorro.BossioCorrea.BuildConfig
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,7 +30,7 @@ sealed class GroqResult {
 
 class GroqRepository {
 
-    private val apiKey = "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"
+    private val apiKey = BuildConfig.GROQ_API_KEY
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
@@ -37,6 +38,11 @@ class GroqRepository {
         .build()
 
     suspend fun analizarTicket(bitmap: Bitmap): GroqResult = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) {
+            return@withContext GroqResult.Error(
+                "Falta configurar GROQ_API_KEY en local.properties"
+            )
+        }
         try {
             val base64 = bitmapToBase64(bitmap)
 

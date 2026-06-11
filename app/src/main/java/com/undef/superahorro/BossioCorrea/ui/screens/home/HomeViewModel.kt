@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
+import com.undef.superahorro.BossioCorrea.data.repository.Promocion
+import com.undef.superahorro.BossioCorrea.data.repository.PromocionesRepository
+import com.undef.superahorro.BossioCorrea.data.repository.PromocionesResult
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,16 +34,39 @@ data class HomeData(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository(AppDatabase.getInstance(application))
-    private val session = SessionManager(application)
-    private val db      = AppDatabase.getInstance(application)
+    private val repo      = CompraRepository(AppDatabase.getInstance(application))
+    private val session   = SessionManager(application)
+    private val db        = AppDatabase.getInstance(application)
+    private val promoRepo = PromocionesRepository()
 
     private val _uiState = MutableStateFlow<UiState<HomeData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
+    private val _notificaciones = MutableStateFlow<List<Promocion>>(emptyList())
+    val notificaciones = _notificaciones.asStateFlow()
+
     private var observarJob: Job? = null
 
-    init { cargar() }
+    init {
+        cargar()
+        cargarNotificaciones()
+    }
+
+    /** Trae las mejores promociones vigentes para mostrarlas como notificaciones de "nueva oferta". */
+    private fun cargarNotificaciones() {
+        viewModelScope.launch {
+            val resultado = promoRepo.buscarPromocionesArgentina()
+            if (resultado is PromocionesResult.Exito) {
+                // Ordena por mayor descuento (menor proporción precio/precioSinDescuento) primero.
+                _notificaciones.value = resultado.promociones
+                    .sortedBy { promo ->
+                        val original = promo.precioSinDescuento
+                        if (original != null && original > 0) (promo.precio / original) else 1.0
+                    }
+                    .take(5)
+            }
+        }
+    }
 
     fun cargar() {
         observarJob?.cancel()

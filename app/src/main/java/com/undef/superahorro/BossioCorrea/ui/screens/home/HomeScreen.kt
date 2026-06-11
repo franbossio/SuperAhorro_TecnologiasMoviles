@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,10 +50,13 @@ fun HomeScreen(
     onCerrarSesionClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val notificaciones by vm.notificaciones.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope      = rememberCoroutineScope()
     var showSheet       by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showNotificaciones by remember { mutableStateOf(false) }
+    var notificacionesVistas by remember { mutableStateOf(false) }
 
     var perfilNombre   by remember { mutableStateOf("") }
     var perfilApellido by remember { mutableStateOf("") }
@@ -172,15 +176,101 @@ fun HomeScreen(
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {
+                            showNotificaciones = true
+                            notificacionesVistas = true
+                        }) {
                             Icon(Icons.Default.Notifications, null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Box(
-                            modifier = Modifier.size(8.dp).align(Alignment.TopEnd)
-                                .offset(x = (-10).dp, y = 10.dp).clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.error)
-                        )
+                        if (notificaciones.isNotEmpty() && !notificacionesVistas) {
+                            Box(
+                                modifier = Modifier.size(8.dp).align(Alignment.TopEnd)
+                                    .offset(x = (-10).dp, y = 10.dp).clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.error)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showNotificaciones,
+                            onDismissRequest = { showNotificaciones = false },
+                            modifier = Modifier.width(300.dp)
+                        ) {
+                            Text(
+                                stringResource(R.string.notificaciones_titulo),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
+
+                            if (notificaciones.isEmpty()) {
+                                Text(
+                                    stringResource(R.string.notificaciones_vacio),
+                                    color = MaterialTheme.colorScheme.outline,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                notificaciones.forEach { promo ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Column {
+                                                Text(
+                                                    stringResource(R.string.notificaciones_nueva_oferta),
+                                                    fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Text(
+                                                    promo.producto,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 13.sp,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                                val descuento = promo.precioSinDescuento?.let { original ->
+                                                    if (original > promo.precio && original > 0)
+                                                        (((original - promo.precio) / original) * 100).toInt()
+                                                    else null
+                                                }
+                                                Text(
+                                                    listOfNotNull(
+                                                        promo.supermercado,
+                                                        descuento?.let { "-$it%" },
+                                                        "$ %.2f".format(promo.precio)
+                                                    ).joinToString(" · "),
+                                                    fontSize = 12.sp,
+                                                    color = MaterialTheme.colorScheme.outline
+                                                )
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.LocalOffer, null,
+                                                tint = MaterialTheme.colorScheme.primary)
+                                        },
+                                        onClick = {
+                                            showNotificaciones = false
+                                            onPromocionesClick()
+                                        }
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.notificaciones_ver_todas),
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                onClick = {
+                                    showNotificaciones = false
+                                    onPromocionesClick()
+                                }
+                            )
+                        }
                     }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, null,

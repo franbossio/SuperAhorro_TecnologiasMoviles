@@ -59,6 +59,12 @@
     <string name="home_promociones">Promociones</string>
     <string name="home_acciones_rapidas">Acciones rápidas</string>
 
+    <!-- Notificaciones -->
+    <string name="notificaciones_titulo">Notificaciones</string>
+    <string name="notificaciones_nueva_oferta">¡Nueva oferta!</string>
+    <string name="notificaciones_vacio">No hay ofertas nuevas por ahora</string>
+    <string name="notificaciones_ver_todas">Ver todas las promociones</string>
+
 
     <!-- Compras -->
     <string name="compra_nueva_titulo">Nueva compra</string>
@@ -251,7 +257,7 @@
     <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
     <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
     <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>
-    <string name="promociones_fuente">Datos en vivo de Open Prices (Open Food Facts)</string>
+    <string name="promociones_fuente">Datos en vivo de los catálogos de Carrefour y Día Argentina</string>
 
     <!-- Settings — valores de sólo lectura -->
     <string name="settings_acerca_de">Acerca de</string>

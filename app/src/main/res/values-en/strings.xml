@@ -55,6 +55,12 @@
     <string name="home_promociones">Deals</string>
     <string name="home_acciones_rapidas">Quick actions</string>
 
+    <!-- Notifications -->
+    <string name="notificaciones_titulo">Notifications</string>
+    <string name="notificaciones_nueva_oferta">New deal!</string>
+    <string name="notificaciones_vacio">No new deals right now</string>
+    <string name="notificaciones_ver_todas">See all deals</string>
+
     <string-array name="estadisticas_meses_cortos">
         <item>J</item>
         <item>F</item>
@@ -250,7 +256,7 @@
     <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
     <string name="promociones_ver_todas">See all deals from Argentina</string>
     <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>
-    <string name="promociones_fuente">Live data from Open Prices (Open Food Facts)</string>
+    <string name="promociones_fuente">Live data from Carrefour and Día Argentina\'s catalogs</string>
 
     <!-- Settings — read-only values -->
     <string name="settings_acerca_de">About</string>

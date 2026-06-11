@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -79,7 +80,7 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
                         val t = resultado.ticket
                         // Reemplazar la lista de productos con los detectados
                         _productos.value = t.productos
-                        onResultado(t.supermercado, t.fecha, t.hora, t.total, t.productos)
+                        onResultado(t.supermercado, fechaIaValida(t.fecha), t.hora, t.total, t.productos)
                     }
                     is GroqResult.Error -> {
                         _errorIA.value = resultado.mensaje
@@ -91,6 +92,22 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
                 _analizando.value = false
             }
         }
+    }
+
+    // Devuelve la fecha de la IA si es plausible (año actual o el anterior),
+    // o "" si no se pudo parsear o el año es claramente erróneo. Con "" el
+    // formulario no autocompleta y el usuario debe elegir la fecha a mano.
+    private fun fechaIaValida(fecha: String): String {
+        val partes = fecha.trim().split("/")
+        if (partes.size != 3) return ""
+        return try {
+            val dia  = partes[0].padStart(2, '0')
+            val mes  = partes[1].padStart(2, '0')
+            val anio = partes[2].let { if (it.length == 2) "20$it" else it }
+            val parsed = LocalDate.parse("$anio-$mes-$dia")
+            val anioActual = LocalDate.now().year
+            if (parsed.year in (anioActual - 1)..anioActual) fecha else ""
+        } catch (_: Exception) { "" }
     }
 
     // ── Productos ─────────────────────────────────────────────────────────────
