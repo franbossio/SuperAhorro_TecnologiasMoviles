@@ -257,7 +257,7 @@
     <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
     <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
     <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>
-    <string name="promociones_fuente">Datos en vivo de los catálogos de Carrefour y Día Argentina</string>
+    <string name="promociones_fuente">Datos en vivo de los catálogos de Carrefour y Chango Más Argentina</string>
 
     <!-- Settings — valores de sólo lectura -->
     <string name="settings_acerca_de">Acerca de</string>

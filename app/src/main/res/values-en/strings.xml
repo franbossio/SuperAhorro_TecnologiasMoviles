@@ -256,7 +256,7 @@
     <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
     <string name="promociones_ver_todas">See all deals from Argentina</string>
     <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>
-    <string name="promociones_fuente">Live data from Carrefour and Día Argentina\'s catalogs</string>
+    <string name="promociones_fuente">Live data from Carrefour and Chango Más Argentina\'s catalogs</string>
 
     <!-- Settings — read-only values -->
     <string name="settings_acerca_de">About</string>

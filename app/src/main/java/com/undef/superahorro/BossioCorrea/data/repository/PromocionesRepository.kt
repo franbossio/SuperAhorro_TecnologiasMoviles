@@ -43,8 +43,8 @@ class PromocionesRepository {
         .build()
 
     private val fuentes = listOf(
-        FuenteVtex("Carrefour", "https://www.carrefour.com.ar"),
-        FuenteVtex("Día",       "https://diaonline.supermercadosdia.com.ar"),
+        FuenteVtex("Carrefour",  "https://www.carrefour.com.ar"),
+        FuenteVtex("Chango Más", "https://www.masonline.com.ar"),
     )
 
     suspend fun buscarPromocionesArgentina(): PromocionesResult = withContext(Dispatchers.IO) {
