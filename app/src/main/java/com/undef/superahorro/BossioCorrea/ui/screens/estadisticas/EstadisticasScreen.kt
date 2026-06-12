@@ -37,7 +37,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 
@@ -58,7 +60,9 @@ private val PODIO_COLORES = listOf(
 fun EstadisticasScreen(
     vm          : EstadisticasViewModel = viewModel(),
     onBackClick : () -> Unit = {},
-    onComparativaClick : () -> Unit = {}
+    onComparativaClick : () -> Unit = {},
+    currentRoute : String = Routes.ESTADISTICAS,
+    onTabClick   : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
@@ -74,7 +78,8 @@ fun EstadisticasScreen(
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.estadisticas_titulo), onBackClick) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) }
     ) { padding ->
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {

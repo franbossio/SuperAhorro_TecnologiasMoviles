@@ -1,6 +1,7 @@
 package com.undef.superahorro.BossioCorrea.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,6 +29,15 @@ import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 @Composable
 fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewModel) {
     val navController = rememberNavController()
+
+    // Navega entre las pestañas de la barra inferior evitando duplicar pantallas en el stack
+    val goToTab: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     NavHost(
         navController    = navController,
@@ -84,7 +94,6 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
             HomeScreen(
                 onNuevaCompraClick  = { navController.navigate(Routes.NUEVA_COMPRA) },
                 onListadoClick      = { navController.navigate(Routes.LISTADO_COMPRAS) },
-                onHistorialClick    = { navController.navigate(Routes.HISTORIAL_COMPRAS) },
                 onEstadisticasClick = { navController.navigate(Routes.ESTADISTICAS) },
                 onPromocionesClick  = { navController.navigate(Routes.PROMOCIONES) },
                 onPerfilClick       = { navController.navigate(Routes.PERFIL) },
@@ -94,7 +103,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
                     navController.navigate(Routes.SPLASH) {
                         popUpTo(Routes.HOME) { inclusive = true }
                     }
-                }
+                },
+                currentRoute = Routes.HOME,
+                onTabClick   = goToTab
             )
         }
 
@@ -110,7 +121,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
             ListadoComprasScreen(
                 onCompraClick      = { id -> navController.navigate(Routes.detalleCompra(id)) },
                 onNuevaCompraClick = { navController.navigate(Routes.NUEVA_COMPRA) },
-                onBackClick        = { navController.popBackStack() }
+                onBackClick        = { navController.popBackStack() },
+                currentRoute       = Routes.LISTADO_COMPRAS,
+                onTabClick         = goToTab
             )
         }
 
@@ -129,7 +142,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
         composable(Routes.HISTORIAL_COMPRAS) {
             HistorialComprasScreen(
                 onCompraClick = { id -> navController.navigate(Routes.detalleCompra(id)) },
-                onBackClick   = { navController.popBackStack() }
+                onBackClick   = { navController.popBackStack() },
+                currentRoute  = Routes.HISTORIAL_COMPRAS,
+                onTabClick    = goToTab
             )
         }
 
@@ -145,7 +160,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
         composable(Routes.ESTADISTICAS) {
             EstadisticasScreen(
                 onBackClick       = { navController.popBackStack() },
-                onComparativaClick = { navController.navigate(Routes.COMPARATIVA_PRECIOS) }
+                onComparativaClick = { navController.navigate(Routes.COMPARATIVA_PRECIOS) },
+                currentRoute      = Routes.ESTADISTICAS,
+                onTabClick        = goToTab
             )
         }
 
@@ -159,7 +176,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
         // ── Promociones ───────────────────────────────────────────────────────
         composable(Routes.PROMOCIONES) {
             PromocionesScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick  = { navController.popBackStack() },
+                currentRoute = Routes.PROMOCIONES,
+                onTabClick   = goToTab
             )
         }
 

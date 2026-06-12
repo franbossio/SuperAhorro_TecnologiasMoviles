@@ -30,6 +30,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
 import kotlinx.coroutines.launch
@@ -43,13 +45,14 @@ fun HomeScreen(
     vm                  : HomeViewModel = viewModel(),
     onNuevaCompraClick  : () -> Unit = {},
     onListadoClick      : () -> Unit = {},
-    onHistorialClick    : () -> Unit = {},
     onEstadisticasClick : () -> Unit = {},
     onPromocionesClick  : () -> Unit = {},
     onPerfilClick       : () -> Unit = {},
     onSettingsClick     : () -> Unit = {},
     onChatClick         : () -> Unit = {},
-    onCerrarSesionClick : () -> Unit = {}
+    onCerrarSesionClick : () -> Unit = {},
+    currentRoute        : String = Routes.HOME,
+    onTabClick          : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     val notificaciones by vm.notificaciones.collectAsStateWithLifecycle()
@@ -313,6 +316,7 @@ fun HomeScreen(
                 }
             }
         },
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
@@ -415,34 +419,6 @@ fun HomeScreen(
                                     }
                                 }
                             }
-                        }
-                    }
-
-                    // ── ACCIONES RÁPIDAS ──────────────────────────────────────
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        LabelCaps(stringResource(R.string.home_acciones_rapidas))
-                        Spacer(Modifier.height(10.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.ListAlt,
-                                stringResource(R.string.home_mis_compras),
-                                accentColor = Color(0xFF1565C0),
-                                bgColor     = MaterialTheme.colorScheme.tertiaryContainer.copy(.4f),
-                                onClick     = onListadoClick)
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.CalendarMonth,
-                                stringResource(R.string.home_historial),
-                                accentColor = MaterialTheme.colorScheme.secondary,
-                                bgColor     = MaterialTheme.colorScheme.secondaryContainer.copy(.4f),
-                                onClick     = onHistorialClick)
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.BarChart,
-                                stringResource(R.string.home_estadisticas),
-                                accentColor = Color(0xFFE65100),
-                                bgColor     = MaterialTheme.colorScheme.errorContainer.copy(.25f),
-                                onClick     = onEstadisticasClick)
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.LocalOffer,
-                                stringResource(R.string.home_promociones),
-                                accentColor = MaterialTheme.colorScheme.primary,
-                                bgColor     = MaterialTheme.colorScheme.primaryContainer.copy(.35f),
-                                onClick     = onPromocionesClick)
                         }
                     }
 
@@ -656,42 +632,6 @@ private fun SheetMenuItem(icon: ImageVector, title: String, subtitle: String, on
         }
         Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outlineVariant,
             modifier = Modifier.size(20.dp))
-    }
-}
-
-@Composable
-private fun QuickActionCard(
-    modifier    : Modifier,
-    icon        : ImageVector,
-    label       : String,
-    accentColor : Color,
-    bgColor     : Color,
-    onClick     : () -> Unit
-) {
-    Surface(
-        modifier        = modifier.clickable { onClick() },
-        shape           = RoundedCornerShape(16.dp),
-        color           = MaterialTheme.colorScheme.surfaceContainerLow,
-        shadowElevation = 2.dp,
-        border          = CardDefaults.outlinedCardBorder().copy(
-            brush = SolidColor(accentColor.copy(.12f))
-        )
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier            = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 8.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)).background(bgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, null, tint = accentColor, modifier = Modifier.size(22.dp))
-            }
-            Spacer(Modifier.height(7.dp))
-            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center, maxLines = 2, lineHeight = 14.sp)
-        }
     }
 }
 

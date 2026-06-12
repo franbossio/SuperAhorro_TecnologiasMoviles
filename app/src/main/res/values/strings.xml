@@ -57,7 +57,7 @@
     <string name="home_cantidad_compras">%1$d compras</string>
     <string name="home_estadisticas">Estadísticas</string>
     <string name="home_promociones">Promociones</string>
-    <string name="home_acciones_rapidas">Acciones rápidas</string>
+    <string name="nav_inicio">Inicio</string>
 
     <!-- Notificaciones -->
     <string name="notificaciones_titulo">Notificaciones</string>
