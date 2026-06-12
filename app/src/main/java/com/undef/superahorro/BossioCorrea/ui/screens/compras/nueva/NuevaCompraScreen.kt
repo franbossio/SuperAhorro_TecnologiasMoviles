@@ -119,7 +119,9 @@ fun NuevaCompraScreen(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+                        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        formatter.timeZone = TimeZone.getTimeZone("UTC")
+                        fecha = formatter.format(Date(it))
                     }
                     mostrarCalendario = false
                 }) { Text(stringResource(R.string.aceptar), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
