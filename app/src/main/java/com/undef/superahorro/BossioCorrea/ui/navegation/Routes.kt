@@ -16,6 +16,7 @@ object Routes {
     const val PROMOCIONES       = "promociones"
     const val PERFIL            = "perfil"
     const val SETTINGS          = "settings"
+    const val CHAT              = "chat"
 
     fun detalleCompra(id: Int) = "detalle_compra/$id"
 }

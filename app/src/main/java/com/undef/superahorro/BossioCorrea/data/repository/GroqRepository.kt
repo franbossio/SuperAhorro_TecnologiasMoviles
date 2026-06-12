@@ -28,6 +28,11 @@ sealed class GroqResult {
     data class Error(val mensaje: String)         : GroqResult()
 }
 
+sealed class ChatResult {
+    data class Exito(val respuesta: String) : ChatResult()
+    data class Error(val mensaje: String)   : ChatResult()
+}
+
 class GroqRepository {
 
     private val apiKey = BuildConfig.GROQ_API_KEY
@@ -198,6 +203,88 @@ REGLAS DEL JSON:
 
         } catch (e: Exception) {
             GroqResult.Error("Error al analizar el ticket: ${e.message}")
+        }
+    }
+
+    /**
+     * Responde una pregunta del usuario sobre su historial de compras.
+     * El historial se pasa como contexto en el mensaje de sistema y los mensajes
+     * previos de la conversación se reenvían para que la IA mantenga el hilo.
+     */
+    suspend fun consultarHistorial(
+        pregunta        : String,
+        contextoCompras : String,
+        mensajesPrevios : List<Pair<String, String>> = emptyList()
+    ): ChatResult = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) {
+            return@withContext ChatResult.Error(
+                "Falta configurar GROQ_API_KEY en local.properties"
+            )
+        }
+        try {
+            val sistema = """
+Sos el asistente de SuperAhorro, una app argentina para registrar compras de supermercado.
+Tu única función es responder preguntas del usuario sobre SU historial de compras, que te paso abajo.
+
+REGLAS:
+- Respondé en español rioplatense, breve y directo (2 a 5 oraciones, sin markdown).
+- Usá solamente los datos del historial. No inventes compras, productos ni precios.
+- Los montos son pesos argentinos: formatealos como ${'$'}1.234,56.
+- Si la pregunta no se puede responder con el historial (o no tiene compras), decilo amablemente.
+- Si te preguntan algo no relacionado con sus compras, recordá que solo respondés sobre el historial.
+
+HISTORIAL DE COMPRAS DEL USUARIO:
+$contextoCompras
+            """.trimIndent()
+
+            val requestBody = JSONObject().apply {
+                put("model", "meta-llama/llama-4-scout-17b-16e-instruct")
+                put("max_tokens", 1000)
+                put("temperature", 0.3)
+                put("messages", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "system")
+                        put("content", sistema)
+                    })
+                    mensajesPrevios.forEach { (rol, contenido) ->
+                        put(JSONObject().apply {
+                            put("role", rol)
+                            put("content", contenido)
+                        })
+                    }
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("content", pregunta)
+                    })
+                })
+            }.toString()
+
+            val request = Request.Builder()
+                .url("https://api.groq.com/openai/v1/chat/completions")
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody.toRequestBody("application/json".toMediaType()))
+                .build()
+
+            val response = client.newCall(request).execute()
+            val body = response.body?.string()
+                ?: return@withContext ChatResult.Error("Respuesta vacía de la API")
+
+            if (!response.isSuccessful) {
+                return@withContext ChatResult.Error("Error API ${response.code}: $body")
+            }
+
+            val content = JSONObject(body)
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content")
+                .trim()
+
+            ChatResult.Exito(content)
+
+        } catch (e: Exception) {
+            ChatResult.Error("Error al consultar: ${e.message}")
         }
     }
 
