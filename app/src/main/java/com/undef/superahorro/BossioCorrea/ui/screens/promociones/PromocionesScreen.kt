@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationCity
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +42,7 @@ fun PromocionesScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     var filtro by remember { mutableStateOf(CIUDAD_SUGERIDA) }
+    var filtroProducto by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.promociones_titulo), onBackClick) },
@@ -71,6 +73,16 @@ fun PromocionesScreen(
                     singleLine    = true,
                     shape         = RoundedCornerShape(14.dp)
                 )
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value         = filtroProducto,
+                    onValueChange = { filtroProducto = it },
+                    modifier      = Modifier.fillMaxWidth(),
+                    placeholder   = { Text(stringResource(R.string.promociones_filtro_producto_placeholder)) },
+                    leadingIcon   = { Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary) },
+                    singleLine    = true,
+                    shape         = RoundedCornerShape(14.dp)
+                )
             }
 
             // ── Resultados ────────────────────────────────────────────────────
@@ -89,9 +101,13 @@ fun PromocionesScreen(
 
                 is UiState.Success -> {
                     val todas = state.data
-                    val filtradas = if (filtro.isBlank()) todas else todas.filter { promo ->
-                        promo.ciudad?.contains(filtro, ignoreCase = true) == true ||
+                    val filtradas = todas.filter { promo ->
+                        val coincideUbicacion = filtro.isBlank() ||
+                                promo.ciudad?.contains(filtro, ignoreCase = true) == true ||
                                 promo.supermercado.contains(filtro, ignoreCase = true)
+                        val coincideProducto = filtroProducto.isBlank() ||
+                                promo.producto.contains(filtroProducto, ignoreCase = true)
+                        coincideUbicacion && coincideProducto
                     }
 
                     when {
@@ -109,12 +125,12 @@ fun PromocionesScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                stringResource(R.string.promociones_sin_resultados, filtro),
+                                stringResource(R.string.promociones_sin_resultados),
                                 color = MaterialTheme.colorScheme.outline,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(Modifier.height(12.dp))
-                            TextButton(onClick = { filtro = "" }) {
+                            TextButton(onClick = { filtro = ""; filtroProducto = "" }) {
                                 Text(stringResource(R.string.promociones_ver_todas))
                             }
                         }

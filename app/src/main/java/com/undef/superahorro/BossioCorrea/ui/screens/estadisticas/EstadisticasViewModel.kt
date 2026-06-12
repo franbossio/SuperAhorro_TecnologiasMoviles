@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.text.Normalizer
 import java.time.LocalDate
 
 data class EstadisticasData(
@@ -51,8 +52,14 @@ class EstadisticasViewModel(application: Application) : AndroidViewModel(applica
                 } else emptyList()
                 val topProds = compras
                     .flatMap { it.productos }
-                    .groupBy { it.nombre }
-                    .map { (n, list) -> n to list.sumOf { it.cantidad } }
+                    .groupBy { normalizarNombreProducto(it.nombre) }
+                    .map { (_, items) ->
+                        val nombreDisplay = items
+                            .groupingBy { it.nombre }
+                            .eachCount()
+                            .maxByOrNull { it.value }!!.key
+                        nombreDisplay to items.sumOf { it.cantidad }
+                    }
                     .sortedByDescending { it.second }
                     .take(5)
                 val anioActual = LocalDate.now().year
@@ -72,5 +79,17 @@ class EstadisticasViewModel(application: Application) : AndroidViewModel(applica
                 )
             }
         }
+    }
+
+    // Ordena las palabras para que "leche descremada manfrey" y "leche manfrey descremada" agrupen igual.
+    private fun normalizarNombreProducto(nombre: String): String {
+        val sinAcentos = Normalizer.normalize(nombre, Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}"), "")
+        return sinAcentos.trim()
+            .lowercase()
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+            .sorted()
+            .joinToString(" ")
     }
 }

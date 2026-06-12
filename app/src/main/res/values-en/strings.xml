@@ -256,8 +256,9 @@
     <string name="promociones_titulo">Deals</string>
     <string name="promociones_subtitulo">Real offers from Argentine supermarkets, fetched live from an API</string>
     <string name="promociones_filtro_placeholder">Filter by city or supermarket (e.g. Córdoba)</string>
+    <string name="promociones_filtro_producto_placeholder">Filter by product (e.g. milk)</string>
     <string name="promociones_resultados">%1$d deals found</string>
-    <string name="promociones_sin_resultados">We couldn\'t find any deals in \"%1$s\" right now.</string>
+    <string name="promociones_sin_resultados">We couldn\'t find any deals matching your search.</string>
     <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
     <string name="promociones_ver_todas">See all deals from Argentina</string>
     <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>

@@ -257,8 +257,9 @@
     <string name="promociones_titulo">Promociones</string>
     <string name="promociones_subtitulo">Ofertas reales en supermercados de Argentina, consultadas en vivo desde una API</string>
     <string name="promociones_filtro_placeholder">Filtrar por ciudad o supermercado (ej: Córdoba)</string>
+    <string name="promociones_filtro_producto_placeholder">Filtrar por producto (ej: leche)</string>
     <string name="promociones_resultados">%1$d ofertas encontradas</string>
-    <string name="promociones_sin_resultados">No encontramos promociones en \"%1$s\" por el momento.</string>
+    <string name="promociones_sin_resultados">No encontramos promociones que coincidan con tu búsqueda.</string>
     <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
     <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
     <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>
