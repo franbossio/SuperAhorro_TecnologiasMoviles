@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,12 +57,11 @@ fun SettingsScreen(
     val languageCode    by languageViewModel.languageCode.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
+    val scope    = rememberCoroutineScope()
+
     val notificationsPrefs = remember { NotificationsPreferences(context) }
-    val scope = rememberCoroutineScope()
     val notificaciones by notificationsPrefs.habilitadas.collectAsStateWithLifecycle(initialValue = true)
 
-    val context = LocalContext.current
-    val scope   = rememberCoroutineScope()
     var mostrarDialogoExportar by remember { mutableStateOf(false) }
     var exportando by remember { mutableStateOf(false) }
 
