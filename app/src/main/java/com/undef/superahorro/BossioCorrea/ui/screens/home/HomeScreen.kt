@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -283,6 +284,35 @@ fun HomeScreen(
                 )
             )
         },
+        floatingActionButton = {
+            // ── Chatbot flotante (fijo abajo a la derecha) ─────────────────
+            Box(contentAlignment = Alignment.Center) {
+                // Halo pulsante detrás del botón
+                Box(
+                    Modifier.size(62.dp).clip(CircleShape)
+                        .background(HeroBgBottom.copy(alpha = pulseAlpha * 0.5f))
+                )
+                Image(
+                    painter            = painterResource(R.drawable.ic_asistente_chat),
+                    contentDescription = stringResource(R.string.home_asistente),
+                    contentScale       = ContentScale.Crop,
+                    modifier           = Modifier
+                        .size(58.dp)
+                        .shadow(10.dp, CircleShape, spotColor = HeroBgTop)
+                        .clip(CircleShape)
+                        .clickable { onChatClick() }
+                )
+                // Puntito "en línea"
+                Box(
+                    Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 4.dp)
+                        .size(13.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF00E676)))
+                }
+            }
+        },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
 
@@ -413,49 +443,6 @@ fun HomeScreen(
                                 accentColor = MaterialTheme.colorScheme.primary,
                                 bgColor     = MaterialTheme.colorScheme.primaryContainer.copy(.35f),
                                 onClick     = onPromocionesClick)
-                        }
-                    }
-
-                    Spacer(Modifier.height(18.dp))
-
-                    // ── ASISTENTE IA (chat sobre el historial) ────────────────
-                    Surface(
-                        modifier        = Modifier.fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .clickable { onChatClick() },
-                        shape           = RoundedCornerShape(18.dp),
-                        color           = MaterialTheme.colorScheme.surfaceContainerLow,
-                        shadowElevation = 2.dp,
-                        border          = CardDefaults.outlinedCardBorder().copy(
-                            brush = SolidColor(MaterialTheme.colorScheme.primary.copy(.20f))
-                        )
-                    ) {
-                        Row(
-                            modifier          = Modifier.fillMaxWidth().padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier.size(46.dp).clip(RoundedCornerShape(13.dp))
-                                    .background(
-                                        Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.SmartToy, null,
-                                    tint = Color.White, modifier = Modifier.size(24.dp))
-                            }
-                            Spacer(Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.home_asistente),
-                                    fontWeight = FontWeight.Bold, fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                                Text(stringResource(R.string.home_asistente_desc),
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.outline)
-                            }
-                            Icon(Icons.Default.ChevronRight, null,
-                                tint = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.size(20.dp))
                         }
                     }
 
