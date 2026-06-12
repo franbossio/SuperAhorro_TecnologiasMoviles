@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.data.local.NotificationsPreferences
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
@@ -54,7 +56,11 @@ fun SettingsScreen(
     val isDark          by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
     val useSystemTheme  by themeViewModel.useSystemTheme.collectAsStateWithLifecycle()
     val languageCode    by languageViewModel.languageCode.collectAsStateWithLifecycle()
-    var notificaciones by remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
+    val notificationsPrefs = remember { NotificationsPreferences(context) }
+    val scope = rememberCoroutineScope()
+    val notificaciones by notificationsPrefs.habilitadas.collectAsStateWithLifecycle(initialValue = true)
 
     val context = LocalContext.current
     val scope   = rememberCoroutineScope()
@@ -139,7 +145,9 @@ fun SettingsScreen(
                     title    = stringResource(R.string.settings_notificaciones),
                     desc     = stringResource(R.string.settings_notificaciones_desc),
                     checked  = notificaciones,
-                    onToggle = { notificaciones = it }
+                    onToggle = { habilitado ->
+                        scope.launch { notificationsPrefs.setHabilitadas(habilitado) }
+                    }
                 )
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
