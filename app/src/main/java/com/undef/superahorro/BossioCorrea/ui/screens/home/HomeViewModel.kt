@@ -3,6 +3,7 @@ package com.undef.superahorro.BossioCorrea.ui.screens.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.undef.superahorro.BossioCorrea.data.local.NotificationsPreferences
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.AuthRepository
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
@@ -38,6 +39,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val session   = SessionManager(application)
     private val authRepo  = AuthRepository(SessionManager(application))
     private val promoRepo = PromocionesRepository()
+    private val notificationsPrefs = NotificationsPreferences(application)
 
     private val _uiState = MutableStateFlow<UiState<HomeData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -46,24 +48,40 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val notificaciones = _notificaciones.asStateFlow()
 
     private var observarJob: Job? = null
+    private var promocionesCache: List<Promocion>? = null
 
     init {
         cargar()
         cargarNotificaciones()
     }
 
-    /** Trae las mejores promociones vigentes para mostrarlas como notificaciones de "nueva oferta". */
+    /**
+     * Trae las mejores promociones vigentes para mostrarlas como notificaciones de "nueva oferta".
+     * Si el usuario deshabilitó las notificaciones en Configuración, no se muestran (sin importar
+     * si ya se habían cargado), y se vuelven a mostrar apenas las vuelve a habilitar.
+     */
     private fun cargarNotificaciones() {
         viewModelScope.launch {
-            val resultado = promoRepo.buscarPromocionesArgentina()
-            if (resultado is PromocionesResult.Exito) {
-                // Ordena por mayor descuento (menor proporción precio/precioSinDescuento) primero.
-                _notificaciones.value = resultado.promociones
-                    .sortedBy { promo ->
-                        val original = promo.precioSinDescuento
-                        if (original != null && original > 0) (promo.precio / original) else 1.0
-                    }
-                    .take(5)
+            notificationsPrefs.habilitadas.collect { habilitadas ->
+                if (!habilitadas) {
+                    _notificaciones.value = emptyList()
+                    return@collect
+                }
+
+                val promociones = promocionesCache ?: run {
+                    val resultado = promoRepo.buscarPromocionesArgentina()
+                    if (resultado is PromocionesResult.Exito) {
+                        // Ordena por mayor descuento (menor proporción precio/precioSinDescuento) primero.
+                        resultado.promociones
+                            .sortedBy { promo ->
+                                val original = promo.precioSinDescuento
+                                if (original != null && original > 0) (promo.precio / original) else 1.0
+                            }
+                            .take(5)
+                            .also { promocionesCache = it }
+                    } else emptyList()
+                }
+                _notificaciones.value = promociones
             }
         }
     }
