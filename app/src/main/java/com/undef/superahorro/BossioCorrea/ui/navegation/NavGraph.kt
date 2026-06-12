@@ -115,9 +115,9 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
 
         composable(
             route     = Routes.DETALLE_COMPRA,
-            arguments = listOf(navArgument("compraId") { type = NavType.IntType })
+            arguments = listOf(navArgument("compraId") { type = NavType.StringType })
         ) { back ->
-            val compraId = back.arguments?.getInt("compraId") ?: 1
+            val compraId = back.arguments?.getString("compraId") ?: ""
             DetalleCompraScreen(
                 compraId               = compraId,
                 onAgregarProductoClick = { navController.navigate(Routes.NUEVO_PRODUCTO) },

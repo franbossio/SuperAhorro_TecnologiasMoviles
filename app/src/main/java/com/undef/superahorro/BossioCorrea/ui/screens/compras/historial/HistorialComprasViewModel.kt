@@ -3,7 +3,6 @@ package com.undef.superahorro.BossioCorrea.ui.screens.compras.historial
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
@@ -17,7 +16,7 @@ import java.time.LocalDate
 
 class HistorialComprasViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository(AppDatabase.getInstance(application))
+    private val repo    = CompraRepository()
     private val session = SessionManager(application)
 
     private val _todasLasCompras = MutableStateFlow<List<Compra>>(emptyList())
@@ -68,7 +67,7 @@ class HistorialComprasViewModel(application: Application) : AndroidViewModel(app
         aplicarFiltros()
     }
 
-    fun eliminarCompra(compraId: Int) {
+    fun eliminarCompra(compraId: String) {
         viewModelScope.launch { repo.eliminarCompra(compraId) }
     }
 

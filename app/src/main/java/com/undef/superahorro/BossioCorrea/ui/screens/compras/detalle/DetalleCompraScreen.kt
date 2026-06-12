@@ -49,7 +49,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleCompraScreen(
-    compraId               : Int = 1,
+    compraId               : String = "",
     vm                     : DetalleCompraViewModel = viewModel(),
     onAgregarProductoClick : () -> Unit = {},
     onBackClick            : () -> Unit = {}

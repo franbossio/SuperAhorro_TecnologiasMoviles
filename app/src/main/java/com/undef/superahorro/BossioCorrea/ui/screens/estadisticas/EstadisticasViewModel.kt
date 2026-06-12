@@ -3,7 +3,6 @@ package com.undef.superahorro.BossioCorrea.ui.screens.estadisticas
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
@@ -25,7 +24,7 @@ data class EstadisticasData(
 
 class EstadisticasViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository(AppDatabase.getInstance(application))
+    private val repo    = CompraRepository()
     private val session = SessionManager(application)
 
     private val _uiState = MutableStateFlow<UiState<EstadisticasData>>(UiState.Loading)

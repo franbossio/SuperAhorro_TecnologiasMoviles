@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class Compra(
-    val id: Int,
+    val id: String,
     val fecha: LocalDate,
     val hora: LocalTime,
     val supermercado: String,
@@ -14,7 +14,7 @@ data class Compra(
 )
 
 data class Producto(
-    val id: Int,
+    val id: String,
     val codigo: String,
     val nombre: String,
     val descripcion: String,

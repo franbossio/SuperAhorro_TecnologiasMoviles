@@ -49,7 +49,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HistorialComprasScreen(
     vm            : HistorialComprasViewModel = viewModel(),
-    onCompraClick : (Int) -> Unit = {},
+    onCompraClick : (String) -> Unit = {},
     onBackClick   : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()

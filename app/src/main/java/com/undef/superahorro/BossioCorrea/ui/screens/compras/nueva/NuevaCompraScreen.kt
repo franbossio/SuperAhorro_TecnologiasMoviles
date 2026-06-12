@@ -512,7 +512,7 @@ private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -
             OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp)) { Text(stringResource(R.string.cancelar)) }
             Button(
                 onClick = {
-                    onGuardar(Producto(id = System.currentTimeMillis().toInt(), codigo = "", nombre = nombre,
+                    onGuardar(Producto(id = UUID.randomUUID().toString(), codigo = "", nombre = nombre,
                         descripcion = descripcion, cantidad = cantidad.toIntOrNull() ?: 1, precio = precio.toDoubleOrNull() ?: 0.0))
                 },
                 modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp),

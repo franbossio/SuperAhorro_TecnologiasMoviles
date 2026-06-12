@@ -3,7 +3,6 @@ package com.undef.superahorro.BossioCorrea.ui.screens.compras.listado
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class ListadoComprasViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository(AppDatabase.getInstance(application))
+    private val repo    = CompraRepository()
     private val session = SessionManager(application)
 
     private val _uiState = MutableStateFlow<UiState<List<Compra>>>(UiState.Loading)
@@ -40,7 +39,7 @@ class ListadoComprasViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    fun eliminar(compraId: Int) {
+    fun eliminar(compraId: String) {
         viewModelScope.launch { repo.eliminarCompra(compraId) }
     }
 }

@@ -3,8 +3,8 @@ package com.undef.superahorro.BossioCorrea.ui.screens.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
+import com.undef.superahorro.BossioCorrea.data.repository.AuthRepository
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.data.repository.Promocion
 import com.undef.superahorro.BossioCorrea.data.repository.PromocionesRepository
@@ -34,9 +34,9 @@ data class HomeData(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo      = CompraRepository(AppDatabase.getInstance(application))
+    private val repo      = CompraRepository()
     private val session   = SessionManager(application)
-    private val db        = AppDatabase.getInstance(application)
+    private val authRepo  = AuthRepository(SessionManager(application))
     private val promoRepo = PromocionesRepository()
 
     private val _uiState = MutableStateFlow<UiState<HomeData>>(UiState.Loading)
@@ -78,12 +78,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
             val fmtFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-            repo.getComprasFlow(userId).collect { compras ->
-                val usuario  = db.usuarioDao().getById(userId)
-                val nombre   = usuario?.nombre   ?: ""
-                val apellido = usuario?.apellido ?: ""
-                val email    = usuario?.email    ?: ""
+            val usuario  = try { authRepo.getUsuario(userId) } catch (_: Exception) { null }
+            val nombre   = usuario?.nombre   ?: ""
+            val apellido = usuario?.apellido ?: ""
+            val email    = usuario?.email    ?: ""
 
+            repo.getComprasFlow(userId).collect { compras ->
                 val ahora  = LocalDate.now()
                 val delMes = compras.filter {
                     it.fecha.year == ahora.year && it.fecha.monthValue == ahora.monthValue
