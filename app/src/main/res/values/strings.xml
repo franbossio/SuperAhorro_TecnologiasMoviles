@@ -284,6 +284,17 @@
     <string name="olvide_password_reenviar">No recibí el email, reenviar</string>
     <string name="olvide_password_volver_login">Volver al inicio de sesión</string>
 
+    <!-- Chat asistente IA -->
+    <string name="chat_titulo">Asistente IA</string>
+    <string name="chat_placeholder">Escribí tu pregunta…</string>
+    <string name="chat_bienvenida">¡Hola! Soy tu asistente de compras. Preguntame lo que quieras sobre tu historial: cuánto gastaste, dónde comprás más, qué productos repetís…</string>
+    <string name="chat_escribiendo">Pensando…</string>
+    <string name="chat_sugerencia_1">¿Cuánto gasté este mes?</string>
+    <string name="chat_sugerencia_2">¿En qué supermercado compro más?</string>
+    <string name="chat_sugerencia_3">¿Cuál es el producto que más compré?</string>
+    <string name="home_asistente">Asistente IA</string>
+    <string name="home_asistente_desc">Preguntale a tu historial de compras</string>
+
     <string-array name="estadisticas_meses_cortos">
         <item>E</item>
         <item>F</item>

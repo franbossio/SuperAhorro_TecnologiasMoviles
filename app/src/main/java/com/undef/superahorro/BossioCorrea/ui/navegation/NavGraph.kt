@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.undef.superahorro.BossioCorrea.ui.screens.comparativa.ComparativaPreciosScreen
+import com.undef.superahorro.BossioCorrea.ui.screens.chat.ChatScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle.DetalleCompraScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.historial.HistorialComprasScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.listado.ListadoComprasScreen
@@ -88,6 +89,7 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
                 onPromocionesClick  = { navController.navigate(Routes.PROMOCIONES) },
                 onPerfilClick       = { navController.navigate(Routes.PERFIL) },
                 onSettingsClick     = { navController.navigate(Routes.SETTINGS) },
+                onChatClick         = { navController.navigate(Routes.CHAT) },
                 onCerrarSesionClick = {
                     navController.navigate(Routes.SPLASH) {
                         popUpTo(Routes.HOME) { inclusive = true }
@@ -170,6 +172,13 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
                         popUpTo(Routes.HOME) { inclusive = true }
                     }
                 },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // ── Chat (asistente IA sobre el historial) ────────────────────────────
+        composable(Routes.CHAT) {
+            ChatScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

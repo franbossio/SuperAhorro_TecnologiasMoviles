@@ -294,4 +294,15 @@
     <string name="comparativa_sin_otros_supers">You haven\'t bought this product at more than one supermarket this month</string>
     <string name="comparativa_agrupando">Identifying similar products with AI…</string>
 
+    <!-- AI assistant chat -->
+    <string name="chat_titulo">AI Assistant</string>
+    <string name="chat_placeholder">Type your question…</string>
+    <string name="chat_bienvenida">Hi! I\'m your shopping assistant. Ask me anything about your purchase history: how much you spent, where you shop the most, which products you repeat…</string>
+    <string name="chat_escribiendo">Thinking…</string>
+    <string name="chat_sugerencia_1">How much did I spend this month?</string>
+    <string name="chat_sugerencia_2">Which supermarket do I shop at the most?</string>
+    <string name="chat_sugerencia_3">What product did I buy the most?</string>
+    <string name="home_asistente">AI Assistant</string>
+    <string name="home_asistente_desc">Ask questions about your purchase history</string>
+
 </resources>

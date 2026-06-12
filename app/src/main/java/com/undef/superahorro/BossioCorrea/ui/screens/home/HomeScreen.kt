@@ -47,6 +47,7 @@ fun HomeScreen(
     onPromocionesClick  : () -> Unit = {},
     onPerfilClick       : () -> Unit = {},
     onSettingsClick     : () -> Unit = {},
+    onChatClick         : () -> Unit = {},
     onCerrarSesionClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
@@ -412,6 +413,49 @@ fun HomeScreen(
                                 accentColor = MaterialTheme.colorScheme.primary,
                                 bgColor     = MaterialTheme.colorScheme.primaryContainer.copy(.35f),
                                 onClick     = onPromocionesClick)
+                        }
+                    }
+
+                    Spacer(Modifier.height(18.dp))
+
+                    // ── ASISTENTE IA (chat sobre el historial) ────────────────
+                    Surface(
+                        modifier        = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .clickable { onChatClick() },
+                        shape           = RoundedCornerShape(18.dp),
+                        color           = MaterialTheme.colorScheme.surfaceContainerLow,
+                        shadowElevation = 2.dp,
+                        border          = CardDefaults.outlinedCardBorder().copy(
+                            brush = SolidColor(MaterialTheme.colorScheme.primary.copy(.20f))
+                        )
+                    ) {
+                        Row(
+                            modifier          = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier.size(46.dp).clip(RoundedCornerShape(13.dp))
+                                    .background(
+                                        Brush.linearGradient(listOf(HeroBgTop, HeroBgBottom))
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.SmartToy, null,
+                                    tint = Color.White, modifier = Modifier.size(24.dp))
+                            }
+                            Spacer(Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.home_asistente),
+                                    fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSurface)
+                                Text(stringResource(R.string.home_asistente_desc),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.outline)
+                            }
+                            Icon(Icons.Default.ChevronRight, null,
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(20.dp))
                         }
                     }
 
