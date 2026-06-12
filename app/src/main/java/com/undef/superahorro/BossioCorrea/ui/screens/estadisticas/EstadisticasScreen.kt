@@ -69,12 +69,11 @@ fun EstadisticasScreen(
     LaunchedEffect(Unit) { vm.cargar() }
 
     val periodos = listOf(
-        stringResource(R.string.estadisticas_periodo_7_dias),
-        stringResource(R.string.estadisticas_periodo_30_dias),
-        stringResource(R.string.estadisticas_periodo_3_meses),
-        stringResource(R.string.estadisticas_periodo_1_ano)
+        PeriodoEstadisticas.SIETE_DIAS   to stringResource(R.string.estadisticas_periodo_7_dias),
+        PeriodoEstadisticas.TREINTA_DIAS to stringResource(R.string.estadisticas_periodo_30_dias),
+        PeriodoEstadisticas.TRES_MESES   to stringResource(R.string.estadisticas_periodo_3_meses),
+        PeriodoEstadisticas.UN_ANIO      to stringResource(R.string.estadisticas_periodo_1_ano)
     )
-    var periodoSel by remember { mutableStateOf(periodos[1]) }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.estadisticas_titulo), onBackClick) },
@@ -116,11 +115,11 @@ fun EstadisticasScreen(
                     // ── Filtros período ────────────────────────────────────
                     item {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(periodos) { p ->
+                            items(periodos) { (periodo, label) ->
                                 FilterChip(
-                                    selected = p == periodoSel,
-                                    onClick  = { periodoSel = p },
-                                    label    = { Text(p, style = MaterialTheme.typography.labelSmall) },
+                                    selected = periodo == data.periodoSeleccionado,
+                                    onClick  = { vm.seleccionarPeriodo(periodo) },
+                                    label    = { Text(label, style = MaterialTheme.typography.labelSmall) },
                                     shape    = RoundedCornerShape(20.dp),
                                     colors   = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = MaterialTheme.colorScheme.primary,

@@ -243,7 +243,6 @@
     <string name="listado_filtro_todo">Todo</string>
     <string name="listado_filtro_7_dias">Últimos 7 días</string>
     <string name="listado_filtro_mes">Este mes</string>
-    <string name="listado_filtro_categorias">Categorías</string>
     <string name="listado_compras_encontradas">%1$d compras encontradas</string>
     <string name="listado_desliza_eliminar">Deslizá para eliminar</string>
     <string name="listado_sin_resultados">Sin resultados para \"%1$s\"</string>
