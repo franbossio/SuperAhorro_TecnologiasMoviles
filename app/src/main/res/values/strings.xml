@@ -118,6 +118,12 @@
     <string name="settings_equipo">Equipo</string>
     <string name="settings_privacidad">Privacidad y seguridad</string>
     <string name="settings_exportar">Exportar datos</string>
+    <string name="settings_exportar_dialog_titulo">Exportar historial de compras</string>
+    <string name="settings_exportar_dialog_mensaje">Elegí el formato del archivo para compartir tu historial de compras.</string>
+    <string name="settings_exportar_csv">CSV (planilla)</string>
+    <string name="settings_exportar_pdf">PDF (reporte)</string>
+    <string name="settings_exportar_sin_datos">No hay compras para exportar todavía.</string>
+    <string name="settings_exportar_compartir">Compartir historial de compras</string>
     <string name="settings_personalizar">Personalizá tu experiencia</string>
     <string name="settings_notificaciones_desc">Recibir alertas de promociones</string>
     <string name="settings_tema_oscuro">Tema</string>
