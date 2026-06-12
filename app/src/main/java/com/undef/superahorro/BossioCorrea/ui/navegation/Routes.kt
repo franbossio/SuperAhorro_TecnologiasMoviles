@@ -13,8 +13,11 @@ object Routes {
     const val DETALLE_COMPRA    = "detalle_compra/{compraId}"
     const val HISTORIAL_COMPRAS = "historial_compras"
     const val ESTADISTICAS      = "estadisticas"
+    const val COMPARATIVA_PRECIOS = "comparativa_precios"
+    const val PROMOCIONES       = "promociones"
     const val PERFIL            = "perfil"
     const val SETTINGS          = "settings"
+    const val CHAT              = "chat"
 
-    fun detalleCompra(id: Int) = "detalle_compra/$id"
+    fun detalleCompra(id: String) = "detalle_compra/$id"
 }

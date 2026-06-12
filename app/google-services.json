@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872047805008",
+    "project_id": "superahorro-22fbe",
+    "storage_bucket": "superahorro-22fbe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872047805008:android:88523cc92dfa634b164755",
+        "android_client_info": {
+          "package_name": "com.undef.superahorro.BossioCorrea"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiWM_7yyL53blOHKWj1ndm4OEeCQWuKm4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

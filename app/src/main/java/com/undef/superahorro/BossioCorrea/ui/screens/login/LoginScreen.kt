@@ -1,11 +1,14 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.login
 
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -13,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,6 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
@@ -43,6 +49,37 @@ fun LoginScreen(
     var email       by remember { mutableStateOf("") }
     var password    by remember { mutableStateOf("") }
     var verPassword by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val puedeUsarBiometria = remember {
+        BiometricManager.from(context).canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+        ) == BiometricManager.BIOMETRIC_SUCCESS
+    }
+
+    fun lanzarBiometria() {
+        val activity = context as FragmentActivity
+        val prompt = BiometricPrompt(
+            activity,
+            ContextCompat.getMainExecutor(context),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    vm.loginConBiometria(onLoginExitoso)
+                }
+            }
+        )
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(context.getString(R.string.login_biometria_titulo))
+            .setSubtitle(context.getString(R.string.login_biometria_subtitulo))
+            .setNegativeButtonText(context.getString(R.string.cancelar))
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+            .build()
+        prompt.authenticate(promptInfo)
+    }
 
     Scaffold(
         topBar = { StitchTopBar(title = stringResource(R.string.app_name), onBackClick = onBackClick) },
@@ -98,12 +135,12 @@ fun LoginScreen(
                 ) {
                     // Email
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL ")
+                        LabelCaps(stringResource(R.string.campo_email))
                         OutlinedTextField(
                             value         = email,
                             onValueChange = { email = it },
                             modifier      = Modifier.fillMaxWidth(),
-                            placeholder   = { Text("nombre@email.com", color = MaterialTheme.colorScheme.outline) },
+                            placeholder   = { Text(stringResource(R.string.email_placeholder), color = MaterialTheme.colorScheme.outline) },
                             singleLine    = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             shape         = RoundedCornerShape(12.dp),
@@ -181,6 +218,37 @@ fun LoginScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize   = 16.sp
                             )
+                        }
+                    }
+
+                    // Botón biométrico (solo si el dispositivo lo soporta)
+                    if (puedeUsarBiometria) {
+                        Row(
+                            modifier            = Modifier.fillMaxWidth(),
+                            verticalAlignment   = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            HorizontalDivider(modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.outlineVariant)
+                            Text(stringResource(R.string.login_o),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline)
+                            HorizontalDivider(modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+
+                        OutlinedButton(
+                            onClick  = { lanzarBiometria() },
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            shape    = RoundedCornerShape(12.dp),
+                            colors   = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(Icons.Default.Fingerprint, null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.login_biometria_btn),
+                                fontWeight = FontWeight.Medium)
                         }
                     }
                 }

@@ -46,17 +46,23 @@ fun PerfilScreen(
     onBackClick         : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    var nombre   by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
-    var email    by remember { mutableStateOf("") }
-    var showLogoutDialog by remember { mutableStateOf(false) }
+    var nombre            by remember { mutableStateOf("") }
+    var apellido          by remember { mutableStateOf("") }
+    var email             by remember { mutableStateOf("") }
+    var cantidadCompras   by remember { mutableStateOf(0) }
+    var cantidadProductos by remember { mutableStateOf(0) }
+    var totalGastado      by remember { mutableStateOf(0.0) }
+    var showLogoutDialog  by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success) {
-            val u = (uiState as UiState.Success).data
-            nombre   = u.nombre
-            apellido = u.apellido
-            email    = u.email
+            val u = (uiState as UiState.Success<PerfilData>).data
+            nombre            = u.nombre
+            apellido          = u.apellido
+            email             = u.email
+            cantidadCompras   = u.cantidadCompras
+            cantidadProductos = u.cantidadProductos
+            totalGastado      = u.totalGastado
         }
     }
 
@@ -70,17 +76,17 @@ fun PerfilScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar sesión", fontWeight = FontWeight.Bold) },
-            text  = { Text("¿Seguro que querés cerrar sesión?",
+            title = { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Bold) },
+            text  = { Text(stringResource(R.string.perfil_cerrar_sesion_confirmacion),
                 color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 Button(
                     onClick = { showLogoutDialog = false; onCerrarSesionClick() },
                     colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Cerrar sesión", color = Color.White) }
+                ) { Text(stringResource(R.string.perfil_cerrar_sesion), color = Color.White) }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showLogoutDialog = false }) { Text("Cancelar") }
+                OutlinedButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.cancelar)) }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -137,7 +143,11 @@ fun PerfilScreen(
             Spacer(Modifier.height(24.dp))
 
             // ── Stats cards rediseñadas ────────────────────────────────────
-            StatsRow()
+            StatsRow(
+                cantidadCompras   = cantidadCompras,
+                cantidadProductos = cantidadProductos,
+                totalGastado      = totalGastado
+            )
 
             Spacer(Modifier.height(24.dp))
 
@@ -154,20 +164,20 @@ fun PerfilScreen(
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("NOMBRE")
+                            LabelCaps(stringResource(R.string.register_nombre))
                             OutlinedTextField(value = nombre, onValueChange = { nombre = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("APELLIDO")
+                            LabelCaps(stringResource(R.string.register_apellido))
                             OutlinedTextField(value = apellido, onValueChange = { apellido = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("EMAIL")
+                        LabelCaps(stringResource(R.string.campo_email))
                         OutlinedTextField(value = email, onValueChange = { email = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             shape = RoundedCornerShape(12.dp), colors = fieldColors)
@@ -214,7 +224,16 @@ fun PerfilScreen(
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun StatsRow() {
+private fun StatsRow(
+    cantidadCompras   : Int,
+    cantidadProductos : Int,
+    totalGastado      : Double
+) {
+    val gastoFormateado = when {
+        totalGastado >= 1_000_000 -> "$ %.1fM".format(totalGastado / 1_000_000)
+        totalGastado >= 1_000     -> "$ %.0fk".format(totalGastado / 1_000)
+        else                      -> "$ %.0f".format(totalGastado)
+    }
     Row(
         modifier              = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -222,22 +241,22 @@ private fun StatsRow() {
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "🛒",
-            value     = "5",
-            label     = "Compras",
+            value     = "$cantidadCompras",
+            label     = stringResource(R.string.home_compras),
             gradient  = CardCompras
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "📦",
-            value     = "23",
-            label     = "Productos",
+            value     = "$cantidadProductos",
+            label     = stringResource(R.string.perfil_stat_productos),
             gradient  = CardProductos
         )
         StatGradientCard(
             modifier  = Modifier.weight(1f),
             emoji     = "💰",
-            value     = "$ 64k",
-            label     = "Ahorrado",
+            value     = gastoFormateado,
+            label     = stringResource(R.string.perfil_stat_ahorrado),
             gradient  = CardAhorrado
         )
     }

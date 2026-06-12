@@ -57,9 +57,9 @@ fun NuevoProductoScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            Text("Agregar Productos", fontSize = 24.sp, fontWeight = FontWeight.Bold,
+            Text(stringResource(R.string.producto_agregar_titulo), fontSize = 24.sp, fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.24).sp)
-            Text("Ingresá los detalles de tu compra.",
+            Text(stringResource(R.string.producto_agregar_subtitulo),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline)
 
@@ -78,16 +78,16 @@ fun NuevoProductoScreen(
 
                     // Nombre
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("NOMBRE DEL PRODUCTO")
+                        LabelCaps(stringResource(R.string.producto_nombre))
                         OutlinedTextField(value = nombre, onValueChange = { nombre = it },
-                            placeholder = { Text("Ej. Leche Entera", color = MaterialTheme.colorScheme.outline) },
+                            placeholder = { Text(stringResource(R.string.producto_nombre_placeholder), color = MaterialTheme.colorScheme.outline) },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
                             shape = RoundedCornerShape(12.dp), colors = fieldColors)
                     }
 
                     // Descripción
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("DESCRIPCIÓN")
+                        LabelCaps(stringResource(R.string.producto_descripcion))
                         OutlinedTextField(value = descripcion, onValueChange = { descripcion = it },
                             modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 3,
                             shape = RoundedCornerShape(12.dp), colors = fieldColors)
@@ -95,11 +95,11 @@ fun NuevoProductoScreen(
 
                     // Código de barras
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        LabelCaps("CÓDIGO DE BARRAS")
+                        LabelCaps(stringResource(R.string.producto_codigo))
                         OutlinedTextField(
                             value         = codigo,
                             onValueChange = { codigo = it },
-                            placeholder   = { Text("Ej. 7790040012345", color = MaterialTheme.colorScheme.outline) },
+                            placeholder   = { Text(stringResource(R.string.producto_codigo_placeholder), color = MaterialTheme.colorScheme.outline) },
                             modifier      = Modifier.fillMaxWidth(), singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             trailingIcon  = {
@@ -115,14 +115,14 @@ fun NuevoProductoScreen(
                     // Cantidad / Precio
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("CANTIDAD")
+                            LabelCaps(stringResource(R.string.producto_cantidad))
                             OutlinedTextField(value = cantidad, onValueChange = { cantidad = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 shape = RoundedCornerShape(12.dp), colors = fieldColors)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            LabelCaps("PRECIO UNITARIO")
+                            LabelCaps(stringResource(R.string.nueva_compra_precio_label))
                             OutlinedTextField(value = precio, onValueChange = { precio = it },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true,
                                 leadingIcon = { Text("$", color = MaterialTheme.colorScheme.outline) },
@@ -142,7 +142,7 @@ fun NuevoProductoScreen(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Subtotal", style = MaterialTheme.typography.bodyLarge,
+                                Text(stringResource(R.string.generico_subtotal), style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.primary)
                                 Text("$ %,.2f".format(subtotal), style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

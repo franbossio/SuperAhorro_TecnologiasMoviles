@@ -1,40 +1,58 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.historial
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.mock.comprasMock
+import com.undef.superahorro.BossioCorrea.data.local.SessionManager
+import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
-class HistorialComprasViewModel : ViewModel() {
+class HistorialComprasViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Lista completa (fuente de verdad)
+    private val repo    = CompraRepository()
+    private val session = SessionManager(application)
+
     private val _todasLasCompras = MutableStateFlow<List<Compra>>(emptyList())
 
-    // Estado que ve la UI (puede estar cargando, en error, o ser la lista filtrada)
     private val _uiState = MutableStateFlow<UiState<List<Compra>>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Filtros activos
-    private val _mesSel = MutableStateFlow<Int?>(null)   // null = "Todos"
+    private val _mesSel = MutableStateFlow<Int?>(null)
     val mesSel = _mesSel.asStateFlow()
 
-    private val _anioSel = MutableStateFlow<Int>(2026)
+    private val _anioSel = MutableStateFlow(LocalDate.now().year)
     val anioSel = _anioSel.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            delay(500)
-            val datos = comprasMock.sortedByDescending { it.fecha }
-            _todasLasCompras.value = datos
-            // Inicializar el año al más reciente que haya en los datos
-            _anioSel.value = datos.maxOfOrNull { it.fecha.year } ?: 2026
-            aplicarFiltros()
+    private var primeraEmision = true
+    private var observarJob: Job? = null
+
+    init { cargar() }
+
+    fun cargar() {
+        observarJob?.cancel()
+        primeraEmision = true
+        observarJob = viewModelScope.launch {
+            val userId = session.userId.first()
+            if (userId == SessionManager.NO_SESSION) {
+                _uiState.value = UiState.Error("Sesión expirada")
+                return@launch
+            }
+            repo.getComprasFlow(userId).collect { compras ->
+                val sorted = compras.sortedByDescending { it.fecha }
+                _todasLasCompras.value = sorted
+                if (primeraEmision) {
+                    _anioSel.value = sorted.maxOfOrNull { it.fecha.year } ?: LocalDate.now().year
+                    primeraEmision = false
+                }
+                aplicarFiltros()
+            }
         }
     }
 
@@ -45,13 +63,12 @@ class HistorialComprasViewModel : ViewModel() {
 
     fun seleccionarAnio(anio: Int) {
         _anioSel.value = anio
-        _mesSel.value  = null          // al cambiar de año reseteamos el mes
+        _mesSel.value  = null
         aplicarFiltros()
     }
 
-    fun eliminarCompra(compraId: Int) {
-        _todasLasCompras.update { it.filterNot { c -> c.id == compraId } }
-        aplicarFiltros()
+    fun eliminarCompra(compraId: String) {
+        viewModelScope.launch { repo.eliminarCompra(compraId) }
     }
 
     private fun aplicarFiltros() {
@@ -63,7 +80,6 @@ class HistorialComprasViewModel : ViewModel() {
         _uiState.value = UiState.Success(resultado)
     }
 
-    /** Años disponibles en los datos para mostrar en el selector */
     fun aniosDisponibles(): List<Int> =
         _todasLasCompras.value.map { it.fecha.year }.distinct().sorted()
 }

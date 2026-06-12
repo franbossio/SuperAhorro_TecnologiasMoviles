@@ -109,7 +109,7 @@ fun RegisterScreen(
                         LabelCaps(stringResource(R.string.register_email))
                         OutlinedTextField(value = email, onValueChange = { email = it },
                             modifier = Modifier.fillMaxWidth(), singleLine = true,
-                            placeholder = { Text("nombre@email.com", color = MaterialTheme.colorScheme.outline) },
+                            placeholder = { Text(stringResource(R.string.email_placeholder), color = MaterialTheme.colorScheme.outline) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             shape = RoundedCornerShape(12.dp), colors = fieldColors)
                     }
@@ -145,7 +145,7 @@ fun RegisterScreen(
                                 IconButton(onClick = { verConfirmar = !verConfirmar }) {
                                     Icon(
                                         if (verConfirmar) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = if (verConfirmar) "Ocultar contraseña" else "Ver contraseña",
+                                        contentDescription = if (verConfirmar) stringResource(R.string.ocultar_password) else stringResource(R.string.ver_password),
                                         tint = MaterialTheme.colorScheme.outline
                                     )
                                 }

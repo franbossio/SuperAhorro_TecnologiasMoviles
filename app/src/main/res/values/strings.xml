@@ -56,7 +56,15 @@
     <string name="home_historial">Historial</string>
     <string name="home_cantidad_compras">%1$d compras</string>
     <string name="home_estadisticas">Estadísticas</string>
-    <string name="home_acciones_rapidas">Acciones rápidas</string>">
+    <string name="home_promociones">Promociones</string>
+    <string name="nav_inicio">Inicio</string>
+
+    <!-- Notificaciones -->
+    <string name="notificaciones_titulo">Notificaciones</string>
+    <string name="notificaciones_nueva_oferta">¡Nueva oferta!</string>
+    <string name="notificaciones_vacio">No hay ofertas nuevas por ahora</string>
+    <string name="notificaciones_ver_todas">Ver todas las promociones</string>
+
 
     <!-- Compras -->
     <string name="compra_nueva_titulo">Nueva compra</string>
@@ -90,6 +98,8 @@
     <string name="estadisticas_promedio">Promedio</string>
     <string name="estadisticas_por_supermercado">Gasto por supermercado</string>
     <string name="estadisticas_mas_comprados">Productos más comprados</string>
+    <string name="estadisticas_comparar_precios">Comparar precios</string>
+    <string name="estadisticas_comparar_precios_desc">Mismo producto, distintos supermercados</string>
 
     <!-- Perfil -->
     <string name="perfil_titulo">Mi perfil</string>
@@ -114,6 +124,9 @@
     <string name="settings_tema_oscuro_desc">Modificar tema</string>
     <string name="settings_version">Versión</string>
     <string name="settings_paquete">Paquete</string>
+    <string name="settings_idioma_espanol">🇦🇷 Español</string>
+    <string name="settings_idioma_ingles">🇺🇸 Inglés</string>
+    <string name="settings_idioma_desc">Idioma de la aplicación</string>
 
     <!-- Generales -->
     <string name="cargando">Cargando…</string>
@@ -145,6 +158,120 @@
     <string name="historial_sin_compras">No hay compras registradas\npara este período.</string>
 
 
+    <!-- Biometría -->
+    <string name="login_biometria_titulo">Ingresar a Super Ahorro</string>
+    <string name="login_biometria_subtitulo">Confirmá tu identidad con huella o cara</string>
+    <string name="login_biometria_btn">Ingresar con huella o cara</string>
+    <string name="login_biometria_sin_sesion">Iniciá sesión con email y contraseña primero</string>
+    <string name="login_o">o</string>
+
+    <!-- Nueva Compra Screen -->
+    <string name="nueva_compra_titulo_seccion">Detalles del ticket</string>
+    <string name="nueva_compra_subtitulo">Ingresá los datos o escaneá el ticket con IA.</string>
+    <string name="nueva_compra_ticket_label">Ticket de compra</string>
+    <string name="nueva_compra_btn_foto">Foto</string>
+    <string name="nueva_compra_btn_cambiar_foto">Cambiar</string>
+    <string name="nueva_compra_analizando">Analizando...</string>
+    <string name="nueva_compra_btn_escanear_ia">Escanear con IA</string>
+    <string name="nueva_compra_ticket_analizado">¡Ticket analizado! Revisá los datos antes de guardar.</string>
+    <string name="nueva_compra_super_placeholder">Buscá o escribí un supermercado</string>
+    <string name="nueva_compra_super_agregar">Agregar \"%1$s\"</string>
+    <string name="nueva_compra_fecha_placeholder">dd/mm/aaaa</string>
+    <string name="nueva_compra_hora_placeholder">hh:mm</string>
+    <string name="compra_total_label">Total</string>
+    <string name="nueva_compra_total_placeholder">0.00</string>
+    <string name="nueva_compra_productos_header">Productos (%1$d)</string>
+    <string name="nueva_compra_btn_agregar">Agregar</string>
+    <string name="nueva_compra_subtotal_label">Subtotal (%1$s×)</string>
+    <string name="dialog_agregar_super_titulo">Agregar supermercado</string>
+    <string name="dialog_agregar_super_campo">Nombre del supermercado</string>
+    <string name="producto_descripcion_opcional">Descripción (opcional)</string>
+    <string name="nueva_compra_precio_label">Precio unitario</string>
+    <string name="nueva_compra_comparativa_titulo">Comparativa de precios este mes</string>
+    <string name="nueva_compra_comparativa_actual">Esta compra</string>
+    <string name="nueva_compra_comparativa_buscando">Identificando productos similares con IA…</string>
+
+    <!-- Perfil Screen -->
+    <string name="perfil_cerrar_sesion_confirmacion">¿Seguro que querés cerrar sesión?</string>
+    <string name="campo_email">Email</string>
+    <string name="perfil_stat_productos">Productos</string>
+    <string name="perfil_stat_ahorrado">Ahorrado</string>
+
+    <!-- Home Screen -->
+    <string name="home_completada">Completada</string>
+    <string name="home_super_ahorrador">Super Ahorrador</string>
+    <string name="cerrar">Cerrar</string>
+    <string name="home_mi_perfil">Mi Perfil</string>
+    <string name="home_mi_perfil_desc">Ver y editar mis datos</string>
+    <string name="home_mis_estadisticas">Mis estadísticas</string>
+    <string name="home_mis_estadisticas_desc">Resumen de ahorro y gastos</string>
+    <string name="home_cerrar_sesion_desc">Salir de tu cuenta</string>
+
+    <!-- Historial -->
+    <string name="historial_filtro_todos">Todos</string>
+
+    <!-- Validación -->
+    <string name="olvide_email_invalido">Ingresá un email válido</string>
+
+    <!-- Nuevo Producto screen -->
+    <string name="producto_agregar_titulo">Agregar Productos</string>
+    <string name="producto_agregar_subtitulo">Ingresá los detalles de tu compra.</string>
+    <string name="producto_nombre_placeholder">Ej. Leche Entera</string>
+    <string name="producto_codigo_placeholder">Ej. 7790040012345</string>
+    <string name="generico_subtotal">Subtotal</string>
+    <string name="producto_cada_uno">c/u</string>
+
+    <!-- Login / Registro placeholders y accesibilidad -->
+    <string name="email_placeholder">nombre@email.com</string>
+    <string name="ver_password">Ver contraseña</string>
+    <string name="ocultar_password">Ocultar contraseña</string>
+
+    <!-- Nueva Compra — diálogo foto -->
+    <string name="nueva_compra_foto_titulo">Foto del ticket</string>
+    <string name="nueva_compra_tomar_foto">Tomar foto</string>
+    <string name="nueva_compra_elegir_galeria">Elegir de galería</string>
+
+    <!-- Listado Compras -->
+    <string name="listado_eliminar_mensaje">Se eliminará la compra en %1$s del %2$s. Esta acción no se puede deshacer.</string>
+    <string name="listado_buscar_placeholder">Buscar por supermercado o producto</string>
+    <string name="listado_filtro_todo">Todo</string>
+    <string name="listado_filtro_7_dias">Últimos 7 días</string>
+    <string name="listado_filtro_mes">Este mes</string>
+    <string name="listado_filtro_categorias">Categorías</string>
+    <string name="listado_compras_encontradas">%1$d compras encontradas</string>
+    <string name="listado_desliza_eliminar">Deslizá para eliminar</string>
+    <string name="listado_sin_resultados">Sin resultados para \"%1$s\"</string>
+    <string name="compra_card_productos">%1$d producto(s)</string>
+
+    <!-- Stats labels (en mayúsculas para los hero cards) -->
+    <string name="stat_favorito">Favorito</string>
+    <string name="estadisticas_tendencia">Tendencia</string>
+    <string name="estadisticas_subtitulo">Análisis inteligente de tus gastos</string>
+    <string name="estadisticas_evolucion_mensual">Evolución mensual</string>
+    <string name="estadisticas_periodo_7_dias">7 días</string>
+    <string name="estadisticas_periodo_30_dias">30 días</string>
+    <string name="estadisticas_periodo_3_meses">3 meses</string>
+    <string name="estadisticas_periodo_1_ano">1 año</string>
+
+    <!-- Promociones (consulta a API externa - Open Prices / Open Food Facts) -->
+    <string name="promociones_titulo">Promociones</string>
+    <string name="promociones_subtitulo">Ofertas reales en supermercados de Argentina, consultadas en vivo desde una API</string>
+    <string name="promociones_filtro_placeholder">Filtrar por ciudad o supermercado (ej: Córdoba)</string>
+    <string name="promociones_resultados">%1$d ofertas encontradas</string>
+    <string name="promociones_sin_resultados">No encontramos promociones en \"%1$s\" por el momento.</string>
+    <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
+    <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
+    <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>
+    <string name="promociones_fuente">Datos en vivo de los catálogos de Carrefour y Chango Más Argentina</string>
+
+    <!-- Settings — valores de sólo lectura -->
+    <string name="settings_acerca_de">Acerca de</string>
+    <string name="settings_idioma_valor">Español (Argentina)</string>
+    <string name="settings_exportar_valor">CSV / PDF</string>
+    <string name="settings_version_valor">1.0.0</string>
+    <string name="settings_paquete_valor">com.undef.superahorro</string>
+    <string name="settings_equipo_valor">BossioCorrea · 2026</string>
+
     <!-- Olvidé mi contraseña -->
     <string name="olvide_password_titulo">Recuperar contraseña</string>
     <string name="olvide_password_enviado_titulo">¡Revisá tu email!</string>
@@ -156,5 +283,43 @@
     <string name="olvide_password_revisar_spam">Si no lo ves, revisá la carpeta de spam.</string>
     <string name="olvide_password_reenviar">No recibí el email, reenviar</string>
     <string name="olvide_password_volver_login">Volver al inicio de sesión</string>
+
+    <!-- Chat asistente IA -->
+    <string name="chat_titulo">Asistente IA</string>
+    <string name="chat_placeholder">Escribí tu pregunta…</string>
+    <string name="chat_bienvenida">¡Hola! Soy tu asistente de compras. Preguntame lo que quieras sobre tu historial: cuánto gastaste, dónde comprás más, qué productos repetís…</string>
+    <string name="chat_escribiendo">Pensando…</string>
+    <string name="chat_sugerencia_1">¿Cuánto gasté este mes?</string>
+    <string name="chat_sugerencia_2">¿En qué supermercado compro más?</string>
+    <string name="chat_sugerencia_3">¿Cuál es el producto que más compré?</string>
+    <string name="home_asistente">Asistente IA</string>
+    <string name="home_asistente_desc">Preguntale a tu historial de compras</string>
+
+    <string-array name="estadisticas_meses_cortos">
+        <item>E</item>
+        <item>F</item>
+        <item>M</item>
+        <item>A</item>
+        <item>M</item>
+        <item>J</item>
+        <item>J</item>
+        <item>A</item>
+        <item>S</item>
+        <item>O</item>
+        <item>N</item>
+        <item>D</item>
+    </string-array>
+
+    <!-- Comparativa de precios -->
+    <string name="comparativa_titulo">Comparativa de precios</string>
+    <string name="comparativa_subtitulo">Compará el precio de un mismo producto entre supermercados, mes a mes</string>
+    <string name="comparativa_mes">Mes</string>
+    <string name="comparativa_producto">Producto</string>
+    <string name="comparativa_mas_barato">Más barato</string>
+    <string name="comparativa_diferencia">+%1$d%% vs. más barato</string>
+    <string name="comparativa_sin_compras">Todavía no registraste compras para comparar</string>
+    <string name="comparativa_sin_productos">No hay productos cargados para este mes</string>
+    <string name="comparativa_sin_otros_supers">Todavía no compraste este producto en más de un supermercado este mes</string>
+    <string name="comparativa_agrupando">Identificando productos similares con IA…</string>
 
 </resources>

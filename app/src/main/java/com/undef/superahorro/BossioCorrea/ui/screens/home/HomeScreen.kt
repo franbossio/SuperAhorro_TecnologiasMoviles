@@ -17,26 +17,27 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
-import com.undef.superahorro.BossioCorrea.data.mock.usuarioMock
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
 import kotlinx.coroutines.launch
 
 private val HeroBgTop    = Color(0xFF006C49)
 private val HeroBgBottom = Color(0xFF00A066)
-private val barHeights   = listOf(0.38f, 0.55f, 0.45f, 0.72f, 0.60f, 0.88f, 0.70f)
-private val barDays      = listOf("L", "M", "X", "J", "V", "S", "D")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,15 +45,38 @@ fun HomeScreen(
     vm                  : HomeViewModel = viewModel(),
     onNuevaCompraClick  : () -> Unit = {},
     onListadoClick      : () -> Unit = {},
-    onHistorialClick    : () -> Unit = {},
     onEstadisticasClick : () -> Unit = {},
+    onPromocionesClick  : () -> Unit = {},
     onPerfilClick       : () -> Unit = {},
-    onSettingsClick     : () -> Unit = {}
+    onSettingsClick     : () -> Unit = {},
+    onChatClick         : () -> Unit = {},
+    onCerrarSesionClick : () -> Unit = {},
+    currentRoute        : String = Routes.HOME,
+    onTabClick          : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val notificaciones by vm.notificaciones.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope      = rememberCoroutineScope()
-    var showSheet  by remember { mutableStateOf(false) }
+    var showSheet       by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showNotificaciones by remember { mutableStateOf(false) }
+    var notificacionesVistas by remember { mutableStateOf(false) }
+
+    var perfilNombre   by remember { mutableStateOf("") }
+    var perfilApellido by remember { mutableStateOf("") }
+    var perfilEmail    by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) { vm.cargar() }
+
+    LaunchedEffect(uiState) {
+        if (uiState is UiState.Success) {
+            val d = (uiState as UiState.Success<HomeData>).data
+            perfilNombre   = d.usuarioNombre
+            perfilApellido = d.usuarioApellido
+            perfilEmail    = d.usuarioEmail
+        }
+    }
 
     val pulse = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by pulse.animateFloat(
@@ -60,6 +84,31 @@ fun HomeScreen(
         animationSpec = infiniteRepeatable(tween(1100, easing = EaseInOutSine), RepeatMode.Reverse),
         label         = "pulseAlpha"
     )
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.Bold) },
+            text  = { Text(stringResource(R.string.perfil_cerrar_sesion_confirmacion), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            confirmButton = {
+                Button(
+                    onClick = { showLogoutDialog = false; onCerrarSesionClick() },
+                    colors  = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    shape   = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.perfil_cerrar_sesion), fontWeight = FontWeight.SemiBold) }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick  = { showLogoutDialog = false },
+                    shape    = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(stringResource(R.string.cancelar)) }
+            },
+            shape          = RoundedCornerShape(20.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    }
 
     if (showSheet) {
         ModalBottomSheet(
@@ -81,9 +130,22 @@ fun HomeScreen(
             }
         ) {
             PerfilBottomSheetContent(
+                nombre   = perfilNombre,
+                apellido = perfilApellido,
+                email    = perfilEmail,
                 onVerPerfilClick = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         showSheet = false; onPerfilClick()
+                    }
+                },
+                onEstadisticasClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false; onEstadisticasClick()
+                    }
+                },
+                onCerrarSesionClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        showSheet = false; showLogoutDialog = true
                     }
                 },
                 onCerrarClick = {
@@ -119,15 +181,101 @@ fun HomeScreen(
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {
+                            showNotificaciones = true
+                            notificacionesVistas = true
+                        }) {
                             Icon(Icons.Default.Notifications, null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Box(
-                            modifier = Modifier.size(8.dp).align(Alignment.TopEnd)
-                                .offset(x = (-10).dp, y = 10.dp).clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.error)
-                        )
+                        if (notificaciones.isNotEmpty() && !notificacionesVistas) {
+                            Box(
+                                modifier = Modifier.size(8.dp).align(Alignment.TopEnd)
+                                    .offset(x = (-10).dp, y = 10.dp).clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.error)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showNotificaciones,
+                            onDismissRequest = { showNotificaciones = false },
+                            modifier = Modifier.width(300.dp)
+                        ) {
+                            Text(
+                                stringResource(R.string.notificaciones_titulo),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
+
+                            if (notificaciones.isEmpty()) {
+                                Text(
+                                    stringResource(R.string.notificaciones_vacio),
+                                    color = MaterialTheme.colorScheme.outline,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                notificaciones.forEach { promo ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Column {
+                                                Text(
+                                                    stringResource(R.string.notificaciones_nueva_oferta),
+                                                    fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Text(
+                                                    promo.producto,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 13.sp,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                                val descuento = promo.precioSinDescuento?.let { original ->
+                                                    if (original > promo.precio && original > 0)
+                                                        (((original - promo.precio) / original) * 100).toInt()
+                                                    else null
+                                                }
+                                                Text(
+                                                    listOfNotNull(
+                                                        promo.supermercado,
+                                                        descuento?.let { "-$it%" },
+                                                        "$ %.2f".format(promo.precio)
+                                                    ).joinToString(" · "),
+                                                    fontSize = 12.sp,
+                                                    color = MaterialTheme.colorScheme.outline
+                                                )
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.LocalOffer, null,
+                                                tint = MaterialTheme.colorScheme.primary)
+                                        },
+                                        onClick = {
+                                            showNotificaciones = false
+                                            onPromocionesClick()
+                                        }
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.notificaciones_ver_todas),
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                onClick = {
+                                    showNotificaciones = false
+                                    onPromocionesClick()
+                                }
+                            )
+                        }
                     }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, null,
@@ -139,8 +287,46 @@ fun HomeScreen(
                 )
             )
         },
+        floatingActionButton = {
+            // ── Chatbot flotante (fijo abajo a la derecha) ─────────────────
+            Box(contentAlignment = Alignment.Center) {
+                // Halo pulsante detrás del botón
+                Box(
+                    Modifier.size(62.dp).clip(CircleShape)
+                        .background(HeroBgBottom.copy(alpha = pulseAlpha * 0.5f))
+                )
+                Image(
+                    painter            = painterResource(R.drawable.ic_asistente_chat),
+                    contentDescription = stringResource(R.string.home_asistente),
+                    contentScale       = ContentScale.Crop,
+                    modifier           = Modifier
+                        .size(58.dp)
+                        .shadow(10.dp, CircleShape, spotColor = HeroBgTop)
+                        .clip(CircleShape)
+                        .clickable { onChatClick() }
+                )
+                // Puntito "en línea"
+                Box(
+                    Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 4.dp)
+                        .size(13.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF00E676)))
+                }
+            }
+        },
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
+
+        val currentLocale = java.util.Locale.getDefault()
+        val dayLabels = remember(currentLocale) {
+            (1..7).map { dayNum ->
+                java.time.DayOfWeek.of(dayNum)
+                    .getDisplayName(java.time.format.TextStyle.NARROW, currentLocale)
+            }
+        }
 
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
@@ -204,51 +390,35 @@ fun HomeScreen(
                                 Text(stringResource(R.string.home_gasto_mes),
                                     fontSize = 13.sp, color = Color.White.copy(alpha = 0.62f))
                                 Spacer(Modifier.height(20.dp))
+                                val maxGasto = data.gastosPorDia.maxOrNull() ?: 0.0
+                                val barHeightsDyn = if (maxGasto > 0) {
+                                    data.gastosPorDia.map { (it / maxGasto).toFloat().coerceAtLeast(0.05f) }
+                                } else {
+                                    List(7) { 0.05f }
+                                }
+                                val todayIndex = java.time.LocalDate.now().dayOfWeek.value - 1
                                 Row(Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                                     verticalAlignment = Alignment.Bottom) {
-                                    barHeights.forEachIndexed { i, h ->
-                                        val isLast = i == barHeights.lastIndex
+                                    barHeightsDyn.forEachIndexed { i, h ->
+                                        val isToday = i == todayIndex
                                         Column(Modifier.weight(1f),
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Bottom) {
                                             Box(Modifier.fillMaxWidth().height((44 * h).dp)
                                                 .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                                                 .background(
-                                                    if (isLast) Color.White.copy(alpha = 0.95f)
+                                                    if (isToday) Color.White.copy(alpha = 0.95f)
                                                     else Color.White.copy(alpha = 0.28f)
                                                 ))
                                             Spacer(Modifier.height(4.dp))
-                                            Text(barDays[i], fontSize = 9.sp,
-                                                color = if (isLast) Color.White else Color.White.copy(.50f),
-                                                fontWeight = if (isLast) FontWeight.Bold else FontWeight.Normal)
+                                            Text(dayLabels[i], fontSize = 9.sp,
+                                                color = if (isToday) Color.White else Color.White.copy(.50f),
+                                                fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal)
                                         }
                                     }
                                 }
                             }
-                        }
-                    }
-
-                    // ── ACCIONES RÁPIDAS ──────────────────────────────────────
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        LabelCaps(stringResource(R.string.home_acciones_rapidas))
-                        Spacer(Modifier.height(10.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.ListAlt,
-                                stringResource(R.string.home_mis_compras),
-                                accentColor = Color(0xFF1565C0),
-                                bgColor     = MaterialTheme.colorScheme.tertiaryContainer.copy(.4f),
-                                onClick     = onListadoClick)
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.CalendarMonth,
-                                stringResource(R.string.home_historial),
-                                accentColor = MaterialTheme.colorScheme.secondary,
-                                bgColor     = MaterialTheme.colorScheme.secondaryContainer.copy(.4f),
-                                onClick     = onHistorialClick)
-                            QuickActionCard(Modifier.weight(1f), Icons.Default.BarChart,
-                                stringResource(R.string.home_estadisticas),
-                                accentColor = Color(0xFFE65100),
-                                bgColor     = MaterialTheme.colorScheme.errorContainer.copy(.25f),
-                                onClick     = onEstadisticasClick)
                         }
                     }
 
@@ -327,7 +497,7 @@ fun HomeScreen(
                                             ) {
                                                 Box(Modifier.size(6.dp).clip(CircleShape)
                                                     .background(MaterialTheme.colorScheme.primary))
-                                                Text("Completada", fontSize = 10.sp,
+                                                Text(stringResource(R.string.home_completada), fontSize = 10.sp,
                                                     color = MaterialTheme.colorScheme.primary,
                                                     fontWeight = FontWeight.SemiBold)
                                             }
@@ -377,9 +547,16 @@ fun HomeScreen(
 }
 
 @Composable
-private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick: () -> Unit) {
-    val usuario  = usuarioMock
-    val iniciales = "${usuario.nombre.firstOrNull() ?: ""}${usuario.apellido.firstOrNull() ?: ""}"
+private fun PerfilBottomSheetContent(
+    nombre              : String,
+    apellido            : String,
+    email               : String,
+    onVerPerfilClick    : () -> Unit,
+    onEstadisticasClick : () -> Unit,
+    onCerrarSesionClick : () -> Unit,
+    onCerrarClick       : () -> Unit
+) {
+    val iniciales = "${nombre.firstOrNull() ?: ""}${apellido.firstOrNull() ?: ""}"
 
     Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
         Row(
@@ -395,10 +572,10 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
                 Text(iniciales, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text("${usuario.nombre} ${usuario.apellido}",
+                Text("$nombre $apellido",
                     fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface)
-                Text(usuario.email, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
+                Text(email, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
                 Spacer(Modifier.height(5.dp))
                 Surface(shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(.4f)) {
@@ -407,7 +584,7 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
                         horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(Icons.Default.Star, null, tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(12.dp))
-                        Text("Super Ahorrador", fontSize = 11.sp,
+                        Text(stringResource(R.string.home_super_ahorrador), fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     }
                 }
@@ -416,9 +593,9 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 
-        SheetMenuItem(Icons.Default.Person, "Mi Perfil", "Ver y editar mis datos", onVerPerfilClick)
-        SheetMenuItem(Icons.Default.BarChart, "Mis estadísticas", "Resumen de ahorro y gastos", {})
-        SheetMenuItem(Icons.Default.Share, "Compartir app", "Invitá a un amigo", {})
+        SheetMenuItem(Icons.Default.Person, stringResource(R.string.home_mi_perfil), stringResource(R.string.home_mi_perfil_desc), onVerPerfilClick)
+        SheetMenuItem(Icons.Default.BarChart, stringResource(R.string.home_mis_estadisticas), stringResource(R.string.home_mis_estadisticas_desc), onEstadisticasClick)
+        SheetMenuItem(Icons.Default.Logout, stringResource(R.string.perfil_cerrar_sesion), stringResource(R.string.home_cerrar_sesion_desc), onCerrarSesionClick)
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(.4f))
 
@@ -426,7 +603,7 @@ private fun PerfilBottomSheetContent(onVerPerfilClick: () -> Unit, onCerrarClick
             onClick  = onCerrarClick,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).height(48.dp)
         ) {
-            Text("Cerrar", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            Text(stringResource(R.string.cerrar), fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.outline)
         }
         Spacer(Modifier.height(8.dp))
@@ -455,42 +632,6 @@ private fun SheetMenuItem(icon: ImageVector, title: String, subtitle: String, on
         }
         Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outlineVariant,
             modifier = Modifier.size(20.dp))
-    }
-}
-
-@Composable
-private fun QuickActionCard(
-    modifier    : Modifier,
-    icon        : ImageVector,
-    label       : String,
-    accentColor : Color,
-    bgColor     : Color,
-    onClick     : () -> Unit
-) {
-    Surface(
-        modifier        = modifier.clickable { onClick() },
-        shape           = RoundedCornerShape(16.dp),
-        color           = MaterialTheme.colorScheme.surfaceContainerLow,
-        shadowElevation = 2.dp,
-        border          = CardDefaults.outlinedCardBorder().copy(
-            brush = SolidColor(accentColor.copy(.12f))
-        )
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier            = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 8.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)).background(bgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, null, tint = accentColor, modifier = Modifier.size(22.dp))
-            }
-            Spacer(Modifier.height(7.dp))
-            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center, maxLines = 2, lineHeight = 14.sp)
-        }
     }
 }
 

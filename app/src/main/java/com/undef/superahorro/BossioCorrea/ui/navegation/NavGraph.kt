@@ -1,11 +1,14 @@
 package com.undef.superahorro.BossioCorrea.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.undef.superahorro.BossioCorrea.ui.screens.comparativa.ComparativaPreciosScreen
+import com.undef.superahorro.BossioCorrea.ui.screens.chat.ChatScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle.DetalleCompraScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.historial.HistorialComprasScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.listado.ListadoComprasScreen
@@ -15,15 +18,26 @@ import com.undef.superahorro.BossioCorrea.ui.screens.home.HomeScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.login.LoginScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.olvidopassword.OlvidoPasswordScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.perfil.PerfilScreen
+import com.undef.superahorro.BossioCorrea.ui.screens.promociones.PromocionesScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.productos.nuevo.NuevoProductoScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.register.RegisterScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.settings.SettingsScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.splash.SplashScreen
+import com.undef.superahorro.BossioCorrea.ui.theme.LanguageViewModel
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
 
 @Composable
-fun NavGraph(themeViewModel: ThemeViewModel) {
+fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewModel) {
     val navController = rememberNavController()
+
+    // Navega entre las pestañas de la barra inferior evitando duplicar pantallas en el stack
+    val goToTab: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     NavHost(
         navController    = navController,
@@ -80,19 +94,26 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
             HomeScreen(
                 onNuevaCompraClick  = { navController.navigate(Routes.NUEVA_COMPRA) },
                 onListadoClick      = { navController.navigate(Routes.LISTADO_COMPRAS) },
-                onHistorialClick    = { navController.navigate(Routes.HISTORIAL_COMPRAS) },
                 onEstadisticasClick = { navController.navigate(Routes.ESTADISTICAS) },
+                onPromocionesClick  = { navController.navigate(Routes.PROMOCIONES) },
                 onPerfilClick       = { navController.navigate(Routes.PERFIL) },
-                onSettingsClick     = { navController.navigate(Routes.SETTINGS) }
+                onSettingsClick     = { navController.navigate(Routes.SETTINGS) },
+                onChatClick         = { navController.navigate(Routes.CHAT) },
+                onCerrarSesionClick = {
+                    navController.navigate(Routes.SPLASH) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                },
+                currentRoute = Routes.HOME,
+                onTabClick   = goToTab
             )
         }
 
         // ── Compras ─────────────────────────────────────────────────────────
         composable(Routes.NUEVA_COMPRA) {
             NuevaCompraScreen(
-                onGuardarClick         = { navController.popBackStack() },
-                onAgregarProductoClick = { navController.navigate(Routes.NUEVO_PRODUCTO) },
-                onBackClick            = { navController.popBackStack() }
+                onGuardarClick = { navController.popBackStack() },
+                onBackClick    = { navController.popBackStack() }
             )
         }
 
@@ -100,15 +121,17 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
             ListadoComprasScreen(
                 onCompraClick      = { id -> navController.navigate(Routes.detalleCompra(id)) },
                 onNuevaCompraClick = { navController.navigate(Routes.NUEVA_COMPRA) },
-                onBackClick        = { navController.popBackStack() }
+                onBackClick        = { navController.popBackStack() },
+                currentRoute       = Routes.LISTADO_COMPRAS,
+                onTabClick         = goToTab
             )
         }
 
         composable(
             route     = Routes.DETALLE_COMPRA,
-            arguments = listOf(navArgument("compraId") { type = NavType.IntType })
+            arguments = listOf(navArgument("compraId") { type = NavType.StringType })
         ) { back ->
-            val compraId = back.arguments?.getInt("compraId") ?: 1
+            val compraId = back.arguments?.getString("compraId") ?: ""
             DetalleCompraScreen(
                 compraId               = compraId,
                 onAgregarProductoClick = { navController.navigate(Routes.NUEVO_PRODUCTO) },
@@ -119,7 +142,9 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
         composable(Routes.HISTORIAL_COMPRAS) {
             HistorialComprasScreen(
                 onCompraClick = { id -> navController.navigate(Routes.detalleCompra(id)) },
-                onBackClick   = { navController.popBackStack() }
+                onBackClick   = { navController.popBackStack() },
+                currentRoute  = Routes.HISTORIAL_COMPRAS,
+                onTabClick    = goToTab
             )
         }
 
@@ -134,7 +159,26 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
         // ── Estadísticas ─────────────────────────────────────────────────────
         composable(Routes.ESTADISTICAS) {
             EstadisticasScreen(
+                onBackClick       = { navController.popBackStack() },
+                onComparativaClick = { navController.navigate(Routes.COMPARATIVA_PRECIOS) },
+                currentRoute      = Routes.ESTADISTICAS,
+                onTabClick        = goToTab
+            )
+        }
+
+        // ── Comparativa de precios ────────────────────────────────────────────
+        composable(Routes.COMPARATIVA_PRECIOS) {
+            ComparativaPreciosScreen(
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // ── Promociones ───────────────────────────────────────────────────────
+        composable(Routes.PROMOCIONES) {
+            PromocionesScreen(
+                onBackClick  = { navController.popBackStack() },
+                currentRoute = Routes.PROMOCIONES,
+                onTabClick   = goToTab
             )
         }
 
@@ -151,11 +195,19 @@ fun NavGraph(themeViewModel: ThemeViewModel) {
             )
         }
 
+        // ── Chat (asistente IA sobre el historial) ────────────────────────────
+        composable(Routes.CHAT) {
+            ChatScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         // ── Settings ──────────────────────────────────────────────────────────
         composable(Routes.SETTINGS) {
             SettingsScreen(
-                themeViewModel = themeViewModel,
-                onBackClick    = { navController.popBackStack() }
+                themeViewModel    = themeViewModel,
+                languageViewModel = languageViewModel,
+                onBackClick       = { navController.popBackStack() }
             )
         }
     }

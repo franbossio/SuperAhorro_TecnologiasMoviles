@@ -52,7 +52,29 @@
     <string name="home_historial">History</string>
     <string name="home_cantidad_compras">%1$d purchases</string>
     <string name="home_estadisticas">Statistics</string>
-    <string name="home_acciones_rapidas">Quick actions</string>
+    <string name="home_promociones">Deals</string>
+    <string name="nav_inicio">Home</string>
+
+    <!-- Notifications -->
+    <string name="notificaciones_titulo">Notifications</string>
+    <string name="notificaciones_nueva_oferta">New deal!</string>
+    <string name="notificaciones_vacio">No new deals right now</string>
+    <string name="notificaciones_ver_todas">See all deals</string>
+
+    <string-array name="estadisticas_meses_cortos">
+        <item>J</item>
+        <item>F</item>
+        <item>M</item>
+        <item>A</item>
+        <item>M</item>
+        <item>J</item>
+        <item>J</item>
+        <item>A</item>
+        <item>S</item>
+        <item>O</item>
+        <item>N</item>
+        <item>D</item>
+    </string-array>
 
     <string name="compra_nueva_titulo">New purchase</string>
     <string name="compra_fecha">Date</string>
@@ -83,6 +105,8 @@
     <string name="estadisticas_promedio">Average</string>
     <string name="estadisticas_por_supermercado">Spending by supermarket</string>
     <string name="estadisticas_mas_comprados">Most purchased products</string>
+    <string name="estadisticas_comparar_precios">Compare prices</string>
+    <string name="estadisticas_comparar_precios_desc">Same product, different supermarkets</string>
 
     <string name="perfil_titulo">My profile</string>
     <string name="perfil_guardar">Save changes</string>
@@ -105,6 +129,9 @@
     <string name="settings_tema_oscuro_desc">Modify theme</string>
     <string name="settings_version">Version</string>
     <string name="settings_paquete">Package</string>
+    <string name="settings_idioma_espanol">🇦🇷 Spanish</string>
+    <string name="settings_idioma_ingles">🇺🇸 English</string>
+    <string name="settings_idioma_desc">App language</string>
 
     <string name="cargando">Loading…</string>
     <string name="error_generico">An error occurred. Try again.</string>
@@ -130,6 +157,120 @@
     <string name="historial_eliminar_mensaje">Do you want to delete the purchase from "%1$s"? This action cannot be undone.</string>
     <string name="historial_sin_compras">No purchases recorded\nfor this period.</string>
 
+    <!-- Biometric -->
+    <string name="login_biometria_titulo">Log in to Super Ahorro</string>
+    <string name="login_biometria_subtitulo">Confirm your identity with fingerprint or face</string>
+    <string name="login_biometria_btn">Log in with fingerprint or face</string>
+    <string name="login_biometria_sin_sesion">Log in with email and password first</string>
+    <string name="login_o">or</string>
+
+    <!-- Nueva Compra Screen -->
+    <string name="nueva_compra_titulo_seccion">Ticket details</string>
+    <string name="nueva_compra_subtitulo">Enter the details or scan the receipt with AI.</string>
+    <string name="nueva_compra_ticket_label">Purchase receipt</string>
+    <string name="nueva_compra_btn_foto">Photo</string>
+    <string name="nueva_compra_btn_cambiar_foto">Change</string>
+    <string name="nueva_compra_analizando">Analyzing...</string>
+    <string name="nueva_compra_btn_escanear_ia">Scan with AI</string>
+    <string name="nueva_compra_ticket_analizado">Receipt analyzed! Review the details before saving.</string>
+    <string name="nueva_compra_super_placeholder">Search or type a supermarket</string>
+    <string name="nueva_compra_super_agregar">Add \"%1$s\"</string>
+    <string name="nueva_compra_fecha_placeholder">dd/mm/yyyy</string>
+    <string name="nueva_compra_hora_placeholder">hh:mm</string>
+    <string name="compra_total_label">Total</string>
+    <string name="nueva_compra_total_placeholder">0.00</string>
+    <string name="nueva_compra_productos_header">Products (%1$d)</string>
+    <string name="nueva_compra_btn_agregar">Add</string>
+    <string name="nueva_compra_subtotal_label">Subtotal (%1$s×)</string>
+    <string name="dialog_agregar_super_titulo">Add supermarket</string>
+    <string name="dialog_agregar_super_campo">Supermarket name</string>
+    <string name="producto_descripcion_opcional">Description (optional)</string>
+    <string name="nueva_compra_precio_label">Unit price</string>
+    <string name="nueva_compra_comparativa_titulo">Price comparison this month</string>
+    <string name="nueva_compra_comparativa_actual">This purchase</string>
+    <string name="nueva_compra_comparativa_buscando">Identifying similar products with AI…</string>
+
+    <!-- Perfil Screen -->
+    <string name="perfil_cerrar_sesion_confirmacion">Are you sure you want to log out?</string>
+    <string name="campo_email">Email</string>
+    <string name="perfil_stat_productos">Products</string>
+    <string name="perfil_stat_ahorrado">Saved</string>
+
+    <!-- Home Screen -->
+    <string name="home_completada">Completed</string>
+    <string name="home_super_ahorrador">Super Saver</string>
+    <string name="cerrar">Close</string>
+    <string name="home_mi_perfil">My Profile</string>
+    <string name="home_mi_perfil_desc">View and edit my data</string>
+    <string name="home_mis_estadisticas">My statistics</string>
+    <string name="home_mis_estadisticas_desc">Savings and spending summary</string>
+    <string name="home_cerrar_sesion_desc">Sign out of your account</string>
+
+    <!-- History -->
+    <string name="historial_filtro_todos">All</string>
+
+    <!-- Validation -->
+    <string name="olvide_email_invalido">Enter a valid email</string>
+
+    <!-- New Product screen -->
+    <string name="producto_agregar_titulo">Add Products</string>
+    <string name="producto_agregar_subtitulo">Enter the details of your purchase.</string>
+    <string name="producto_nombre_placeholder">E.g. Whole Milk</string>
+    <string name="producto_codigo_placeholder">E.g. 7790040012345</string>
+    <string name="generico_subtotal">Subtotal</string>
+    <string name="producto_cada_uno">ea.</string>
+
+    <!-- Login / Register placeholders and accessibility -->
+    <string name="email_placeholder">name@email.com</string>
+    <string name="ver_password">Show password</string>
+    <string name="ocultar_password">Hide password</string>
+
+    <!-- Nueva Compra — photo dialog -->
+    <string name="nueva_compra_foto_titulo">Ticket photo</string>
+    <string name="nueva_compra_tomar_foto">Take photo</string>
+    <string name="nueva_compra_elegir_galeria">Choose from gallery</string>
+
+    <!-- Listado Compras -->
+    <string name="listado_eliminar_mensaje">The purchase at %1$s on %2$s will be deleted. This action cannot be undone.</string>
+    <string name="listado_buscar_placeholder">Search by supermarket or product</string>
+    <string name="listado_filtro_todo">All</string>
+    <string name="listado_filtro_7_dias">Last 7 days</string>
+    <string name="listado_filtro_mes">This month</string>
+    <string name="listado_filtro_categorias">Categories</string>
+    <string name="listado_compras_encontradas">%1$d purchases found</string>
+    <string name="listado_desliza_eliminar">Swipe to delete</string>
+    <string name="listado_sin_resultados">No results for \"%1$s\"</string>
+    <string name="compra_card_productos">%1$d product(s)</string>
+
+    <!-- Stats labels -->
+    <string name="stat_favorito">Favourite</string>
+    <string name="estadisticas_tendencia">Trend</string>
+    <string name="estadisticas_subtitulo">Smart analysis of your spending</string>
+    <string name="estadisticas_evolucion_mensual">Monthly evolution</string>
+    <string name="estadisticas_periodo_7_dias">7 days</string>
+    <string name="estadisticas_periodo_30_dias">30 days</string>
+    <string name="estadisticas_periodo_3_meses">3 months</string>
+    <string name="estadisticas_periodo_1_ano">1 year</string>
+
+    <!-- Promotions (query to external API - Open Prices / Open Food Facts) -->
+    <string name="promociones_titulo">Deals</string>
+    <string name="promociones_subtitulo">Real offers from Argentine supermarkets, fetched live from an API</string>
+    <string name="promociones_filtro_placeholder">Filter by city or supermarket (e.g. Córdoba)</string>
+    <string name="promociones_resultados">%1$d deals found</string>
+    <string name="promociones_sin_resultados">We couldn\'t find any deals in \"%1$s\" right now.</string>
+    <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
+    <string name="promociones_ver_todas">See all deals from Argentina</string>
+    <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>
+    <string name="promociones_fuente">Live data from Carrefour and Chango Más Argentina\'s catalogs</string>
+
+    <!-- Settings — read-only values -->
+    <string name="settings_acerca_de">About</string>
+    <string name="settings_idioma_valor">English</string>
+    <string name="settings_exportar_valor">CSV / PDF</string>
+    <string name="settings_version_valor">1.0.0</string>
+    <string name="settings_paquete_valor">com.undef.superahorro</string>
+    <string name="settings_equipo_valor">BossioCorrea · 2026</string>
+
     <string name="olvide_password_titulo">Recover password</string>
     <string name="olvide_password_enviado_titulo">Check your email!</string>
     <string name="olvide_password_desc">Enter your email and we will send you a link to reset your password.</string>
@@ -140,5 +281,28 @@
     <string name="olvide_password_revisar_spam">If you don\'t see it, check your spam folder.</string>
     <string name="olvide_password_reenviar">Didn\'t receive the email? Resend</string>
     <string name="olvide_password_volver_login">Back to login</string>
+
+    <!-- Price comparison -->
+    <string name="comparativa_titulo">Price comparison</string>
+    <string name="comparativa_subtitulo">Compare the price of the same product across supermarkets, month by month</string>
+    <string name="comparativa_mes">Month</string>
+    <string name="comparativa_producto">Product</string>
+    <string name="comparativa_mas_barato">Cheapest</string>
+    <string name="comparativa_diferencia">+%1$d%% vs. cheapest</string>
+    <string name="comparativa_sin_compras">You haven\'t registered any purchases to compare yet</string>
+    <string name="comparativa_sin_productos">No products loaded for this month</string>
+    <string name="comparativa_sin_otros_supers">You haven\'t bought this product at more than one supermarket this month</string>
+    <string name="comparativa_agrupando">Identifying similar products with AI…</string>
+
+    <!-- AI assistant chat -->
+    <string name="chat_titulo">AI Assistant</string>
+    <string name="chat_placeholder">Type your question…</string>
+    <string name="chat_bienvenida">Hi! I\'m your shopping assistant. Ask me anything about your purchase history: how much you spent, where you shop the most, which products you repeat…</string>
+    <string name="chat_escribiendo">Thinking…</string>
+    <string name="chat_sugerencia_1">How much did I spend this month?</string>
+    <string name="chat_sugerencia_2">Which supermarket do I shop at the most?</string>
+    <string name="chat_sugerencia_3">What product did I buy the most?</string>
+    <string name="home_asistente">AI Assistant</string>
+    <string name="home_asistente_desc">Ask questions about your purchase history</string>
 
 </resources>

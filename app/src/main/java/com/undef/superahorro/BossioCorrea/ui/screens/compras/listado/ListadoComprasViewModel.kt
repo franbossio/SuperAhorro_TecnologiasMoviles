@@ -1,35 +1,45 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.listado
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.mock.comprasMock
+import com.undef.superahorro.BossioCorrea.data.local.SessionManager
+import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class ListadoComprasViewModel : ViewModel() {
+class ListadoComprasViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repo    = CompraRepository()
+    private val session = SessionManager(application)
 
     private val _uiState = MutableStateFlow<UiState<List<Compra>>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
 
-    // Lista mutable en memoria (primera entrega = mock)
-    private val _compras = comprasMock.toMutableList()
+    private var observarJob: Job? = null
 
     init { cargar() }
 
     fun cargar() {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            delay(500)
-            _uiState.value = UiState.Success(_compras.toList())
+        observarJob?.cancel()
+        observarJob = viewModelScope.launch {
+            val usuarioId = session.userId.first()
+            if (usuarioId == SessionManager.NO_SESSION) {
+                _uiState.value = UiState.Error("Sesión expirada")
+                return@launch
+            }
+            repo.getComprasFlow(usuarioId).collect { compras ->
+                _uiState.value = UiState.Success(compras)
+            }
         }
     }
 
-    fun eliminar(compraId: Int) {
-        _compras.removeAll { it.id == compraId }
-        _uiState.value = UiState.Success(_compras.toList())
+    fun eliminar(compraId: String) {
+        viewModelScope.launch { repo.eliminarCompra(compraId) }
     }
 }

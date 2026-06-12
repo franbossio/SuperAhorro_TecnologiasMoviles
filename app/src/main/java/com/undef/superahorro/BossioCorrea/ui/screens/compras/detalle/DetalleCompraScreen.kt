@@ -1,13 +1,19 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle
 
+import android.content.Intent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import java.io.File
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -43,13 +49,16 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleCompraScreen(
-    compraId               : Int = 1,
+    compraId               : String = "",
     vm                     : DetalleCompraViewModel = viewModel(),
     onAgregarProductoClick : () -> Unit = {},
     onBackClick            : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(compraId) { vm.cargar(compraId) }
+
+    val context = LocalContext.current
+    val compra  = (uiState as? UiState.Success)?.data
 
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
@@ -95,7 +104,33 @@ fun DetalleCompraScreen(
                 title       = stringResource(R.string.compra_detalle_titulo),
                 onBackClick = onBackClick,
                 actions     = {
-                    IconButton(onClick = {}) {
+                    IconButton(
+                        onClick  = {
+                            compra?.let { c ->
+                                val fmt   = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                val texto = buildString {
+                                    appendLine("🛒 Compra en ${c.supermercado}")
+                                    appendLine("📅 ${c.fecha.format(fmt)} · ${c.hora}")
+                                    appendLine()
+                                    c.productos.forEach { p ->
+                                        appendLine("• ${p.nombre}  ×${p.cantidad}  ${"$%,.2f".format(p.subtotal)}")
+                                    }
+                                    appendLine()
+                                    appendLine("Total: ${"$%,.2f".format(c.total)}")
+                                    appendLine()
+                                    appendLine("Enviado desde Super Ahorro 💚")
+                                }
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, texto)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(intent, "Compartir compra")
+                                )
+                            }
+                        },
+                        enabled = compra != null
+                    ) {
                         Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -128,6 +163,11 @@ fun DetalleCompraScreen(
 
                     // ── Hero card — gradiente verde igual que Estadísticas ─
                     item { HeroCard(compra) }
+
+                    // ── Imagen del ticket (si existe) ─────────────────────
+                    if (compra.ticketImageUri != null) {
+                        item { TicketImageCard(compra.ticketImageUri) }
+                    }
 
                     // ── Encabezado sección productos ──────────────────────
                     item {
@@ -507,6 +547,47 @@ private fun ProductoRow(p: Producto, index: Int) {
                     color      = MaterialTheme.colorScheme.primary
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TicketImageCard(imagePath: String) {
+    var expandido by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier        = Modifier.fillMaxWidth(),
+        shape           = RoundedCornerShape(16.dp),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
+        shadowElevation = 1.dp
+    ) {
+        Column(
+            modifier            = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                "TICKET",
+                style         = MaterialTheme.typography.labelSmall,
+                fontWeight    = FontWeight.Bold,
+                color         = MaterialTheme.colorScheme.outline,
+                letterSpacing = 1.5.sp
+            )
+            AsyncImage(
+                model              = File(imagePath),
+                contentDescription = "Ticket de compra",
+                modifier           = Modifier
+                    .fillMaxWidth()
+                    .height(if (expandido) 600.dp else 220.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { expandido = !expandido },
+                contentScale       = if (expandido) ContentScale.Fit else ContentScale.Crop
+            )
+            Text(
+                if (expandido) "Tocá para comprimir" else "Tocá para ver completo",
+                style    = MaterialTheme.typography.labelSmall,
+                color    = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
     }
 }

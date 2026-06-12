@@ -2,12 +2,16 @@ package com.undef.superahorro.BossioCorrea.ui.screens.estadisticas
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +25,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,7 +37,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 
@@ -52,15 +59,27 @@ private val PODIO_COLORES = listOf(
 @Composable
 fun EstadisticasScreen(
     vm          : EstadisticasViewModel = viewModel(),
-    onBackClick : () -> Unit = {}
+    onBackClick : () -> Unit = {},
+    onComparativaClick : () -> Unit = {},
+    currentRoute : String = Routes.ESTADISTICAS,
+    onTabClick   : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
-    val periodos = listOf("7 días", "30 días", "3 meses", "1 año")
-    var periodoSel by remember { mutableStateOf("30 días") }
+
+    LaunchedEffect(Unit) { vm.cargar() }
+
+    val periodos = listOf(
+        stringResource(R.string.estadisticas_periodo_7_dias),
+        stringResource(R.string.estadisticas_periodo_30_dias),
+        stringResource(R.string.estadisticas_periodo_3_meses),
+        stringResource(R.string.estadisticas_periodo_1_ano)
+    )
+    var periodoSel by remember { mutableStateOf(periodos[1]) }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.estadisticas_titulo), onBackClick) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) }
     ) { padding ->
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
@@ -87,7 +106,7 @@ fun EstadisticasScreen(
                                 letterSpacing = (-0.72).sp
                             )
                             Text(
-                                "Análisis inteligente de tus gastos",
+                                stringResource(R.string.estadisticas_subtitulo),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.outline
                             )
@@ -123,7 +142,7 @@ fun EstadisticasScreen(
 
                     // ── Evolución mensual (barras animadas) ────────────────
                     item {
-                        EvolucionMensualCard()
+                        EvolucionMensualCard(gastosPorMes = data.gastosPorMes)
                     }
 
                     // ── Por supermercado ───────────────────────────────────
@@ -152,6 +171,11 @@ fun EstadisticasScreen(
                     // ── Productos más comprados (rediseñado) ───────────────
                     item {
                         TopProductosCard(data.topProductos)
+                    }
+
+                    // ── Comparativa de precios ──────────────────────────────
+                    item {
+                        ComparativaPreciosEntryCard(onClick = onComparativaClick)
                     }
 
                     item { Spacer(Modifier.height(32.dp)) }
@@ -207,7 +231,7 @@ private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double)
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "TOTAL GASTADO",
+                stringResource(R.string.estadisticas_total_gastado).uppercase(),
                 style      = MaterialTheme.typography.labelSmall,
                 color      = Color.White.copy(alpha = 0.65f),
                 fontWeight = FontWeight.Bold,
@@ -228,9 +252,9 @@ private fun TotalHeroCard(total: Double, cantidadCompras: Int, promedio: Double)
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                HeroStat("COMPRAS",   "$cantidadCompras")
-                HeroStat("PROMEDIO",  "$ %,.0f".format(promedio))
-                HeroStat("TENDENCIA", "+12%")
+                HeroStat(stringResource(R.string.estadisticas_cantidad_compras).uppercase(), "$cantidadCompras")
+                HeroStat(stringResource(R.string.estadisticas_promedio).uppercase(), "$ %,.0f".format(promedio))
+                HeroStat(stringResource(R.string.estadisticas_tendencia).uppercase(), "+12%")
             }
         }
     }
@@ -250,15 +274,20 @@ private fun HeroStat(label: String, value: String) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun EvolucionMensualCard() {
-    val meses = listOf("E","F","M","A","M","J","J","A","S","O","N","D")
-    val vals  = listOf(0.4f,0.55f,0.45f,0.7f,0.6f,0.8f,0.5f,0.65f,0.9f,0.75f,0.85f,1f)
+private fun EvolucionMensualCard(gastosPorMes: List<Double>) {
+    val meses = stringArrayResource(R.array.estadisticas_meses_cortos).toList()
+    val maxGasto = gastosPorMes.maxOrNull() ?: 0.0
+    val vals = if (maxGasto > 0) {
+        gastosPorMes.map { (it / maxGasto).toFloat().coerceAtLeast(0.03f) }
+    } else {
+        List(12) { 0.03f }
+    }
 
     // Cada barra tiene su propio animatable para efecto stagger
     val animatedHeights = vals.mapIndexed { idx, target ->
         val anim = remember { Animatable(0f) }
-        LaunchedEffect(Unit) {
-            kotlinx.coroutines.delay(idx * 60L)   // stagger: 60 ms por barra
+        LaunchedEffect(target) {
+            kotlinx.coroutines.delay(idx * 60L)
             anim.animateTo(
                 targetValue   = target,
                 animationSpec = tween(600, easing = EaseOutBack)
@@ -279,7 +308,7 @@ private fun EvolucionMensualCard() {
         )
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            LabelCaps("EVOLUCIÓN MENSUAL")
+            LabelCaps(stringResource(R.string.estadisticas_evolucion_mensual).uppercase())
             Spacer(Modifier.height(20.dp))
 
             val barHeight: Dp = 120.dp
@@ -455,6 +484,46 @@ private fun TopProductosCard(topProductos: List<Pair<String, Int>>) {
                     )
                 }
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Comparativa de precios — acceso a la pantalla dedicada
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun ComparativaPreciosEntryCard(onClick: () -> Unit) {
+    Surface(
+        modifier        = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape           = RoundedCornerShape(16.dp),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
+        shadowElevation = 1.dp,
+        border          = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Box(
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(.35f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.CompareArrows, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                }
+                Column {
+                    Text(stringResource(R.string.estadisticas_comparar_precios), fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.estadisticas_comparar_precios_desc), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline)
+                }
+            }
+            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }
