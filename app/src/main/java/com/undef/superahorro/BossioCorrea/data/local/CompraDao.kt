@@ -45,4 +45,32 @@ interface ProductoDao {
 
     @Query("SELECT * FROM productos WHERE compraId = :compraId")
     fun getProductosDeCompraFlow(compraId: Int): Flow<List<ProductoEntity>>
+
+    // ── Comparativa de precios ─────────────────────────────────────────────────
+
+    @Query("""
+        SELECT p.nombre AS nombre, p.precio AS precio, c.supermercado AS supermercado, c.fecha AS fecha
+        FROM productos p
+        INNER JOIN compras c ON p.compraId = c.id
+        WHERE c.usuarioId = :usuarioId AND substr(c.fecha, 1, 7) = :anioMes
+        ORDER BY p.nombre COLLATE NOCASE
+    """)
+    suspend fun getProductosDelMes(usuarioId: Int, anioMes: String): List<ProductoConCompra>
+
+    @Query("""
+        SELECT DISTINCT substr(c.fecha, 1, 7) AS mes
+        FROM productos p
+        INNER JOIN compras c ON p.compraId = c.id
+        WHERE c.usuarioId = :usuarioId
+        ORDER BY mes DESC
+    """)
+    suspend fun getMesesConProductos(usuarioId: Int): List<String>
 }
+
+// Resultado crudo de la query de comparativa: producto + datos de la compra a la que pertenece
+data class ProductoConCompra(
+    val nombre: String,
+    val precio: Double,
+    val supermercado: String,
+    val fecha: String
+)

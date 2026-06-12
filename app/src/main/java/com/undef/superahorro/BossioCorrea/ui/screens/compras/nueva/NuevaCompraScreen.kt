@@ -59,6 +59,8 @@ fun NuevaCompraScreen(
     val ticketUri by vm.ticketUri.collectAsStateWithLifecycle()
     val analizando by vm.analizando.collectAsStateWithLifecycle()
     val errorIA    by vm.errorIA.collectAsStateWithLifecycle()
+    val comparaciones by vm.comparaciones.collectAsStateWithLifecycle()
+    val agrupandoComparativa by vm.agrupandoComparativa.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
 
@@ -78,6 +80,12 @@ fun NuevaCompraScreen(
     val supersFiltrados = remember(superQuery, supermercados) {
         if (superQuery.isBlank()) supermercados
         else supermercados.filter { it.contains(superQuery.trim(), ignoreCase = true) }
+    }
+
+    // Recalcula la comparativa de precios cada vez que cambian los productos,
+    // la fecha o el supermercado seleccionados
+    LaunchedEffect(productos, fecha, supermercado) {
+        vm.actualizarComparaciones(fecha, supermercado)
     }
 
     // ── BottomSheet producto ──────────────────────────────────────────────────
@@ -418,6 +426,12 @@ fun NuevaCompraScreen(
                 }
             }
 
+            // ── COMPARATIVA DE PRECIOS DEL MES ───────────────────────────────
+            if (comparaciones.isNotEmpty() || agrupandoComparativa) {
+                Spacer(Modifier.height(14.dp))
+                ComparativaPreciosCard(comparaciones, agrupandoComparativa)
+            }
+
             Spacer(Modifier.height(20.dp))
 
             when (uiState) {
@@ -454,6 +468,68 @@ private fun ProductoItemRow(producto: Producto, onEliminar: () -> Unit) {
                 Text("$ %,.2f".format(producto.subtotal), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 IconButton(onClick = onEliminar, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+// ── Comparativa de precios del mes ────────────────────────────────────────────
+
+@Composable
+private fun ComparativaPreciosCard(comparaciones: Map<String, List<ItemComparacionPrecio>>, agrupando: Boolean) {
+    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow, shadowElevation = 1.dp,
+        border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(MaterialTheme.colorScheme.primary.copy(0.25f)))) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.CompareArrows, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Text(stringResource(R.string.nueva_compra_comparativa_titulo), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            }
+            if (agrupando) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.nueva_compra_comparativa_buscando), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                }
+            }
+            comparaciones.entries.forEachIndexed { index, (nombre, items) ->
+                val precioMin = items.minOf { it.precio }
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(nombre, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    items.forEach { item ->
+                        val esMasBarato = item.precio == precioMin
+                        val nombreDistinto = !item.nombreProducto.equals(nombre, ignoreCase = true)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Icon(Icons.Default.Store, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.outline)
+                                    Text(item.supermercado, style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = if (item.esActual) FontWeight.Bold else FontWeight.Normal)
+                                    if (item.esActual) {
+                                        Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.primary.copy(0.12f)) {
+                                            Text(stringResource(R.string.nueva_compra_comparativa_actual),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                }
+                                if (nombreDistinto) {
+                                    Text(item.nombreProducto, style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(start = 20.dp))
+                                }
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                if (esMasBarato) {
+                                    Icon(Icons.Default.Star, null, modifier = Modifier.size(14.dp), tint = Color(0xFFFFA000))
+                                }
+                                Text("$ %,.2f".format(item.precio), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold,
+                                    color = if (esMasBarato) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+                }
+                if (index < comparaciones.size - 1) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.2f))
                 }
             }
         }

@@ -98,6 +98,8 @@
     <string name="estadisticas_promedio">Promedio</string>
     <string name="estadisticas_por_supermercado">Gasto por supermercado</string>
     <string name="estadisticas_mas_comprados">Productos más comprados</string>
+    <string name="estadisticas_comparar_precios">Comparar precios</string>
+    <string name="estadisticas_comparar_precios_desc">Mismo producto, distintos supermercados</string>
 
     <!-- Perfil -->
     <string name="perfil_titulo">Mi perfil</string>
@@ -185,6 +187,9 @@
     <string name="dialog_agregar_super_campo">Nombre del supermercado</string>
     <string name="producto_descripcion_opcional">Descripción (opcional)</string>
     <string name="nueva_compra_precio_label">Precio unitario</string>
+    <string name="nueva_compra_comparativa_titulo">Comparativa de precios este mes</string>
+    <string name="nueva_compra_comparativa_actual">Esta compra</string>
+    <string name="nueva_compra_comparativa_buscando">Identificando productos similares con IA…</string>
 
     <!-- Perfil Screen -->
     <string name="perfil_cerrar_sesion_confirmacion">¿Seguro que querés cerrar sesión?</string>
@@ -293,5 +298,17 @@
         <item>N</item>
         <item>D</item>
     </string-array>
+
+    <!-- Comparativa de precios -->
+    <string name="comparativa_titulo">Comparativa de precios</string>
+    <string name="comparativa_subtitulo">Compará el precio de un mismo producto entre supermercados, mes a mes</string>
+    <string name="comparativa_mes">Mes</string>
+    <string name="comparativa_producto">Producto</string>
+    <string name="comparativa_mas_barato">Más barato</string>
+    <string name="comparativa_diferencia">+%1$d%% vs. más barato</string>
+    <string name="comparativa_sin_compras">Todavía no registraste compras para comparar</string>
+    <string name="comparativa_sin_productos">No hay productos cargados para este mes</string>
+    <string name="comparativa_sin_otros_supers">Todavía no compraste este producto en más de un supermercado este mes</string>
+    <string name="comparativa_agrupando">Identificando productos similares con IA…</string>
 
 </resources>

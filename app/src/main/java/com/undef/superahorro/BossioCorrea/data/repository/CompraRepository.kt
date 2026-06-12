@@ -4,6 +4,7 @@ import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.CompraEntity
 import com.undef.superahorro.BossioCorrea.data.local.ProductoEntity
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
+import com.undef.superahorro.BossioCorrea.domain.model.PrecioProducto
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
@@ -71,6 +72,23 @@ class CompraRepository(private val db: AppDatabase) {
         val productos = productoDao.getProductosDeCompra(compraId)
         return entity.toDomain(productos)
     }
+
+    // ── Comparativa de precios ────────────────────────────────────────────────
+
+    // anioMes con formato "yyyy-MM"
+    suspend fun getProductosDelMes(usuarioId: Int, anioMes: String): List<PrecioProducto> =
+        productoDao.getProductosDelMes(usuarioId, anioMes).map {
+            PrecioProducto(
+                nombre       = it.nombre,
+                supermercado = it.supermercado,
+                precio       = it.precio,
+                fecha        = parseFecha(it.fecha)
+            )
+        }
+
+    // Meses ("yyyy-MM") con compras del usuario, más reciente primero
+    suspend fun getMesesConCompras(usuarioId: Int): List<String> =
+        productoDao.getMesesConProductos(usuarioId)
 }
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
