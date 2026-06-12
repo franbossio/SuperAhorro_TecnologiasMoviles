@@ -118,6 +118,12 @@
     <string name="settings_equipo">Equipo</string>
     <string name="settings_privacidad">Privacidad y seguridad</string>
     <string name="settings_exportar">Exportar datos</string>
+    <string name="settings_exportar_dialog_titulo">Exportar historial de compras</string>
+    <string name="settings_exportar_dialog_mensaje">Elegí el formato del archivo para compartir tu historial de compras.</string>
+    <string name="settings_exportar_csv">CSV (planilla)</string>
+    <string name="settings_exportar_pdf">PDF (reporte)</string>
+    <string name="settings_exportar_sin_datos">No hay compras para exportar todavía.</string>
+    <string name="settings_exportar_compartir">Compartir historial de compras</string>
     <string name="settings_personalizar">Personalizá tu experiencia</string>
     <string name="settings_notificaciones_desc">Recibir alertas de promociones</string>
     <string name="settings_tema_oscuro">Tema</string>
@@ -256,8 +262,9 @@
     <string name="promociones_titulo">Promociones</string>
     <string name="promociones_subtitulo">Ofertas reales en supermercados de Argentina, consultadas en vivo desde una API</string>
     <string name="promociones_filtro_placeholder">Filtrar por ciudad o supermercado (ej: Córdoba)</string>
+    <string name="promociones_filtro_producto_placeholder">Filtrar por producto (ej: leche)</string>
     <string name="promociones_resultados">%1$d ofertas encontradas</string>
-    <string name="promociones_sin_resultados">No encontramos promociones en \"%1$s\" por el momento.</string>
+    <string name="promociones_sin_resultados">No encontramos promociones que coincidan con tu búsqueda.</string>
     <string name="promociones_sin_datos">No hay promociones de supermercados argentinos disponibles en este momento.</string>
     <string name="promociones_ver_todas">Ver todas las promociones de Argentina</string>
     <string name="promociones_error">No se pudieron cargar las promociones. Probá de nuevo.</string>

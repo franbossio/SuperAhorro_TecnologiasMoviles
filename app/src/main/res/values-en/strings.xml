@@ -123,6 +123,12 @@
     <string name="settings_equipo">Team</string>
     <string name="settings_privacidad">Privacy and security</string>
     <string name="settings_exportar">Export data</string>
+    <string name="settings_exportar_dialog_titulo">Export purchase history</string>
+    <string name="settings_exportar_dialog_mensaje">Choose the file format to share your purchase history.</string>
+    <string name="settings_exportar_csv">CSV (spreadsheet)</string>
+    <string name="settings_exportar_pdf">PDF (report)</string>
+    <string name="settings_exportar_sin_datos">There are no purchases to export yet.</string>
+    <string name="settings_exportar_compartir">Share purchase history</string>
     <string name="settings_personalizar">Personalize your experience</string>
     <string name="settings_notificaciones_desc">Receive alerts for promotions</string>
     <string name="settings_tema_oscuro">Theme</string>
@@ -255,8 +261,9 @@
     <string name="promociones_titulo">Deals</string>
     <string name="promociones_subtitulo">Real offers from Argentine supermarkets, fetched live from an API</string>
     <string name="promociones_filtro_placeholder">Filter by city or supermarket (e.g. Córdoba)</string>
+    <string name="promociones_filtro_producto_placeholder">Filter by product (e.g. milk)</string>
     <string name="promociones_resultados">%1$d deals found</string>
-    <string name="promociones_sin_resultados">We couldn\'t find any deals in \"%1$s\" right now.</string>
+    <string name="promociones_sin_resultados">We couldn\'t find any deals matching your search.</string>
     <string name="promociones_sin_datos">No deals from Argentine supermarkets are available right now.</string>
     <string name="promociones_ver_todas">See all deals from Argentina</string>
     <string name="promociones_error">We couldn\'t load the deals. Please try again.</string>

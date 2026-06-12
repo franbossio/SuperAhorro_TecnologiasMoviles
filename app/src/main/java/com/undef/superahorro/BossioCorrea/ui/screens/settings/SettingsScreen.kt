@@ -1,5 +1,8 @@
 package com.undef.superahorro.BossioCorrea.ui.screens.settings
 
+import android.content.Intent
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,18 +16,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import com.undef.superahorro.BossioCorrea.ui.theme.LanguageViewModel
 import com.undef.superahorro.BossioCorrea.ui.theme.ThemeViewModel
+import com.undef.superahorro.BossioCorrea.util.exportarComprasCsv
+import com.undef.superahorro.BossioCorrea.util.exportarComprasPdf
+import kotlinx.coroutines.launch
 
 // Opciones del selector de tema
 private enum class ThemeMode { LIGHT, DARK, SYSTEM }
@@ -32,17 +40,55 @@ private enum class ThemeMode { LIGHT, DARK, SYSTEM }
 // Opciones del selector de idioma
 private enum class LangMode { ES, EN }
 
+// Formatos disponibles para exportar el historial de compras
+private enum class FormatoExportacion { CSV, PDF }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     themeViewModel    : ThemeViewModel,
     languageViewModel : LanguageViewModel,
+    vm                : SettingsViewModel = viewModel(),
     onBackClick       : () -> Unit = {}
 ) {
     val isDark          by themeViewModel.isDarkMode.collectAsStateWithLifecycle()
     val useSystemTheme  by themeViewModel.useSystemTheme.collectAsStateWithLifecycle()
     val languageCode    by languageViewModel.languageCode.collectAsStateWithLifecycle()
     var notificaciones by remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
+    val scope   = rememberCoroutineScope()
+    var mostrarDialogoExportar by remember { mutableStateOf(false) }
+    var exportando by remember { mutableStateOf(false) }
+
+    fun exportar(formato: FormatoExportacion) {
+        scope.launch {
+            exportando = true
+            val compras = vm.obtenerCompras()
+            if (compras.isEmpty()) {
+                Toast.makeText(context, context.getString(R.string.settings_exportar_sin_datos), Toast.LENGTH_SHORT).show()
+            } else {
+                val uri = when (formato) {
+                    FormatoExportacion.CSV -> exportarComprasCsv(context, compras)
+                    FormatoExportacion.PDF -> exportarComprasPdf(context, compras)
+                }
+                val mimeType = when (formato) {
+                    FormatoExportacion.CSV -> "text/csv"
+                    FormatoExportacion.PDF -> "application/pdf"
+                }
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = mimeType
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(
+                    Intent.createChooser(intent, context.getString(R.string.settings_exportar_compartir))
+                )
+                mostrarDialogoExportar = false
+            }
+            exportando = false
+        }
+    }
 
     val langMode = if (languageCode == "en") LangMode.EN else LangMode.ES
 
@@ -163,7 +209,12 @@ fun SettingsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                 ActionSettingRow(Icons.Outlined.Security, stringResource(R.string.settings_privacidad), "")
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                ActionSettingRow(Icons.Outlined.FileDownload, stringResource(R.string.settings_exportar), "CSV / PDF")
+                ActionSettingRow(
+                    icon    = Icons.Outlined.FileDownload,
+                    title   = stringResource(R.string.settings_exportar),
+                    value   = stringResource(R.string.settings_exportar_valor),
+                    onClick = { mostrarDialogoExportar = true }
+                )
             }
 
             // ── Sección Acerca de ──────────────────────────────────────────
@@ -177,6 +228,64 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(32.dp))
         }
+    }
+
+    if (mostrarDialogoExportar) {
+        AlertDialog(
+            onDismissRequest = { if (!exportando) mostrarDialogoExportar = false },
+            title = {
+                Text(
+                    stringResource(R.string.settings_exportar_dialog_titulo),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        stringResource(R.string.settings_exportar_dialog_mensaje),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (exportando) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                }
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick  = { exportar(FormatoExportacion.CSV) },
+                        enabled  = !exportando,
+                        shape    = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Outlined.TableChart, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.settings_exportar_csv))
+                    }
+                    Button(
+                        onClick  = { exportar(FormatoExportacion.PDF) },
+                        enabled  = !exportando,
+                        shape    = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Outlined.PictureAsPdf, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.settings_exportar_pdf))
+                    }
+                    OutlinedButton(
+                        onClick  = { mostrarDialogoExportar = false },
+                        enabled  = !exportando,
+                        shape    = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.cancelar)) }
+                }
+            },
+            shape          = RoundedCornerShape(20.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     }
 }
 
@@ -350,9 +459,9 @@ private fun ToggleSettingRow(
 }
 
 @Composable
-private fun ActionSettingRow(icon: ImageVector, title: String, value: String) {
+private fun ActionSettingRow(icon: ImageVector, title: String, value: String, onClick: () -> Unit = {}) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
