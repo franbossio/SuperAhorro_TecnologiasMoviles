@@ -33,7 +33,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
 import java.time.format.DateTimeFormatter
@@ -46,7 +48,9 @@ fun ListadoComprasScreen(
     vm                 : ListadoComprasViewModel = viewModel(),
     onCompraClick      : (Int) -> Unit = {},
     onNuevaCompraClick : () -> Unit = {},
-    onBackClick        : () -> Unit = {}
+    onBackClick        : () -> Unit = {},
+    currentRoute       : String = Routes.LISTADO_COMPRAS,
+    onTabClick         : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
@@ -146,7 +150,8 @@ fun ListadoComprasScreen(
                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.home_nueva_compra))
                 }
             }
-        }
+        },
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) }
     ) { padding ->
 
         when (val state = uiState) {

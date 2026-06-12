@@ -22,9 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.data.repository.Promocion
+import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
 import com.undef.superahorro.BossioCorrea.ui.components.PriceChip
 import com.undef.superahorro.BossioCorrea.ui.components.StitchCard
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
+import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 
 private const val CIUDAD_SUGERIDA = "Córdoba"
@@ -33,14 +35,17 @@ private const val CIUDAD_SUGERIDA = "Córdoba"
 @Composable
 fun PromocionesScreen(
     vm          : PromocionesViewModel = viewModel(),
-    onBackClick : () -> Unit = {}
+    onBackClick : () -> Unit = {},
+    currentRoute : String = Routes.PROMOCIONES,
+    onTabClick   : (String) -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     var filtro by remember { mutableStateOf(CIUDAD_SUGERIDA) }
 
     Scaffold(
         topBar = { StitchTopBar(stringResource(R.string.promociones_titulo), onBackClick) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 

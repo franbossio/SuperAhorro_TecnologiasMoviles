@@ -53,7 +53,7 @@
     <string name="home_cantidad_compras">%1$d purchases</string>
     <string name="home_estadisticas">Statistics</string>
     <string name="home_promociones">Deals</string>
-    <string name="home_acciones_rapidas">Quick actions</string>
+    <string name="nav_inicio">Home</string>
 
     <!-- Notifications -->
     <string name="notificaciones_titulo">Notifications</string>
