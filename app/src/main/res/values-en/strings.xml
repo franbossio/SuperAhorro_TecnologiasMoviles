@@ -236,7 +236,6 @@
     <string name="listado_filtro_todo">All</string>
     <string name="listado_filtro_7_dias">Last 7 days</string>
     <string name="listado_filtro_mes">This month</string>
-    <string name="listado_filtro_categorias">Categories</string>
     <string name="listado_compras_encontradas">%1$d purchases found</string>
     <string name="listado_desliza_eliminar">Swipe to delete</string>
     <string name="listado_sin_resultados">No results for \"%1$s\"</string>

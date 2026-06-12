@@ -38,6 +38,7 @@ import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.*
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val CardBorder = Color(0xFFBBCABF).copy(alpha = 0.35f)
@@ -58,12 +59,9 @@ fun ListadoComprasScreen(
 
     var busqueda        by remember { mutableStateOf("") }
     val filtroTodo      = stringResource(R.string.listado_filtro_todo)
-    val filtros         = listOf(
-        filtroTodo,
-        stringResource(R.string.listado_filtro_7_dias),
-        stringResource(R.string.listado_filtro_mes),
-        stringResource(R.string.listado_filtro_categorias)
-    )
+    val filtro7Dias     = stringResource(R.string.listado_filtro_7_dias)
+    val filtroMes       = stringResource(R.string.listado_filtro_mes)
+    val filtros         = listOf(filtroTodo, filtro7Dias, filtroMes)
     var filtroSel       by remember { mutableStateOf(filtroTodo) }
     var compraAEliminar by remember { mutableStateOf<Compra?>(null) }
 
@@ -164,10 +162,19 @@ fun ListadoComprasScreen(
             ) { Text(stringResource(R.string.error_generico)) }
 
             is UiState.Success -> {
+                val hoy = LocalDate.now()
                 val comprasFiltradas = state.data.filter { c ->
-                    busqueda.isBlank() ||
+                    val coincideBusqueda = busqueda.isBlank() ||
                             c.supermercado.contains(busqueda, ignoreCase = true) ||
                             c.productos.any { p -> p.nombre.contains(busqueda, ignoreCase = true) }
+
+                    val coincidePeriodo = when (filtroSel) {
+                        filtro7Dias -> !c.fecha.isBefore(hoy.minusDays(6))
+                        filtroMes   -> c.fecha.year == hoy.year && c.fecha.monthValue == hoy.monthValue
+                        else        -> true
+                    }
+
+                    coincideBusqueda && coincidePeriodo
                 }
 
                 LazyColumn(
