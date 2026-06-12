@@ -19,5 +19,5 @@ object Routes {
     const val SETTINGS          = "settings"
     const val CHAT              = "chat"
 
-    fun detalleCompra(id: Int) = "detalle_compra/$id"
+    fun detalleCompra(id: String) = "detalle_compra/$id"
 }

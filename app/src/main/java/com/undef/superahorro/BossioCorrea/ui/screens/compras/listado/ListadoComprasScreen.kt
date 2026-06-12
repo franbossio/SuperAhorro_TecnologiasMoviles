@@ -46,7 +46,7 @@ private val CardBorder = Color(0xFFBBCABF).copy(alpha = 0.35f)
 @Composable
 fun ListadoComprasScreen(
     vm                 : ListadoComprasViewModel = viewModel(),
-    onCompraClick      : (Int) -> Unit = {},
+    onCompraClick      : (String) -> Unit = {},
     onNuevaCompraClick : () -> Unit = {},
     onBackClick        : () -> Unit = {},
     currentRoute       : String = Routes.LISTADO_COMPRAS,

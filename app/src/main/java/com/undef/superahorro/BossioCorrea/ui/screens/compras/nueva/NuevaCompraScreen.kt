@@ -127,7 +127,9 @@ fun NuevaCompraScreen(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
-                        fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+                        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        formatter.timeZone = TimeZone.getTimeZone("UTC")
+                        fecha = formatter.format(Date(it))
                     }
                     mostrarCalendario = false
                 }) { Text(stringResource(R.string.aceptar), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
@@ -586,7 +588,7 @@ private fun AgregarProductoSheet(onGuardar: (Producto) -> Unit, onCancelar: () -
             OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp)) { Text(stringResource(R.string.cancelar)) }
             Button(
                 onClick = {
-                    onGuardar(Producto(id = System.currentTimeMillis().toInt(), codigo = "", nombre = nombre,
+                    onGuardar(Producto(id = UUID.randomUUID().toString(), codigo = "", nombre = nombre,
                         descripcion = descripcion, cantidad = cantidad.toIntOrNull() ?: 1, precio = precio.toDoubleOrNull() ?: 0.0))
                 },
                 modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(14.dp),

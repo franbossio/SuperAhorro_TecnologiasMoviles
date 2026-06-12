@@ -39,9 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.undef.superahorro.BossioCorrea.R
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
-import com.undef.superahorro.BossioCorrea.ui.components.MainBottomBar
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
-import com.undef.superahorro.BossioCorrea.ui.navigation.Routes
 import com.undef.superahorro.BossioCorrea.ui.navigation.UiState
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
 import java.time.format.DateTimeFormatter
@@ -51,10 +49,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HistorialComprasScreen(
     vm            : HistorialComprasViewModel = viewModel(),
-    onCompraClick : (Int) -> Unit = {},
-    onBackClick   : () -> Unit = {},
-    currentRoute  : String = Routes.HISTORIAL_COMPRAS,
-    onTabClick    : (String) -> Unit = {}
+    onCompraClick : (String) -> Unit = {},
+    onBackClick   : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     val mesSel  by vm.mesSel.collectAsStateWithLifecycle()
@@ -105,8 +101,7 @@ fun HistorialComprasScreen(
 
     Scaffold(
         topBar         = { StitchTopBar(stringResource(R.string.compra_historial_titulo), onBackClick) },
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar      = { MainBottomBar(currentRoute = currentRoute, onTabClick = onTabClick) }
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         when (val state = uiState) {
             is UiState.Loading -> Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {

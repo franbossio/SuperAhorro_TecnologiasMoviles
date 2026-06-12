@@ -6,7 +6,6 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.data.repository.GroqRepository
@@ -29,7 +28,7 @@ import java.time.format.DateTimeFormatter
 
 class NuevaCompraViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo      = CompraRepository(AppDatabase.getInstance(application))
+    private val repo      = CompraRepository()
     private val session   = SessionManager(application)
     private val groqRepo  = GroqRepository()
     private val context   = application.applicationContext
@@ -139,7 +138,7 @@ class NuevaCompraViewModel(application: Application) : AndroidViewModel(applicat
         _productos.value = _productos.value + producto
     }
 
-    fun eliminarProducto(productoId: Int) {
+    fun eliminarProducto(productoId: String) {
         _productos.value = _productos.value.filterNot { it.id == productoId }
     }
 

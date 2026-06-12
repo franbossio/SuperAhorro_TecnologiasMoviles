@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,9 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.undef.superahorro.BossioCorrea.R
+import com.undef.superahorro.BossioCorrea.data.local.SessionManager
+import com.undef.superahorro.BossioCorrea.data.repository.AuthRepository
 import com.undef.superahorro.BossioCorrea.ui.components.LabelCaps
 import com.undef.superahorro.BossioCorrea.ui.components.StitchTopBar
 import com.undef.superahorro.BossioCorrea.ui.theme.SuperAhorroTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +39,22 @@ fun OlvidoPasswordScreen(
     var email      by remember { mutableStateOf("") }
     var enviado    by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf(false) }
+    var enviando   by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val scope   = rememberCoroutineScope()
+
+    // Manda el email real de restablecimiento vía Firebase Auth.
+    // Si Firebase falla igual mostramos "enviado": por seguridad no conviene
+    // revelar si un email está registrado o no.
+    fun enviarReset() {
+        scope.launch {
+            enviando = true
+            AuthRepository(SessionManager(context)).recuperarPassword(email)
+            enviando = false
+            enviado  = true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -188,9 +208,10 @@ fun OlvidoPasswordScreen(
                                     if (email.isBlank() || !email.contains("@")) {
                                         emailError = true
                                     } else {
-                                        enviado = true
+                                        enviarReset()
                                     }
                                 },
+                                enabled   = !enviando,
                                 modifier  = Modifier
                                     .fillMaxWidth()
                                     .height(52.dp),
@@ -200,11 +221,19 @@ fun OlvidoPasswordScreen(
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                             ) {
-                                Text(
-                                    text       = stringResource(R.string.olvide_password_btn_enviar),
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize   = 16.sp
-                                )
+                                if (enviando) {
+                                    CircularProgressIndicator(
+                                        modifier    = Modifier.size(22.dp),
+                                        strokeWidth = 2.dp,
+                                        color       = Color.White
+                                    )
+                                } else {
+                                    Text(
+                                        text       = stringResource(R.string.olvide_password_btn_enviar),
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize   = 16.sp
+                                    )
+                                }
                             }
 
                         } else {
@@ -222,9 +251,9 @@ fun OlvidoPasswordScreen(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                             )
 
-                            // Reenviar (mockeado)
+                            // Reenviar el email de restablecimiento
                             TextButton(
-                                onClick  = { /* mock: reenviar */ },
+                                onClick  = { enviarReset() },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(

@@ -1,99 +1,135 @@
 package com.undef.superahorro.BossioCorrea.data.repository
 
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
-import com.undef.superahorro.BossioCorrea.data.local.CompraEntity
-import com.undef.superahorro.BossioCorrea.data.local.ProductoEntity
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.domain.model.PrecioProducto
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
-class CompraRepository(private val db: AppDatabase) {
+/**
+ * Compras en Firestore: colección "compras", un documento por compra
+ * con sus productos embebidos como lista (equivale al JOIN compras-productos
+ * que había en Room). Firestore cachea offline automáticamente.
+ */
+class CompraRepository {
 
-    private val compraDao   = db.compraDao()
-    private val productoDao = db.productoDao()
+    private val compras = FirebaseFirestore.getInstance().collection("compras")
 
     // ── Observar compras del usuario ──────────────────────────────────────────
     //
-    // mapLatest cancela la transformación anterior cuando llega un nuevo valor.
-    // El catch solo captura IOException, no CancellationException, para que
-    // la cancelación de corrutinas se propague correctamente.
+    // callbackFlow envuelve el listener en tiempo real de Firestore: cada vez
+    // que cambia algo en la nube (o localmente offline) emite la lista nueva.
 
-    fun getComprasFlow(usuarioId: Int): Flow<List<Compra>> =
-        compraDao.getComprasDeUsuario(usuarioId).mapLatest { entities ->
-            entities.mapNotNull { entity ->
-                val productos = productoDao.getProductosDeCompra(entity.id)
-                entity.toDomain(productos)
+    fun getComprasFlow(usuarioId: String): Flow<List<Compra>> = callbackFlow {
+        val registro = compras
+            .whereEqualTo("usuarioId", usuarioId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val lista = snapshot?.documents
+                    ?.mapNotNull { it.toCompra() }
+                    ?.sortedByDescending { it.fecha.atTime(it.hora) }
+                    ?: emptyList()
+                trySend(lista)
             }
-        }
+        awaitClose { registro.remove() }
+    }
 
     // ── Guardar compra con productos ──────────────────────────────────────────
 
     suspend fun guardarCompra(
-        usuarioId    : Int,
+        usuarioId    : String,
         fecha        : String,
         hora         : String,
         supermercado : String,
         total        : Double,
         productos    : List<Producto>,
         ticketUri    : String? = null
-    ): Int {
-        val compraId = compraDao.insertar(
-            CompraEntity(
-                usuarioId      = usuarioId,
-                fecha          = fecha,
-                hora           = hora,
-                supermercado   = supermercado,
-                total          = total,
-                ticketImageUri = ticketUri
+    ): String {
+        val doc = compras.add(
+            mapOf(
+                "usuarioId"      to usuarioId,
+                "fecha"          to fecha,
+                "hora"           to hora,
+                "supermercado"   to supermercado,
+                "total"          to total,
+                "ticketImageUri" to ticketUri,
+                "productos"      to productos.map { it.toMap() }
             )
-        ).toInt()
-
-        if (productos.isNotEmpty()) {
-            productoDao.insertarTodos(productos.map { it.toEntity(compraId) })
-        }
-        return compraId
+        ).await()
+        return doc.id
     }
 
-    suspend fun agregarProducto(compraId: Int, producto: Producto) {
-        productoDao.insertar(producto.toEntity(compraId))
+    suspend fun agregarProducto(compraId: String, producto: Producto) {
+        val conId = if (producto.id.isBlank())
+            producto.copy(id = UUID.randomUUID().toString()) else producto
+        val doc       = compras.document(compraId).get().await()
+        val actuales  = doc.productosEmbebidos()
+        compras.document(compraId)
+            .update("productos", (actuales + conId).map { it.toMap() })
+            .await()
     }
 
-    suspend fun eliminarCompra(compraId: Int) { compraDao.eliminar(compraId) }
-
-    suspend fun eliminarProducto(productoId: Int) { productoDao.eliminar(productoId) }
-
-    suspend fun getCompraById(compraId: Int): Compra? {
-        val entity    = compraDao.getById(compraId) ?: return null
-        val productos = productoDao.getProductosDeCompra(compraId)
-        return entity.toDomain(productos)
+    suspend fun eliminarCompra(compraId: String) {
+        compras.document(compraId).delete().await()
     }
+
+    suspend fun eliminarProducto(compraId: String, productoId: String) {
+        val doc      = compras.document(compraId).get().await()
+        val restantes = doc.productosEmbebidos().filterNot { it.id == productoId }
+        compras.document(compraId)
+            .update("productos", restantes.map { it.toMap() })
+            .await()
+    }
+
+    suspend fun getCompraById(compraId: String): Compra? =
+        compras.document(compraId).get().await().toCompra()
 
     // ── Comparativa de precios ────────────────────────────────────────────────
 
-    // anioMes con formato "yyyy-MM"
-    suspend fun getProductosDelMes(usuarioId: Int, anioMes: String): List<PrecioProducto> =
-        productoDao.getProductosDelMes(usuarioId, anioMes).map {
-            PrecioProducto(
-                nombre       = it.nombre,
-                supermercado = it.supermercado,
-                precio       = it.precio,
-                fecha        = parseFecha(it.fecha)
-            )
-        }
+    // Precios de cada producto comprado por el usuario durante [anioMes] ("yyyy-MM")
+    suspend fun getProductosDelMes(usuarioId: String, anioMes: String): List<PrecioProducto> {
+        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
+        return snapshot.documents
+            .mapNotNull { it.toCompra() }
+            .filter { it.fecha.format(FMT_ANIO_MES) == anioMes }
+            .flatMap { compra ->
+                compra.productos.map { producto ->
+                    PrecioProducto(
+                        nombre       = producto.nombre,
+                        supermercado = compra.supermercado,
+                        precio       = producto.precio,
+                        fecha        = compra.fecha
+                    )
+                }
+            }
+    }
 
     // Meses ("yyyy-MM") con compras del usuario, más reciente primero
-    suspend fun getMesesConCompras(usuarioId: Int): List<String> =
-        productoDao.getMesesConProductos(usuarioId)
+    suspend fun getMesesConCompras(usuarioId: String): List<String> {
+        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
+        return snapshot.documents
+            .mapNotNull { it.toCompra() }
+            .map { it.fecha.format(FMT_ANIO_MES) }
+            .distinct()
+            .sortedDescending()
+    }
 }
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
 private val FMT_HORA_LENIENTE = DateTimeFormatter.ofPattern("H:mm")
+private val FMT_ANIO_MES      = DateTimeFormatter.ofPattern("yyyy-MM")
 
 // Normaliza cualquier variante "yy-M-d" / "yyyy-M-d" → "yyyy-MM-dd" y parsea.
 private fun parseFecha(raw: String): LocalDate {
@@ -107,34 +143,46 @@ private fun parseFecha(raw: String): LocalDate {
     return LocalDate.parse(raw)   // último recurso: dejar que falle con mensaje claro
 }
 
-private fun CompraEntity.toDomain(productos: List<ProductoEntity>): Compra =
-    Compra(
-        id             = id,
-        fecha          = parseFecha(fecha),
-        hora           = try { LocalTime.parse(hora) }
-                         catch (_: Exception) { LocalTime.parse(hora, FMT_HORA_LENIENTE) },
-        supermercado   = supermercado,
-        total          = total,
-        productos      = productos.map { it.toDomain() },
-        ticketImageUri = ticketImageUri
-    )
+private fun DocumentSnapshot.toCompra(): Compra? {
+    if (!exists()) return null
+    return try {
+        Compra(
+            id             = id,
+            fecha          = parseFecha(getString("fecha") ?: return null),
+            hora           = (getString("hora") ?: "00:00").let { h ->
+                                 try { LocalTime.parse(h) }
+                                 catch (_: Exception) { LocalTime.parse(h, FMT_HORA_LENIENTE) }
+                             },
+            supermercado   = getString("supermercado") ?: "",
+            total          = getDouble("total") ?: 0.0,
+            productos      = productosEmbebidos(),
+            ticketImageUri = getString("ticketImageUri")
+        )
+    } catch (_: Exception) {
+        null   // documento corrupto: lo salteamos en vez de romper toda la lista
+    }
+}
 
-private fun ProductoEntity.toDomain(): Producto =
-    Producto(
-        id          = id,
-        codigo      = codigo,
-        nombre      = nombre,
-        descripcion = descripcion,
-        cantidad    = cantidad,
-        precio      = precio
-    )
+@Suppress("UNCHECKED_CAST")
+private fun DocumentSnapshot.productosEmbebidos(): List<Producto> {
+    val crudos = get("productos") as? List<Map<String, Any?>> ?: return emptyList()
+    return crudos.map { p ->
+        Producto(
+            id          = p["id"] as? String ?: UUID.randomUUID().toString(),
+            codigo      = p["codigo"] as? String ?: "",
+            nombre      = p["nombre"] as? String ?: "",
+            descripcion = p["descripcion"] as? String ?: "",
+            cantidad    = (p["cantidad"] as? Number)?.toInt() ?: 1,
+            precio      = (p["precio"] as? Number)?.toDouble() ?: 0.0
+        )
+    }
+}
 
-private fun Producto.toEntity(compraId: Int): ProductoEntity =
-    ProductoEntity(
-        compraId    = compraId,
-        codigo      = codigo,
-        nombre      = nombre,
-        descripcion = descripcion,
-        cantidad    = cantidad,
-        precio      = precio
-    )
+private fun Producto.toMap(): Map<String, Any?> = mapOf(
+    "id"          to id.ifBlank { UUID.randomUUID().toString() },
+    "codigo"      to codigo,
+    "nombre"      to nombre,
+    "descripcion" to descripcion,
+    "cantidad"    to cantidad,
+    "precio"      to precio
+)

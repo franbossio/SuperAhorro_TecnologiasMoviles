@@ -505,7 +505,7 @@ $contextoCompras
         val productos = (0 until productosArr.length()).mapIndexed { i, _ ->
             val p = productosArr.getJSONObject(i)
             Producto(
-                id          = System.currentTimeMillis().toInt() + i,
+                id          = java.util.UUID.randomUUID().toString(),
                 codigo      = "",
                 nombre      = p.optString("nombre", "Producto ${i + 1}"),
                 descripcion = p.optString("descripcion", ""),

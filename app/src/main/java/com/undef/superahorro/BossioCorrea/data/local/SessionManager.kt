@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -15,22 +14,23 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 /**
  * Gestiona la sesión del usuario logueado usando DataStore.
- * Guarda el ID y el email del usuario para que al reiniciar
- * la app no haya que loguearse de nuevo.
+ * Guarda el UID de Firebase y el email del usuario para que al
+ * reiniciar la app no haya que loguearse de nuevo.
  */
 class SessionManager(private val context: Context) {
 
     companion object {
-        private val KEY_USER_ID    = intPreferencesKey("user_id")
+        // Clave nueva ("user_uid") porque la vieja ("user_id") guardaba un Int de Room
+        private val KEY_USER_ID    = stringPreferencesKey("user_uid")
         private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
         private val KEY_USER_NAME  = stringPreferencesKey("user_name")
 
         // Valor centinela: no hay sesión activa
-        const val NO_SESSION = -1
+        const val NO_SESSION = ""
     }
 
-    /** Flow que emite el ID del usuario logueado (-1 si no hay sesión) */
-    val userId: Flow<Int> = context.dataStore.data.map { prefs ->
+    /** Flow que emite el UID del usuario logueado ("" si no hay sesión) */
+    val userId: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[KEY_USER_ID] ?: NO_SESSION
     }
 
@@ -45,7 +45,7 @@ class SessionManager(private val context: Context) {
     }
 
     /** Guarda la sesión al loguearse */
-    suspend fun guardarSesion(userId: Int, email: String, nombre: String) {
+    suspend fun guardarSesion(userId: String, email: String, nombre: String) {
         context.dataStore.edit { prefs ->
             prefs[KEY_USER_ID]    = userId
             prefs[KEY_USER_EMAIL] = email

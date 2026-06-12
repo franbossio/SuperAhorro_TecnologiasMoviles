@@ -3,7 +3,6 @@ package com.undef.superahorro.BossioCorrea.ui.screens.comparativa
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
 import com.undef.superahorro.BossioCorrea.data.local.SessionManager
 import com.undef.superahorro.BossioCorrea.data.repository.CompraRepository
 import com.undef.superahorro.BossioCorrea.data.repository.GroqRepository
@@ -28,7 +27,7 @@ data class ComparativaData(
 
 class ComparativaPreciosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository(AppDatabase.getInstance(application))
+    private val repo    = CompraRepository()
     private val session = SessionManager(application)
     private val groqRepo = GroqRepository()
 
