@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.undef.superahorro.BossioCorrea.ui.screens.comparativa.ComparativaPreciosScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.chat.ChatScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.detalle.DetalleCompraScreen
 import com.undef.superahorro.BossioCorrea.ui.screens.compras.historial.HistorialComprasScreen
@@ -143,6 +144,14 @@ fun NavGraph(themeViewModel: ThemeViewModel, languageViewModel: LanguageViewMode
         // ── Estadísticas ─────────────────────────────────────────────────────
         composable(Routes.ESTADISTICAS) {
             EstadisticasScreen(
+                onBackClick       = { navController.popBackStack() },
+                onComparativaClick = { navController.navigate(Routes.COMPARATIVA_PRECIOS) }
+            )
+        }
+
+        // ── Comparativa de precios ────────────────────────────────────────────
+        composable(Routes.COMPARATIVA_PRECIOS) {
+            ComparativaPreciosScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

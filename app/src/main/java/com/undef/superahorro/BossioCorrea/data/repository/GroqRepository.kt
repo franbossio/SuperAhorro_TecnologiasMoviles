@@ -13,6 +13,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.text.Normalizer
 import java.util.concurrent.TimeUnit
 
 data class TicketAnalizado(
@@ -27,6 +28,14 @@ sealed class GroqResult {
     data class Exito(val ticket: TicketAnalizado) : GroqResult()
     data class Error(val mensaje: String)         : GroqResult()
 }
+
+// Grupo de nombres que corresponden al mismo producto.
+// [nombre] es un nombre genérico/legible para mostrar en la UI,
+// [items] son los nombres originales (tal como aparecen en las compras) que pertenecen al grupo.
+data class GrupoProductos(
+    val nombre: String,
+    val items: List<String>
+)
 
 sealed class ChatResult {
     data class Exito(val respuesta: String) : ChatResult()
@@ -204,6 +213,157 @@ REGLAS DEL JSON:
         } catch (e: Exception) {
             GroqResult.Error("Error al analizar el ticket: ${e.message}")
         }
+    }
+
+    /**
+     * Agrupa nombres de productos que corresponden al mismo producto aunque estén
+     * escritos de forma distinta. Cada nombre de [nombres] queda en exactamente un grupo.
+     *
+     * Paso 1 (siempre, sin red): agrupa nombres que tienen exactamente las mismas
+     * palabras —sin importar tildes, mayúsculas/minúsculas, puntuación u orden—,
+     * por ejemplo "Aceite Girasol Los Soles 500ml" y "aceite girasol 500ml los soles".
+     *
+     * Paso 2 (si hay GROQ_API_KEY configurada): usa un modelo de texto para fusionar
+     * además grupos del paso 1 que correspondan al mismo producto pero estén
+     * redactados con palabras distintas (abreviaturas, sinónimos, unidades, etc.).
+     * Si la IA no está disponible o falla, se devuelve el resultado del paso 1.
+     */
+    suspend fun agruparProductos(nombres: List<String>): List<GrupoProductos> = withContext(Dispatchers.IO) {
+        val distintos = nombres.map { it.trim() }.filter { it.isNotBlank() }.distinctBy { it.lowercase() }
+        if (distintos.size < 2) return@withContext distintos.map { GrupoProductos(it, listOf(it)) }
+
+        val gruposBase = distintos
+            .groupBy { firmaProducto(it) }
+            .values
+            .map { items -> GrupoProductos(items.first(), items) }
+
+        if (apiKey.isBlank() || gruposBase.size < 2) return@withContext gruposBase
+
+        try {
+            val representantes = gruposBase.map { it.nombre }
+            val listado = representantes.mapIndexed { i, n -> "${i + 1}. $n" }.joinToString("\n")
+
+            val prompt = """
+Sos un experto en catalogar productos de supermercados argentinos.
+
+TAREA: Te paso una lista de nombres de productos tal como aparecen en tickets de compra reales
+(pueden tener mayúsculas/minúsculas distintas, abreviaturas, unidades escritas de formas diferentes,
+con o sin tildes, etc.). Agrupá los nombres que correspondan AL MISMO PRODUCTO, aunque estén escritos
+de forma distinta.
+
+REGLAS:
+- Mismo producto = misma marca, mismo tipo y misma presentación/tamaño (ej: "COCA COLA 1.5L" y
+  "Coca-Cola Botella 1,5 Litros" son el mismo producto).
+- Productos de distinta marca, sabor, variedad (light, zero, entera, descremada, etc.) o
+  tamaño/presentación son productos DIFERENTES y van en grupos separados.
+- Si un producto no tiene ningún equivalente en la lista, va solo en su propio grupo.
+- Cada nombre de la lista debe aparecer en EXACTAMENTE un grupo, copiado tal cual está en la lista.
+- Responder SOLO con JSON válido, sin texto extra ni bloques de código markdown.
+
+LISTA DE PRODUCTOS:
+$listado
+
+FORMATO DE RESPUESTA:
+{
+  "grupos": [
+    { "nombre": "nombre genérico y legible del producto", "items": ["nombre tal cual de la lista", "..."] }
+  ]
+}
+            """.trimIndent()
+
+            val requestBody = JSONObject().apply {
+                put("model", "llama-3.3-70b-versatile")
+                put("max_tokens", 2000)
+                put("temperature", 0.0)
+                put("response_format", JSONObject().apply { put("type", "json_object") })
+                put("messages", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("content", prompt)
+                    })
+                })
+            }.toString()
+
+            val request = Request.Builder()
+                .url("https://api.groq.com/openai/v1/chat/completions")
+                .addHeader("Authorization", "Bearer $apiKey")
+                .addHeader("Content-Type", "application/json")
+                .post(requestBody.toRequestBody("application/json".toMediaType()))
+                .build()
+
+            val response = client.newCall(request).execute()
+            val body = response.body?.string() ?: return@withContext gruposBase
+
+            if (!response.isSuccessful) return@withContext gruposBase
+
+            val content = JSONObject(body)
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content")
+                .trim()
+
+            val cleanJson = content
+                .removePrefix("```json").removePrefix("```")
+                .removeSuffix("```").trim()
+
+            val gruposIA = parsearGrupos(cleanJson, representantes)
+
+            // Cada grupo de la IA agrupa representantes de gruposBase: expandirlo
+            // a todos los nombres originales que esos representantes englobaban.
+            gruposIA.map { gIA ->
+                val repsLower = gIA.items.map { it.lowercase() }.toSet()
+                val items = gruposBase.filter { it.nombre.lowercase() in repsLower }.flatMap { it.items }
+                GrupoProductos(gIA.nombre, items)
+            }
+
+        } catch (e: Exception) {
+            gruposBase
+        }
+    }
+
+    // Firma de un nombre de producto: minúsculas, sin tildes ni puntuación,
+    // con sus palabras ordenadas alfabéticamente. Dos nombres con las mismas
+    // palabras (en cualquier orden, mayúsculas o con/sin tildes) producen la
+    // misma firma y se consideran el mismo producto sin necesidad de IA.
+    private fun firmaProducto(nombre: String): String =
+        Normalizer.normalize(nombre.lowercase(), Normalizer.Form.NFD)
+            .replace(Regex("\\p{Mn}+"), "")
+            .replace(Regex("[^a-z0-9]+"), " ")
+            .trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotBlank() }
+            .sorted()
+            .joinToString(" ")
+
+    private fun parsearGrupos(json: String, originales: List<String>): List<GrupoProductos> {
+        val obj       = JSONObject(json)
+        val gruposArr = obj.optJSONArray("grupos") ?: JSONArray()
+
+        val grupos = mutableListOf<GrupoProductos>()
+        val usados = mutableSetOf<String>()
+
+        for (i in 0 until gruposArr.length()) {
+            val g       = gruposArr.optJSONObject(i) ?: continue
+            val nombre  = g.optString("nombre").trim()
+            val itemsArr = g.optJSONArray("items") ?: JSONArray()
+
+            val items = (0 until itemsArr.length())
+                .mapNotNull { itemsArr.optString(it)?.trim() }
+                .filter { item -> item.isNotBlank() && originales.any { it.equals(item, ignoreCase = true) } }
+
+            if (items.isEmpty()) continue
+            grupos.add(GrupoProductos(nombre.ifBlank { items.first() }, items))
+            items.forEach { usados.add(it.lowercase()) }
+        }
+
+        // Cualquier nombre original que la IA no haya devuelto en ningún grupo va solo
+        originales.forEach { original ->
+            if (original.lowercase() !in usados) {
+                grupos.add(GrupoProductos(original, listOf(original)))
+            }
+        }
+        return grupos
     }
 
     /**

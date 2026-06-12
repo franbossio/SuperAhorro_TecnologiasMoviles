@@ -2,12 +2,16 @@ package com.undef.superahorro.BossioCorrea.ui.screens.estadisticas
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -53,7 +57,8 @@ private val PODIO_COLORES = listOf(
 @Composable
 fun EstadisticasScreen(
     vm          : EstadisticasViewModel = viewModel(),
-    onBackClick : () -> Unit = {}
+    onBackClick : () -> Unit = {},
+    onComparativaClick : () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
 
@@ -161,6 +166,11 @@ fun EstadisticasScreen(
                     // ── Productos más comprados (rediseñado) ───────────────
                     item {
                         TopProductosCard(data.topProductos)
+                    }
+
+                    // ── Comparativa de precios ──────────────────────────────
+                    item {
+                        ComparativaPreciosEntryCard(onClick = onComparativaClick)
                     }
 
                     item { Spacer(Modifier.height(32.dp)) }
@@ -469,6 +479,46 @@ private fun TopProductosCard(topProductos: List<Pair<String, Int>>) {
                     )
                 }
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Comparativa de precios — acceso a la pantalla dedicada
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun ComparativaPreciosEntryCard(onClick: () -> Unit) {
+    Surface(
+        modifier        = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape           = RoundedCornerShape(16.dp),
+        color           = MaterialTheme.colorScheme.surfaceContainerLow,
+        shadowElevation = 1.dp,
+        border          = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFBBCABF).copy(alpha = 0.3f))
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Box(
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(.35f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.CompareArrows, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                }
+                Column {
+                    Text(stringResource(R.string.estadisticas_comparar_precios), fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.estadisticas_comparar_precios_desc), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline)
+                }
+            }
+            Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }

@@ -3,6 +3,7 @@ package com.undef.superahorro.BossioCorrea.data.repository
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
+import com.undef.superahorro.BossioCorrea.domain.model.PrecioProducto
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -93,11 +94,42 @@ class CompraRepository {
 
     suspend fun getCompraById(compraId: String): Compra? =
         compras.document(compraId).get().await().toCompra()
+
+    // ── Comparativa de precios ────────────────────────────────────────────────
+
+    // Precios de cada producto comprado por el usuario durante [anioMes] ("yyyy-MM")
+    suspend fun getProductosDelMes(usuarioId: String, anioMes: String): List<PrecioProducto> {
+        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
+        return snapshot.documents
+            .mapNotNull { it.toCompra() }
+            .filter { it.fecha.format(FMT_ANIO_MES) == anioMes }
+            .flatMap { compra ->
+                compra.productos.map { producto ->
+                    PrecioProducto(
+                        nombre       = producto.nombre,
+                        supermercado = compra.supermercado,
+                        precio       = producto.precio,
+                        fecha        = compra.fecha
+                    )
+                }
+            }
+    }
+
+    // Meses ("yyyy-MM") con compras del usuario, más reciente primero
+    suspend fun getMesesConCompras(usuarioId: String): List<String> {
+        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
+        return snapshot.documents
+            .mapNotNull { it.toCompra() }
+            .map { it.fecha.format(FMT_ANIO_MES) }
+            .distinct()
+            .sortedDescending()
+    }
 }
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
 private val FMT_HORA_LENIENTE = DateTimeFormatter.ofPattern("H:mm")
+private val FMT_ANIO_MES      = DateTimeFormatter.ofPattern("yyyy-MM")
 
 // Normaliza cualquier variante "yy-M-d" / "yyyy-M-d" → "yyyy-MM-dd" y parsea.
 private fun parseFecha(raw: String): LocalDate {

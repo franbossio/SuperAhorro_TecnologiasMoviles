@@ -105,6 +105,8 @@
     <string name="estadisticas_promedio">Average</string>
     <string name="estadisticas_por_supermercado">Spending by supermarket</string>
     <string name="estadisticas_mas_comprados">Most purchased products</string>
+    <string name="estadisticas_comparar_precios">Compare prices</string>
+    <string name="estadisticas_comparar_precios_desc">Same product, different supermarkets</string>
 
     <string name="perfil_titulo">My profile</string>
     <string name="perfil_guardar">Save changes</string>
@@ -184,6 +186,9 @@
     <string name="dialog_agregar_super_campo">Supermarket name</string>
     <string name="producto_descripcion_opcional">Description (optional)</string>
     <string name="nueva_compra_precio_label">Unit price</string>
+    <string name="nueva_compra_comparativa_titulo">Price comparison this month</string>
+    <string name="nueva_compra_comparativa_actual">This purchase</string>
+    <string name="nueva_compra_comparativa_buscando">Identifying similar products with AI…</string>
 
     <!-- Perfil Screen -->
     <string name="perfil_cerrar_sesion_confirmacion">Are you sure you want to log out?</string>
@@ -276,6 +281,18 @@
     <string name="olvide_password_revisar_spam">If you don\'t see it, check your spam folder.</string>
     <string name="olvide_password_reenviar">Didn\'t receive the email? Resend</string>
     <string name="olvide_password_volver_login">Back to login</string>
+
+    <!-- Price comparison -->
+    <string name="comparativa_titulo">Price comparison</string>
+    <string name="comparativa_subtitulo">Compare the price of the same product across supermarkets, month by month</string>
+    <string name="comparativa_mes">Month</string>
+    <string name="comparativa_producto">Product</string>
+    <string name="comparativa_mas_barato">Cheapest</string>
+    <string name="comparativa_diferencia">+%1$d%% vs. cheapest</string>
+    <string name="comparativa_sin_compras">You haven\'t registered any purchases to compare yet</string>
+    <string name="comparativa_sin_productos">No products loaded for this month</string>
+    <string name="comparativa_sin_otros_supers">You haven\'t bought this product at more than one supermarket this month</string>
+    <string name="comparativa_agrupando">Identifying similar products with AI…</string>
 
     <!-- AI assistant chat -->
     <string name="chat_titulo">AI Assistant</string>
