@@ -203,3 +203,13 @@ Nombre
 ## Presentacion Primera Entrega
 
 https://docs.google.com/presentation/d/1mYGUkIa217INziN8BKaNFLbPrw6QL1Of/edit?usp=sharing&ouid=113337839765885953025&rtpof=true&sd=true
+
+## Presentacion Segunda Entrega
+
+https://docs.google.com/presentation/d/1II9rcRuCFt1JghjPA8PojKF9xPl8iLWJ/edit?usp=sharing&ouid=113337839765885953025&rtpof=true&sd=true
+
+## Video de la app 
+
+https://drive.google.com/file/d/1NmVdKSoue2FrB_42BJWcu4E3Bf-ju0Sj/view?usp=sharing
+
+
