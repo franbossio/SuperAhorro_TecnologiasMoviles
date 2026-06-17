@@ -27,7 +27,7 @@ data class ComparativaData(
 
 class ComparativaPreciosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository()
+    private val repo    = CompraRepository.create(application)
     private val session = SessionManager(application)
     private val groqRepo = GroqRepository()
 

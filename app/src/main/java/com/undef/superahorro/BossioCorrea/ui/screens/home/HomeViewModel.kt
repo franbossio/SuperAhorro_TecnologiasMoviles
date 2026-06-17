@@ -35,7 +35,7 @@ data class HomeData(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo      = CompraRepository()
+    private val repo      = CompraRepository.create(application)
     private val session   = SessionManager(application)
     private val authRepo  = AuthRepository(SessionManager(application))
     private val promoRepo = PromocionesRepository()
@@ -94,6 +94,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _uiState.value = UiState.Error("Sesión expirada")
                 return@launch
             }
+            // Sincroniza las compras de Firestore al Room local al iniciar la app
+            repo.sincronizarDesdeFirestore(userId)
+
             val fmtFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
             val usuario  = try { authRepo.getUsuario(userId) } catch (_: Exception) { null }

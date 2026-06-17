@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.ksp)
 }
 
 // Lee las claves locales (no versionadas) desde local.properties
@@ -79,8 +80,14 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // OkHttp — para llamadas a Groq API
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // Retrofit — cliente HTTP declarativo con conversor Gson
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+
+    // Room — base de datos local
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // Coil — para mostrar la imagen del ticket en la UI
     implementation("io.coil-kt:coil-compose:2.6.0")

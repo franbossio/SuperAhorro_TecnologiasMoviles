@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class ListadoComprasViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository()
+    private val repo    = CompraRepository.create(application)
     private val session = SessionManager(application)
 
     private val _uiState = MutableStateFlow<UiState<List<Compra>>>(UiState.Loading)

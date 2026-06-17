@@ -20,7 +20,6 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SessionManager(private val context: Context) {
 
     companion object {
-        // Clave nueva ("user_uid") porque la vieja ("user_id") guardaba un Int de Room
         private val KEY_USER_ID    = stringPreferencesKey("user_uid")
         private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
         private val KEY_USER_NAME  = stringPreferencesKey("user_name")

@@ -16,7 +16,7 @@ import java.time.LocalDate
 
 class HistorialComprasViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository()
+    private val repo    = CompraRepository.create(application)
     private val session = SessionManager(application)
 
     private val _todasLasCompras = MutableStateFlow<List<Compra>>(emptyList())

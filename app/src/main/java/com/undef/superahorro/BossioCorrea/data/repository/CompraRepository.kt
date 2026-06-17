@@ -1,52 +1,58 @@
 package com.undef.superahorro.BossioCorrea.data.repository
 
+import android.content.Context
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.undef.superahorro.BossioCorrea.data.local.AppDatabase
+import com.undef.superahorro.BossioCorrea.data.local.CompraConProductos
+import com.undef.superahorro.BossioCorrea.data.local.CompraDao
+import com.undef.superahorro.BossioCorrea.data.local.CompraEntity
+import com.undef.superahorro.BossioCorrea.data.local.ProductoEntity
 import com.undef.superahorro.BossioCorrea.domain.model.Compra
 import com.undef.superahorro.BossioCorrea.domain.model.PrecioProducto
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
-/**
- * Compras en Firestore: colección "compras", un documento por compra
- * con sus productos embebidos como lista (equivale al JOIN compras-productos
- * que había en Room). Firestore cachea offline automáticamente.
- */
-class CompraRepository {
+class CompraRepository(private val compraDao: CompraDao) {
 
-    private val compras = FirebaseFirestore.getInstance().collection("compras")
+    private val firestoreCompras = FirebaseFirestore.getInstance().collection("compras")
 
-    // ── Observar compras del usuario ──────────────────────────────────────────
-    //
-    // callbackFlow envuelve el listener en tiempo real de Firestore: cada vez
-    // que cambia algo en la nube (o localmente offline) emite la lista nueva.
-
-    fun getComprasFlow(usuarioId: String): Flow<List<Compra>> = callbackFlow {
-        val registro = compras
-            .whereEqualTo("usuarioId", usuarioId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                val lista = snapshot?.documents
-                    ?.mapNotNull { it.toCompra() }
-                    ?.sortedByDescending { it.fecha.atTime(it.hora) }
-                    ?: emptyList()
-                trySend(lista)
-            }
-        awaitClose { registro.remove() }
+    companion object {
+        fun create(context: Context) = CompraRepository(
+            AppDatabase.getInstance(context).compraDao()
+        )
     }
 
-    // ── Guardar compra con productos ──────────────────────────────────────────
+    // ── UI observa Room (offline-first) ──────────────────────────────────────
+    fun getComprasFlow(usuarioId: String): Flow<List<Compra>> =
+        compraDao.observarCompras(usuarioId)
+            .map { lista -> lista.map { it.toDomain() } }
 
+    // ── Sincroniza Firestore → Room ───────────────────────────────────────────
+    // Llamar una vez al iniciar la app con sesión activa (HomeViewModel.cargar)
+    suspend fun sincronizarDesdeFirestore(usuarioId: String) {
+        try {
+            val snapshot = firestoreCompras
+                .whereEqualTo("usuarioId", usuarioId)
+                .get()
+                .await()
+            val compras = snapshot.documents.mapNotNull { it.toCompra() }
+            // Limpiar solo si la consulta fue exitosa para no perder datos offline
+            compraDao.limpiarComprasDeUsuario(usuarioId)
+            compras.forEach { compra ->
+                compraDao.insertarCompra(compra.toEntity(usuarioId))
+                compraDao.insertarProductos(compra.productos.map { it.toEntity(compra.id) })
+            }
+        } catch (_: Exception) { /* sin internet: la UI muestra los datos locales de Room */ }
+    }
+
+    // ── Guardar compra ────────────────────────────────────────────────────────
     suspend fun guardarCompra(
         usuarioId    : String,
         fecha        : String,
@@ -56,52 +62,67 @@ class CompraRepository {
         productos    : List<Producto>,
         ticketUri    : String? = null
     ): String {
-        val doc = compras.add(
-            mapOf(
-                "usuarioId"      to usuarioId,
-                "fecha"          to fecha,
-                "hora"           to hora,
-                "supermercado"   to supermercado,
-                "total"          to total,
-                "ticketImageUri" to ticketUri,
-                "productos"      to productos.map { it.toMap() }
-            )
-        ).await()
-        return doc.id
+        val id = UUID.randomUUID().toString()
+        // 1. Room primero — disponible offline de inmediato
+        compraDao.insertarCompra(CompraEntity(id, usuarioId, fecha, hora, supermercado, total, ticketUri))
+        compraDao.insertarProductos(productos.map { it.toEntity(id) })
+        // 2. Firestore — best-effort, falla en silencio sin internet
+        try {
+            firestoreCompras.document(id).set(
+                mapOf(
+                    "usuarioId"      to usuarioId,
+                    "fecha"          to fecha,
+                    "hora"           to hora,
+                    "supermercado"   to supermercado,
+                    "total"          to total,
+                    "ticketImageUri" to ticketUri,
+                    "productos"      to productos.map { it.toFirestoreMap() }
+                )
+            ).await()
+        } catch (_: Exception) { }
+        return id
     }
 
     suspend fun agregarProducto(compraId: String, producto: Producto) {
         val conId = if (producto.id.isBlank())
             producto.copy(id = UUID.randomUUID().toString()) else producto
-        val doc       = compras.document(compraId).get().await()
-        val actuales  = doc.productosEmbebidos()
-        compras.document(compraId)
-            .update("productos", (actuales + conId).map { it.toMap() })
-            .await()
+        compraDao.insertarProductos(listOf(conId.toEntity(compraId)))
+        try {
+            val doc = firestoreCompras.document(compraId).get().await()
+            val actuales = doc.productosEmbebidos()
+            firestoreCompras.document(compraId)
+                .update("productos", (actuales + conId).map { it.toFirestoreMap() })
+                .await()
+        } catch (_: Exception) { }
     }
 
     suspend fun eliminarCompra(compraId: String) {
-        compras.document(compraId).delete().await()
+        // CASCADE en Room elimina los productos automáticamente
+        compraDao.eliminarCompraPorId(compraId)
+        try {
+            firestoreCompras.document(compraId).delete().await()
+        } catch (_: Exception) { }
     }
 
     suspend fun eliminarProducto(compraId: String, productoId: String) {
-        val doc      = compras.document(compraId).get().await()
-        val restantes = doc.productosEmbebidos().filterNot { it.id == productoId }
-        compras.document(compraId)
-            .update("productos", restantes.map { it.toMap() })
-            .await()
+        compraDao.eliminarProducto(compraId, productoId)
+        try {
+            val doc = firestoreCompras.document(compraId).get().await()
+            val restantes = doc.productosEmbebidos().filterNot { it.id == productoId }
+            firestoreCompras.document(compraId)
+                .update("productos", restantes.map { it.toFirestoreMap() })
+                .await()
+        } catch (_: Exception) { }
     }
 
     suspend fun getCompraById(compraId: String): Compra? =
-        compras.document(compraId).get().await().toCompra()
+        compraDao.getCompraConProductos(compraId)?.toDomain()
 
     // ── Comparativa de precios ────────────────────────────────────────────────
 
-    // Precios de cada producto comprado por el usuario durante [anioMes] ("yyyy-MM")
     suspend fun getProductosDelMes(usuarioId: String, anioMes: String): List<PrecioProducto> {
-        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
-        return snapshot.documents
-            .mapNotNull { it.toCompra() }
+        return compraDao.getComprasSnapshot(usuarioId)
+            .map { it.toDomain() }
             .filter { it.fecha.format(FMT_ANIO_MES) == anioMes }
             .flatMap { compra ->
                 compra.productos.map { producto ->
@@ -115,23 +136,21 @@ class CompraRepository {
             }
     }
 
-    // Meses ("yyyy-MM") con compras del usuario, más reciente primero
     suspend fun getMesesConCompras(usuarioId: String): List<String> {
-        val snapshot = compras.whereEqualTo("usuarioId", usuarioId).get().await()
-        return snapshot.documents
-            .mapNotNull { it.toCompra() }
+        return compraDao.getComprasSnapshot(usuarioId)
+            .map { it.toDomain() }
             .map { it.fecha.format(FMT_ANIO_MES) }
             .distinct()
             .sortedDescending()
     }
 }
 
-// ── Mappers ───────────────────────────────────────────────────────────────────
+// ── Formato compartido ────────────────────────────────────────────────────────
 
 private val FMT_HORA_LENIENTE = DateTimeFormatter.ofPattern("H:mm")
 private val FMT_ANIO_MES      = DateTimeFormatter.ofPattern("yyyy-MM")
 
-// Normaliza cualquier variante "yy-M-d" / "yyyy-M-d" → "yyyy-MM-dd" y parsea.
+// Normaliza "yy-M-d" / "yyyy-M-d" → LocalDate
 private fun parseFecha(raw: String): LocalDate {
     val partes = raw.trim().split("-")
     if (partes.size == 3) {
@@ -140,8 +159,52 @@ private fun parseFecha(raw: String): LocalDate {
         val dia  = partes[2].padStart(2, '0')
         return LocalDate.parse("$anio-$mes-$dia")
     }
-    return LocalDate.parse(raw)   // último recurso: dejar que falle con mensaje claro
+    return LocalDate.parse(raw)
 }
+
+// ── Room mappers ──────────────────────────────────────────────────────────────
+
+private fun CompraConProductos.toDomain(): Compra = Compra(
+    id             = compra.id,
+    fecha          = parseFecha(compra.fecha),
+    hora           = try { LocalTime.parse(compra.hora) }
+                     catch (_: Exception) { LocalTime.parse(compra.hora, FMT_HORA_LENIENTE) },
+    supermercado   = compra.supermercado,
+    total          = compra.total,
+    productos      = productos.map { it.toDomain() },
+    ticketImageUri = compra.ticketImageUri
+)
+
+private fun ProductoEntity.toDomain(): Producto = Producto(
+    id          = id,
+    codigo      = codigo,
+    nombre      = nombre,
+    descripcion = descripcion,
+    cantidad    = cantidad,
+    precio      = precio
+)
+
+private fun Compra.toEntity(usuarioId: String): CompraEntity = CompraEntity(
+    id             = id,
+    usuarioId      = usuarioId,
+    fecha          = fecha.toString(),
+    hora           = hora.toString(),
+    supermercado   = supermercado,
+    total          = total,
+    ticketImageUri = ticketImageUri
+)
+
+private fun Producto.toEntity(compraId: String): ProductoEntity = ProductoEntity(
+    id          = id.ifBlank { UUID.randomUUID().toString() },
+    compraId    = compraId,
+    codigo      = codigo,
+    nombre      = nombre,
+    descripcion = descripcion,
+    cantidad    = cantidad,
+    precio      = precio
+)
+
+// ── Firestore mappers ─────────────────────────────────────────────────────────
 
 private fun DocumentSnapshot.toCompra(): Compra? {
     if (!exists()) return null
@@ -158,9 +221,7 @@ private fun DocumentSnapshot.toCompra(): Compra? {
             productos      = productosEmbebidos(),
             ticketImageUri = getString("ticketImageUri")
         )
-    } catch (_: Exception) {
-        null   // documento corrupto: lo salteamos en vez de romper toda la lista
-    }
+    } catch (_: Exception) { null }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -178,7 +239,7 @@ private fun DocumentSnapshot.productosEmbebidos(): List<Producto> {
     }
 }
 
-private fun Producto.toMap(): Map<String, Any?> = mapOf(
+private fun Producto.toFirestoreMap(): Map<String, Any?> = mapOf(
     "id"          to id.ifBlank { UUID.randomUUID().toString() },
     "codigo"      to codigo,
     "nombre"      to nombre,

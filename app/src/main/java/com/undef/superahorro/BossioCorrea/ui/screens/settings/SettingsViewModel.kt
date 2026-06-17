@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.first
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo    = CompraRepository()
+    private val repo    = CompraRepository.create(application)
     private val session = SessionManager(application)
 
     /** Trae el historial de compras actual del usuario logueado (vacío si no hay sesión). */

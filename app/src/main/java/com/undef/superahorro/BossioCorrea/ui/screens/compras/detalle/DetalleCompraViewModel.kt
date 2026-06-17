@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class DetalleCompraViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo = CompraRepository()
+    private val repo = CompraRepository.create(application)
 
     private val _uiState = MutableStateFlow<UiState<Compra>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
@@ -48,7 +48,6 @@ class DetalleCompraViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             val compraId = (_uiState.value as? UiState.Success)?.data?.id ?: return@launch
             repo.agregarProducto(compraId, producto)
-            // Recargar para obtener la compra actualizada desde Firestore
             cargar(compraId)
         }
     }

@@ -3,18 +3,19 @@ package com.undef.superahorro.BossioCorrea.data.repository
 import android.graphics.Bitmap
 import android.util.Base64
 import com.undef.superahorro.BossioCorrea.BuildConfig
+import com.undef.superahorro.BossioCorrea.data.remote.GroqContentPart
+import com.undef.superahorro.BossioCorrea.data.remote.GroqImageUrl
+import com.undef.superahorro.BossioCorrea.data.remote.GroqMessage
+import com.undef.superahorro.BossioCorrea.data.remote.GroqRequest
+import com.undef.superahorro.BossioCorrea.data.remote.ResponseFormat
+import com.undef.superahorro.BossioCorrea.data.remote.RetrofitClient
 import com.undef.superahorro.BossioCorrea.domain.model.Producto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.text.Normalizer
-import java.util.concurrent.TimeUnit
 
 data class TicketAnalizado(
     val supermercado : String,
@@ -29,9 +30,6 @@ sealed class GroqResult {
     data class Error(val mensaje: String)         : GroqResult()
 }
 
-// Grupo de nombres que corresponden al mismo producto.
-// [nombre] es un nombre genérico/legible para mostrar en la UI,
-// [items] son los nombres originales (tal como aparecen en las compras) que pertenecen al grupo.
 data class GrupoProductos(
     val nombre: String,
     val items: List<String>
@@ -45,17 +43,11 @@ sealed class ChatResult {
 class GroqRepository {
 
     private val apiKey = BuildConfig.GROQ_API_KEY
-
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .build()
+    private val auth   get() = "Bearer $apiKey"
 
     suspend fun analizarTicket(bitmap: Bitmap): GroqResult = withContext(Dispatchers.IO) {
         if (apiKey.isBlank()) {
-            return@withContext GroqResult.Error(
-                "Falta configurar GROQ_API_KEY en local.properties"
-            )
+            return@withContext GroqResult.Error("Falta configurar GROQ_API_KEY en local.properties")
         }
         try {
             val base64 = bitmapToBase64(bitmap)
@@ -156,57 +148,32 @@ REGLAS DEL JSON:
 - No inventar ni modificar nombres de productos, copiar exactamente lo que dice el ticket
             """.trimIndent()
 
-            val requestBody = JSONObject().apply {
-                put("model", "meta-llama/llama-4-scout-17b-16e-instruct")
-                put("max_tokens", 3000)
-                put("temperature", 0.0)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", JSONArray().apply {
-                            put(JSONObject().apply {
-                                put("type", "text")
-                                put("text", prompt)
-                            })
-                            put(JSONObject().apply {
-                                put("type", "image_url")
-                                put("image_url", JSONObject().apply {
-                                    put("url", "data:image/jpeg;base64,$base64")
-                                })
-                            })
-                        })
-                    })
-                })
-            }.toString()
+            val request = GroqRequest(
+                model       = "meta-llama/llama-4-scout-17b-16e-instruct",
+                maxTokens   = 3000,
+                temperature = 0.0,
+                messages    = listOf(
+                    GroqMessage(
+                        role    = "user",
+                        content = listOf(
+                            GroqContentPart(type = "text", text = prompt),
+                            GroqContentPart(
+                                type     = "image_url",
+                                imageUrl = GroqImageUrl("data:image/jpeg;base64,$base64")
+                            )
+                        )
+                    )
+                )
+            )
 
-            val request = Request.Builder()
-                .url("https://api.groq.com/openai/v1/chat/completions")
-                .addHeader("Authorization", "Bearer $apiKey")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody.toRequestBody("application/json".toMediaType()))
-                .build()
-
-            val response = client.newCall(request).execute()
-            val body = response.body?.string()
-                ?: return@withContext GroqResult.Error("Respuesta vacía de la API")
-
-            if (!response.isSuccessful) {
-                return@withContext GroqResult.Error("Error API ${response.code}: $body")
-            }
-
-            val content = JSONObject(body)
-                .getJSONArray("choices")
-                .getJSONObject(0)
-                .getJSONObject("message")
-                .getString("content")
-                .trim()
-
+            val respuesta = RetrofitClient.groq.chatCompletions(auth, request)
+            val content = respuesta.choices.first().message.content.trim()
             val cleanJson = content
                 .removePrefix("```json").removePrefix("```")
                 .removeSuffix("```").trim()
 
-            val ticket    = parsearTicket(cleanJson)
-            val filtrados = filtrarProductosSospechosos(ticket.productos)
+            val ticket        = parsearTicket(cleanJson)
+            val filtrados     = filtrarProductosSospechosos(ticket.productos)
             val conDescuentos = aplicarDescuentosSueltos(filtrados)
             GroqResult.Exito(ticket.copy(productos = conDescuentos))
 
@@ -215,19 +182,6 @@ REGLAS DEL JSON:
         }
     }
 
-    /**
-     * Agrupa nombres de productos que corresponden al mismo producto aunque estén
-     * escritos de forma distinta. Cada nombre de [nombres] queda en exactamente un grupo.
-     *
-     * Paso 1 (siempre, sin red): agrupa nombres que tienen exactamente las mismas
-     * palabras —sin importar tildes, mayúsculas/minúsculas, puntuación u orden—,
-     * por ejemplo "Aceite Girasol Los Soles 500ml" y "aceite girasol 500ml los soles".
-     *
-     * Paso 2 (si hay GROQ_API_KEY configurada): usa un modelo de texto para fusionar
-     * además grupos del paso 1 que correspondan al mismo producto pero estén
-     * redactados con palabras distintas (abreviaturas, sinónimos, unidades, etc.).
-     * Si la IA no está disponible o falla, se devuelve el resultado del paso 1.
-     */
     suspend fun agruparProductos(nombres: List<String>): List<GrupoProductos> = withContext(Dispatchers.IO) {
         val distintos = nombres.map { it.trim() }.filter { it.isNotBlank() }.distinctBy { it.lowercase() }
         if (distintos.size < 2) return@withContext distintos.map { GrupoProductos(it, listOf(it)) }
@@ -271,46 +225,22 @@ FORMATO DE RESPUESTA:
 }
             """.trimIndent()
 
-            val requestBody = JSONObject().apply {
-                put("model", "llama-3.3-70b-versatile")
-                put("max_tokens", 2000)
-                put("temperature", 0.0)
-                put("response_format", JSONObject().apply { put("type", "json_object") })
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", prompt)
-                    })
-                })
-            }.toString()
+            val request = GroqRequest(
+                model          = "llama-3.3-70b-versatile",
+                maxTokens      = 2000,
+                temperature    = 0.0,
+                responseFormat = ResponseFormat("json_object"),
+                messages       = listOf(GroqMessage(role = "user", content = prompt))
+            )
 
-            val request = Request.Builder()
-                .url("https://api.groq.com/openai/v1/chat/completions")
-                .addHeader("Authorization", "Bearer $apiKey")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody.toRequestBody("application/json".toMediaType()))
-                .build()
-
-            val response = client.newCall(request).execute()
-            val body = response.body?.string() ?: return@withContext gruposBase
-
-            if (!response.isSuccessful) return@withContext gruposBase
-
-            val content = JSONObject(body)
-                .getJSONArray("choices")
-                .getJSONObject(0)
-                .getJSONObject("message")
-                .getString("content")
-                .trim()
-
+            val respuesta = RetrofitClient.groq.chatCompletions(auth, request)
+            val content = respuesta.choices.first().message.content.trim()
             val cleanJson = content
                 .removePrefix("```json").removePrefix("```")
                 .removeSuffix("```").trim()
 
             val gruposIA = parsearGrupos(cleanJson, representantes)
 
-            // Cada grupo de la IA agrupa representantes de gruposBase: expandirlo
-            // a todos los nombres originales que esos representantes englobaban.
             gruposIA.map { gIA ->
                 val repsLower = gIA.items.map { it.lowercase() }.toSet()
                 val items = gruposBase.filter { it.nombre.lowercase() in repsLower }.flatMap { it.items }
@@ -322,10 +252,53 @@ FORMATO DE RESPUESTA:
         }
     }
 
-    // Firma de un nombre de producto: minúsculas, sin tildes ni puntuación,
-    // con sus palabras ordenadas alfabéticamente. Dos nombres con las mismas
-    // palabras (en cualquier orden, mayúsculas o con/sin tildes) producen la
-    // misma firma y se consideran el mismo producto sin necesidad de IA.
+    suspend fun consultarHistorial(
+        pregunta        : String,
+        contextoCompras : String,
+        mensajesPrevios : List<Pair<String, String>> = emptyList()
+    ): ChatResult = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) {
+            return@withContext ChatResult.Error("Falta configurar GROQ_API_KEY en local.properties")
+        }
+        try {
+            val sistema = """
+Sos el asistente de SuperAhorro, una app argentina para registrar compras de supermercado.
+Tu única función es responder preguntas del usuario sobre SU historial de compras, que te paso abajo.
+
+REGLAS:
+- Respondé en español rioplatense, breve y directo (2 a 5 oraciones, sin markdown).
+- Usá solamente los datos del historial. No inventes compras, productos ni precios.
+- Los montos son pesos argentinos: formatealos como ${'$'}1.234,56.
+- Si la pregunta no se puede responder con el historial (o no tiene compras), decilo amablemente.
+- Si te preguntan algo no relacionado con sus compras, recordá que solo respondés sobre el historial.
+
+HISTORIAL DE COMPRAS DEL USUARIO:
+$contextoCompras
+            """.trimIndent()
+
+            val mensajes = mutableListOf(GroqMessage(role = "system", content = sistema))
+            mensajesPrevios.forEach { (rol, contenido) ->
+                mensajes += GroqMessage(role = rol, content = contenido)
+            }
+            mensajes += GroqMessage(role = "user", content = pregunta)
+
+            val request = GroqRequest(
+                model       = "meta-llama/llama-4-scout-17b-16e-instruct",
+                maxTokens   = 1000,
+                temperature = 0.3,
+                messages    = mensajes
+            )
+
+            val respuesta = RetrofitClient.groq.chatCompletions(auth, request)
+            ChatResult.Exito(respuesta.choices.first().message.content.trim())
+
+        } catch (e: Exception) {
+            ChatResult.Error("Error al consultar: ${e.message}")
+        }
+    }
+
+    // ── Lógica de negocio (sin cambios) ──────────────────────────────────────
+
     private fun firmaProducto(nombre: String): String =
         Normalizer.normalize(nombre.lowercase(), Normalizer.Form.NFD)
             .replace(Regex("\\p{Mn}+"), "")
@@ -344,8 +317,8 @@ FORMATO DE RESPUESTA:
         val usados = mutableSetOf<String>()
 
         for (i in 0 until gruposArr.length()) {
-            val g       = gruposArr.optJSONObject(i) ?: continue
-            val nombre  = g.optString("nombre").trim()
+            val g        = gruposArr.optJSONObject(i) ?: continue
+            val nombre   = g.optString("nombre").trim()
             val itemsArr = g.optJSONArray("items") ?: JSONArray()
 
             val items = (0 until itemsArr.length())
@@ -357,95 +330,12 @@ FORMATO DE RESPUESTA:
             items.forEach { usados.add(it.lowercase()) }
         }
 
-        // Cualquier nombre original que la IA no haya devuelto en ningún grupo va solo
         originales.forEach { original ->
             if (original.lowercase() !in usados) {
                 grupos.add(GrupoProductos(original, listOf(original)))
             }
         }
         return grupos
-    }
-
-    /**
-     * Responde una pregunta del usuario sobre su historial de compras.
-     * El historial se pasa como contexto en el mensaje de sistema y los mensajes
-     * previos de la conversación se reenvían para que la IA mantenga el hilo.
-     */
-    suspend fun consultarHistorial(
-        pregunta        : String,
-        contextoCompras : String,
-        mensajesPrevios : List<Pair<String, String>> = emptyList()
-    ): ChatResult = withContext(Dispatchers.IO) {
-        if (apiKey.isBlank()) {
-            return@withContext ChatResult.Error(
-                "Falta configurar GROQ_API_KEY en local.properties"
-            )
-        }
-        try {
-            val sistema = """
-Sos el asistente de SuperAhorro, una app argentina para registrar compras de supermercado.
-Tu única función es responder preguntas del usuario sobre SU historial de compras, que te paso abajo.
-
-REGLAS:
-- Respondé en español rioplatense, breve y directo (2 a 5 oraciones, sin markdown).
-- Usá solamente los datos del historial. No inventes compras, productos ni precios.
-- Los montos son pesos argentinos: formatealos como ${'$'}1.234,56.
-- Si la pregunta no se puede responder con el historial (o no tiene compras), decilo amablemente.
-- Si te preguntan algo no relacionado con sus compras, recordá que solo respondés sobre el historial.
-
-HISTORIAL DE COMPRAS DEL USUARIO:
-$contextoCompras
-            """.trimIndent()
-
-            val requestBody = JSONObject().apply {
-                put("model", "meta-llama/llama-4-scout-17b-16e-instruct")
-                put("max_tokens", 1000)
-                put("temperature", 0.3)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "system")
-                        put("content", sistema)
-                    })
-                    mensajesPrevios.forEach { (rol, contenido) ->
-                        put(JSONObject().apply {
-                            put("role", rol)
-                            put("content", contenido)
-                        })
-                    }
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", pregunta)
-                    })
-                })
-            }.toString()
-
-            val request = Request.Builder()
-                .url("https://api.groq.com/openai/v1/chat/completions")
-                .addHeader("Authorization", "Bearer $apiKey")
-                .addHeader("Content-Type", "application/json")
-                .post(requestBody.toRequestBody("application/json".toMediaType()))
-                .build()
-
-            val response = client.newCall(request).execute()
-            val body = response.body?.string()
-                ?: return@withContext ChatResult.Error("Respuesta vacía de la API")
-
-            if (!response.isSuccessful) {
-                return@withContext ChatResult.Error("Error API ${response.code}: $body")
-            }
-
-            val content = JSONObject(body)
-                .getJSONArray("choices")
-                .getJSONObject(0)
-                .getJSONObject("message")
-                .getString("content")
-                .trim()
-
-            ChatResult.Exito(content)
-
-        } catch (e: Exception) {
-            ChatResult.Error("Error al consultar: ${e.message}")
-        }
     }
 
     private fun aplicarDescuentosSueltos(productos: List<Producto>): List<Producto> {

@@ -25,7 +25,7 @@ class PerfilViewModel(application: Application) : AndroidViewModel(application) 
 
     private val session  = SessionManager(application)
     private val authRepo = AuthRepository(session)
-    private val repo     = CompraRepository()
+    private val repo     = CompraRepository.create(application)
 
     private val _uiState = MutableStateFlow<UiState<PerfilData>>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
